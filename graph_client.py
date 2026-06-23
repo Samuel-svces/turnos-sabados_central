@@ -59,6 +59,7 @@ def _file_url(file_key: str, action: str = "content") -> str:
     action: "content"  → descarga/sube el binario
     """
     key_map = {
+        "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
         "modificaciones_sabados": ("drive_id_mod_sab", "file_id_mod_sab"),
         "modificaciones_personal": ("drive_id_mod_per", "file_id_mod_per"),
     }
