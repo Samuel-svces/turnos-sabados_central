@@ -102,14 +102,12 @@ def load_app_data():
         df_super = dp.load_supernumeraries(st.session_state.excel_path)
         st.session_state.super_df = df_super
         
-        st.session_state.req_df = pd.DataFrame()  # solicitudes no utilizadas en esta versión
         st.session_state.data_loaded = True
         st.session_state.load_error = None
         st.session_state.last_load_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     except Exception as e:
         st.session_state.shifts_df = pd.DataFrame()
         st.session_state.super_df = pd.DataFrame()
-        st.session_state.req_df = pd.DataFrame()
         st.session_state.errors = []
         st.session_state.data_loaded = False
         st.session_state.load_error = str(e)
@@ -480,7 +478,7 @@ with tab_calendar:
                         date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                         for _, s_row in date_shifts.reset_index().iterrows():
                             name = s_row['Supernumerary']
-                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}_{s_row['Excel_Row']}"):
+                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}"):
                                 action_details = {
                                     'date': sat_date,
                                     'doctor': name,

@@ -12,6 +12,7 @@ locales como fallback (comportamiento original).
 """
 
 import pandas as pd
+import streamlit as st
 import openpyxl
 import re
 import datetime
@@ -399,10 +400,8 @@ def _open_master_excel(excel_path):
         return pd.ExcelFile(excel_path)
 
 
-def load_data(excel_path):
-    """
-    Lee los turnos del Excel maestro y aplica las modificaciones delta en memoria.
-    """
+@st.cache_data(ttl=3600, show_spinner=False)
+def _get_base_shifts_df(excel_path):
     xl = _open_master_excel(excel_path)
 
     months = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
@@ -528,6 +527,15 @@ def load_data(excel_path):
     df_shifts['Excel_Col'] = df_shifts['Excel_Col'].astype(int)
     df_shifts['Observation'] = ''
     df_shifts['Classification'] = 'Secuencia Normal'
+    return df_shifts, errors
+
+def load_data(excel_path):
+    """
+    Lee los turnos del Excel maestro y aplica las modificaciones delta en memoria.
+    """
+    df_shifts_base, errors_base = _get_base_shifts_df(excel_path)
+    df_shifts = df_shifts_base.copy()
+    errors = list(errors_base)
 
     # Aplicar modificaciones delta en memoria
     df_mods = load_modifications(excel_path)
@@ -596,7 +604,8 @@ def load_data(excel_path):
 # Supernumerarios (solo lectura del maestro + delta personal)
 # ---------------------------------------------------------------------------
 
-def load_supernumeraries(excel_path):
+@st.cache_data(ttl=3600, show_spinner=False)
+def _get_base_supernumeraries(excel_path):
     try:
         xl = _open_master_excel(excel_path)
         df = pd.read_excel(xl, sheet_name="PERSONAL")
@@ -628,6 +637,15 @@ def load_supernumeraries(excel_path):
             df_super['OBSERVACIONES'] = ''
         else:
             df_super['OBSERVACIONES'] = df_super['OBSERVACIONES'].fillna('').astype(str).str.strip()
+        return df_super
+    except Exception as e:
+        print(f"Error loading base supernumeraries: {e}")
+        return pd.DataFrame(columns=['CEDULA', 'NOMBRES Y APELLIDOS', 'CARGO',
+                                     'CELULAR', 'SEDE / CECO', 'FECHA_INICIO', 'OBSERVACIONES', 'STATUS'])
+
+def load_supernumeraries(excel_path):
+    df_super = _get_base_supernumeraries(excel_path).copy()
+    try:
 
         df_pm = load_personal_modifications(excel_path)
         for _, mod in df_pm.iterrows():
