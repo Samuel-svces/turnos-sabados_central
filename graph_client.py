@@ -18,6 +18,7 @@ import os
 import requests
 import msal
 import streamlit as st
+import time
 
 
 # ---------------------------------------------------------------------------
@@ -93,9 +94,10 @@ def download_excel(file_key: str) -> io.BytesIO:
     return io.BytesIO(resp.content)
 
 
-def upload_excel(file_key: str, buffer: io.BytesIO) -> None:
+def upload_excel(file_key: str, buffer: io.BytesIO, max_retries: int = 3) -> None:
     """
     Sube el BytesIO como el Excel indicado en SharePoint/OneDrive (sobreescribe el archivo).
+    Intenta varias veces si el archivo está bloqueado (HTTP 423).
     """
     token = _get_access_token()
     url   = _file_url(file_key, "content")
@@ -103,16 +105,31 @@ def upload_excel(file_key: str, buffer: io.BytesIO) -> None:
     buffer.seek(0)
     content = buffer.read()
 
-    resp = requests.put(
-        url,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        },
-        data=content,
-        timeout=60,
-    )
-    if resp.status_code not in (200, 201):
+    for attempt in range(1, max_retries + 1):
+        resp = requests.put(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            },
+            data=content,
+            timeout=60,
+        )
+        
+        if resp.status_code in (200, 201):
+            return  # Éxito
+            
+        if resp.status_code == 423:
+            if attempt < max_retries:
+                time.sleep(2)  # Espera 2 segundos antes de reintentar
+                continue
+            else:
+                raise RuntimeError(
+                    f"El archivo '{file_key}' está bloqueado temporalmente por otro usuario o aplicación (HTTP 423). "
+                    "Por favor, asegúrate de cerrarlo en Excel, SharePoint o OneDrive y vuelve a intentarlo."
+                )
+                
+        # Si no es éxito ni 423, rompe el ciclo lanzando la excepción
         raise RuntimeError(
             f"Error al subir '{file_key}': HTTP {resp.status_code} — {resp.text[:300]}"
         )
