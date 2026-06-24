@@ -280,8 +280,6 @@ if not st.session_state.data_loaded or st.session_state.load_error:
 
 df_shifts = st.session_state.shifts_df
 df_super = st.session_state.super_df
-df_req = st.session_state.req_df
-
 # Navigation Tabs
 # Navigation Tabs
 if st.session_state.is_admin:
