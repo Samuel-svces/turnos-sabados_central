@@ -348,6 +348,7 @@ with tab_calendar:
             
             # Prepare sortable items
             original_state = []
+            global_docs_seen = set()
             for sat_date in saturdays:
                 date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                 
@@ -377,13 +378,14 @@ with tab_calendar:
                     if search_query and search_query in name.upper():
                         display_name = "🎯 " + display_name
                         
-                    # Evitar nombres duplicados para prevenir que el componente React sortable colapse (Error #185)
+                    # Evitar nombres duplicados GLOBALMENTE en todos los sábados (Error #185 de React)
                     original_display = display_name
                     counter = 1
-                    while display_name in docs:
+                    while display_name in global_docs_seen:
                         display_name = original_display + ("\u200B" * counter)
                         counter += 1
                         
+                    global_docs_seen.add(display_name)
                     docs.append(display_name)
                 
                 original_state.append({
