@@ -129,9 +129,9 @@ if 'last_action' not in st.session_state:
 
 st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
-col_gear, col_spacer, col_notif = st.columns([1, 10, 2])
+col_gear, col_spacer = st.columns([1, 11])
 with col_gear:
-    with st.popover(" ", help="Administración"):
+    with st.popover("⚙️", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
         
         if st.session_state.is_admin:
@@ -169,13 +169,6 @@ with col_spacer:
         </div>
     """, unsafe_allow_html=True)
 
-with col_notif:
-    st.markdown("<div class='refresh-btn-wrapper' style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-    if st.button("Refrescar", help="Recargar datos del Excel y limpiar caché", use_container_width=True):
-        st.cache_data.clear()
-        st.cache_resource.clear()
-        load_app_data()
-        st.rerun()
 if not st.session_state.data_loaded or st.session_state.load_error:
     st.error(f"### Error al cargar datos")
     st.info(f"Detalle: {st.session_state.load_error}")
@@ -222,12 +215,19 @@ with tab_calendar:
             except Exception as e:
                 st.error(f"No se pudo deshacer: {e}")
 
-    col_lbl, col_search, _ = st.columns([0.4, 1.5, 2.5])
+    col_lbl, col_search, col_refresh = st.columns([0.4, 1.5, 2.5])
     with col_lbl:
         st.markdown("<div style='margin-top: 15px; font-weight: 500; color: #7f8fa6; font-size: 0.95rem; text-align: right;'>Buscar:</div>", unsafe_allow_html=True)
     with col_search:
         st.markdown("<div class='custom-search-marker'></div>", unsafe_allow_html=True)
         search_query = st.text_input("Buscador", "", placeholder="", label_visibility="collapsed").strip().upper()
+    with col_refresh:
+        st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
+        if st.button("Refrescar 🔄", help="Recargar datos del Excel y limpiar caché", use_container_width=False):
+            st.cache_data.clear()
+            st.cache_resource.clear()
+            load_app_data()
+            st.rerun()
     
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
