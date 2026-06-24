@@ -713,6 +713,17 @@ def apply_styles():
         display: inline-block;
     }
     
+    /* Ocultar los contenedores inyectados para que no afecten el layout y alineación */
+    div[data-testid="stElementContainer"]:has(.change-btn-wrapper),
+    div.element-container:has(.change-btn-wrapper),
+    div[data-testid="stElementContainer"]:has(.add-doc-btn-wrapper),
+    div.element-container:has(.add-doc-btn-wrapper) {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
     /* Añadir icono bi-arrow-clockwise al botón Cambiar / Reemplazar */
     div[data-testid="stElementContainer"]:has(.change-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
     div.element-container:has(.change-btn-wrapper) + div.element-container button p::before {
