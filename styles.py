@@ -27,16 +27,46 @@ def apply_styles():
         background: radial-gradient(circle at 10% 20%, rgba(90, 92, 106, 0.03) 0%, rgba(32, 45, 58, 0.05) 90%);
     }
     
-    /* Header title styling */
-    .premium-banner {
+    /* Full width header banner */
+    .header-banner-marker {
+        display: none;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
         background: linear-gradient(to right, #1a2238 0%, #3a506b 60%, #b2ccd6 100%);
         border-radius: 12px;
-        padding: 12px 20px;
-        display: flex;
-        align-items: center;
+        padding: 8px 15px;
         margin-bottom: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        width: 100%;
+        align-items: center;
+    }
+    
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) > div[data-testid="column"] {
+        /* Centrar contenido verticalmente y quitar márgenes extra */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    /* Transparent container for title text inside banner */
+    .premium-banner-transparent {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding-left: 10px;
+    }
+    
+    /* Style the popover button (gear) to be white */
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button {
+        color: white !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button:hover {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p {
+        color: white !important;
     }
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);
