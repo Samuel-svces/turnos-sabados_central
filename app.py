@@ -115,23 +115,6 @@ def load_app_data():
 if 'data_loaded' not in st.session_state or not st.session_state.data_loaded:
     load_app_data()
 
-# Robust name matching helper for timeline
-def match_name(cell_name, doc_name):
-    cell_clean = re.sub(r'\s+', ' ', str(cell_name).strip().upper())
-    doc_clean = re.sub(r'\s+', ' ', str(doc_name).strip().upper())
-    if cell_clean == doc_clean:
-        return True
-    
-    # Token-based subset matching (e.g. "ANDRES GARCIA" in "ANDRES RICARDO GARCIA GOMEZ")
-    cell_tokens = set(cell_clean.split(' '))
-    doc_tokens = set(doc_clean.split(' '))
-    
-    if len(cell_tokens) >= 2 and cell_tokens.issubset(doc_tokens):
-        return True
-    if len(doc_tokens) >= 2 and doc_tokens.issubset(cell_tokens):
-        return True
-    return False
-
 # Initialize session state for replacement flow
 if 'replacement_target' not in st.session_state:
     st.session_state.replacement_target = None
