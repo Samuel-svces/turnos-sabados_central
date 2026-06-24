@@ -17,10 +17,17 @@ def apply_styles():
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
+    /* Hide the Streamlit top header (hamburger menu) to save space */
+    header[data-testid="stHeader"] {
+        display: none !important;
+        height: 0px !important;
+    }
+    
     /* Reduce top padding to remove empty space above banner */
-    .block-container {
-        padding-top: 1.5rem !important;
+    .block-container, div[data-testid="stAppViewBlockContainer"] {
+        padding-top: 1rem !important;
         padding-bottom: 2rem !important;
+        margin-top: -1rem !important;
     }
     
     h1, h2, h3 {
