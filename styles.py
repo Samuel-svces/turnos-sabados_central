@@ -613,6 +613,15 @@ def apply_styles():
         visibility: hidden !important;
     }
     
+    /* Hide Manage App button (viewer badge in bottom right corner) */
+    .viewerBadge_container, 
+    [data-testid="viewerBadge"],
+    .stAppDeployButton,
+    div[class^="viewerBadge_container"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
     /* Adjust Main Title inside header */
     .main-title {
         font-family: 'Outfit', sans-serif !important;
