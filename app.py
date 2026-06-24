@@ -1,4 +1,5 @@
 # pyrefly: ignore [missing-import]
+# Actualización forzada del layout
 import streamlit as st
 import pandas as pd
 import datetime
@@ -129,7 +130,7 @@ if 'last_action' not in st.session_state:
 st.markdown("""
     <div class="premium-banner">
         <div class="premium-banner-icon">
-            <i class="bi bi-briefcase-fill"></i>
+            <i class="bi bi-calendar"></i>
         </div>
         <div class="premium-banner-text">
             <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
