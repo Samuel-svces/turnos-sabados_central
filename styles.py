@@ -699,6 +699,19 @@ def apply_styles():
     div.element-container:has(.refresh-btn-wrapper) + div.element-container button:hover p::before {
         transform: rotate(180deg);
     }
+    
+    /* Añadir icono bi-plus al botón Agregar Médico */
+    div[data-testid="stElementContainer"]:has(.add-doc-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
+    div.element-container:has(.add-doc-btn-wrapper) + div.element-container button p::before {
+        content: "\\f4fa"; /* bi-plus */
+        font-family: "bootstrap-icons";
+        margin-right: 0.4rem;
+        font-size: 1.3rem;
+        vertical-align: middle;
+        font-weight: 800;
+        color: #7e57c2; /* Color morado similar al emoji original */
+        display: inline-block;
+    }
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])

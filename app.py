@@ -489,7 +489,8 @@ with tab_calendar:
                                 }
                                 show_selection_dialog(action_details)
                                 
-                        if st.button("➕ Agregar Médico", key=f"add_btn_{sat_date}", use_container_width=True):
+                        st.markdown("<div class='add-doc-btn-wrapper'></div>", unsafe_allow_html=True)
+                        if st.button("Agregar Médico", key=f"add_btn_{sat_date}", use_container_width=True):
                             sheet_name = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
                             show_add_dialog(sat_date, sheet_name)
 
