@@ -655,6 +655,33 @@ def apply_styles():
     .stTabs {
         margin-top: 0px !important;
     }
+    
+    /* Reemplazar emoji de engranaje por icono bi-gear de Bootstrap en el Popover */
+    div[data-testid="stPopover"] button p {
+        font-size: 0; /* Oculta el emoji original */
+    }
+    div[data-testid="stPopover"] button p::before {
+        content: "\\f3e5"; /* bi-gear */
+        font-family: "bootstrap-icons";
+        font-size: 1.4rem;
+        color: #546e7a;
+        visibility: visible;
+        display: inline-block;
+        line-height: 1;
+    }
+    div[data-testid="stPopover"] button {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        transition: transform 0.2s;
+    }
+    div[data-testid="stPopover"] button:hover {
+        transform: rotate(30deg);
+        color: #1976d2 !important;
+    }
+    div[data-testid="stPopover"] button:hover p::before {
+        color: #1976d2;
+    }
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])
