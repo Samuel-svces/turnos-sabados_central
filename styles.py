@@ -712,6 +712,25 @@ def apply_styles():
         color: #7e57c2; /* Color morado similar al emoji original */
         display: inline-block;
     }
+    
+    /* Añadir icono bi-arrow-clockwise al botón Cambiar / Reemplazar */
+    div[data-testid="stElementContainer"]:has(.change-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
+    div.element-container:has(.change-btn-wrapper) + div.element-container button p::before {
+        content: "\\f130"; /* bi-arrow-clockwise */
+        font-family: "bootstrap-icons";
+        margin-right: 0.4rem;
+        font-size: 1.15rem;
+        vertical-align: middle;
+        font-weight: 800;
+        color: #0d47a1;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+    
+    div[data-testid="stElementContainer"]:has(.change-btn-wrapper) + div[data-testid="stElementContainer"] button:hover p::before,
+    div.element-container:has(.change-btn-wrapper) + div.element-container button:hover p::before {
+        transform: rotate(180deg);
+    }
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])

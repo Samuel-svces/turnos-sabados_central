@@ -169,7 +169,8 @@ def show_selection_dialog(action_details):
     
     col_change, col_delete = st.columns(2)
     with col_change:
-        if st.button("🔄 Cambiar / Reemplazar", use_container_width=True):
+        st.markdown("<div class='change-btn-wrapper'></div>", unsafe_allow_html=True)
+        if st.button("Cambiar / Reemplazar", use_container_width=True):
             st.session_state.replacement_target = action_details
             st.rerun()
     with col_delete:
