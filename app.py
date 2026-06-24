@@ -229,14 +229,69 @@ with tab_calendar:
         search_query = st.text_input("Buscador", key="search_input", placeholder="", label_visibility="collapsed").strip().upper()
     
     with col_btn_search:
-        st.markdown("<div class='search-btn-marker' style='margin-top: 11px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
         st.button("B", key="btn_search", use_container_width=True)
     with col_btn_clear:
-        st.markdown("<div class='clear-btn-marker' style='margin-top: 11px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
         st.button("L", key="btn_clear", use_container_width=True, on_click=clear_search)
     with col_refresh:
-        st.markdown("<div class='refresh-btn-marker' style='margin-top: 11px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
         st.button("R", key="btn_refresh", help="Recargar datos", use_container_width=True, on_click=refresh_data)
+
+    st.components.v1.html("""
+    <script>
+    function styleButtons() {
+        const buttons = window.parent.document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            const text = btn.innerText.trim();
+            if(text === 'B') {
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white" width="1.2rem" height="1.2rem"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>';
+                btn.style.backgroundColor = '#1a73e8';
+                btn.style.borderColor = '#1a73e8';
+                btn.style.color = 'transparent';
+                btn.style.display = 'flex';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'center';
+            } else if(text === 'L') {
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="#dc3545" width="1.2rem" height="1.2rem"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>';
+                btn.style.backgroundColor = 'transparent';
+                btn.style.borderColor = '#dc3545';
+                btn.style.display = 'flex';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'center';
+            } else if(text === 'R') {
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="#198754" width="1.2rem" height="1.2rem"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>';
+                btn.style.backgroundColor = 'transparent';
+                btn.style.borderColor = '#198754';
+                btn.style.display = 'flex';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'center';
+            }
+        });
+    }
+    styleButtons();
+    const observer = new MutationObserver(styleButtons);
+    observer.observe(window.parent.document.body, { childList: true, subtree: true });
+    </script>
+    """, height=0)
+
+    if search_query:
+        found = False
+        if not df_shifts.empty and df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():
+            found = True
+            
+        if not found:
+            st.components.v1.html(f"""
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+                Swal.fire({{
+                    icon: 'warning',
+                    title: 'No encontrado',
+                    text: 'El nombre "{search_query}" no está en la base de datos de turnos.',
+                    confirmButtonColor: '#1a73e8'
+                }});
+            </script>
+            """, height=0)
 
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
