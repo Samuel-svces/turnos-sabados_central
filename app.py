@@ -8,6 +8,7 @@ import data_processor as dp
 import styles
 import importlib
 importlib.reload(styles)
+import ui_dialogs
 
 # Set page config for Streamlit
 st.set_page_config(
@@ -118,104 +119,10 @@ if 'data_loaded' not in st.session_state or not st.session_state.data_loaded:
 # Initialize session state for replacement flow
 if 'replacement_target' not in st.session_state:
     st.session_state.replacement_target = None
+if 'last_action' not in st.session_state:
+    st.session_state.last_action = None
 
-def get_allowed_doctors():
-    df_s = st.session_state.shifts_df
-    df_sup = st.session_state.super_df
-    june_date = datetime.date(2026, 6, 1)
-    docs_with_shifts = df_s[df_s['Date'] >= june_date]['Supernumerary'].unique().tolist()
-    
-    try:
-        df_pm = dp.load_personal_modifications(st.session_state.excel_path)
-        added_docs = df_pm[df_pm['TYPE'] == 'AGREGAR']['NOMBRES_Y_APELLIDOS'].unique().tolist()
-    except Exception:
-        added_docs = []
-        
-    if not df_sup.empty:
-        allowed = df_sup[df_sup['NOMBRES Y APELLIDOS'].isin(docs_with_shifts + added_docs)]['NOMBRES Y APELLIDOS'].tolist()
-        allowed = sorted(list(set(allowed + docs_with_shifts + added_docs)))
-    else:
-        allowed = sorted(list(set(docs_with_shifts + added_docs)))
-    return allowed
 
-@st.dialog("Gestión de Turno")
-def show_selection_dialog(action_details):
-    if not st.session_state.is_admin:
-        st.error("Acceso denegado: Se requieren permisos de administrador.")
-        st.stop()
-    st.markdown(f"### Opciones para el Sábado")
-    st.write(f"**Médico:** {action_details['doctor']}")
-    st.write(f"**Fecha:** {action_details['date'].strftime('%d/%m/%Y')}")
-    st.markdown("---")
-    
-    col_change, col_delete = st.columns(2)
-    with col_change:
-        st.markdown("<div class='change-btn-wrapper'></div>", unsafe_allow_html=True)
-        if st.button("Cambiar / Reemplazar", use_container_width=True):
-            st.session_state.replacement_target = action_details
-            st.rerun()
-    with col_delete:
-        if st.button("❌ Eliminar Asignación", use_container_width=True, type="primary"):
-            try:
-                dp.delete_shift_cell(
-                    excel_path=st.session_state.excel_path,
-                    sheet_name=action_details['sheet'],
-                    row_idx=action_details['row'],
-                    col_idx=action_details['col'],
-                    date_val=action_details['date'],
-                    observation="",
-                    original_name=action_details['doctor'],
-                    clasificacion="Secuencia Normal"
-                )
-                st.success(f"Turno de {action_details['doctor']} eliminado.")
-                load_app_data()
-                st.rerun()
-            except Exception as e:
-                st.error(f"Error al eliminar: {e}")
-
-@st.dialog("Agregar Médico Adicional")
-def show_add_dialog(sat_date, sheet):
-    if not st.session_state.is_admin:
-        st.error("Acceso denegado: Se requieren permisos de administrador.")
-        st.stop()
-    st.markdown("### Asignar Médico Adicional")
-    DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-    MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    fecha_es = f"{DIAS[sat_date.weekday()]}, {sat_date.day:02d} de {MESES[sat_date.month-1]} de {sat_date.year}"
-    st.write(f"**Fecha:** {fecha_es}")
-    st.markdown("---")
-    
-    # Get doctors already assigned to this date to prevent duplicates
-    df_s = st.session_state.shifts_df
-    already_assigned = [n.upper() for n in df_s[df_s['Date'] == sat_date]['Supernumerary'].tolist()]
-    
-    allowed = get_allowed_doctors()
-    new_doc = st.selectbox("Seleccione Médico Supernumerario:", allowed)
-    obs = st.text_input("Observaciones (opcional):", placeholder="Ej: Pago de turno...")
-    clasif = st.radio("Clasificación del Turno:", ["Secuencia Normal", "Compensación / Pago de turno"], horizontal=True)
-    
-    # Show warning if duplicate detected
-    if new_doc and new_doc.upper() in already_assigned:
-        st.warning(f"⚠️ **{new_doc}** ya está asignado a este sábado ({sat_date.strftime('%d/%m/%Y')}). No se pueden tener duplicados.")
-    
-    if st.button("Agregar Médico", use_container_width=True, type="primary"):
-        if new_doc and new_doc.upper() in already_assigned:
-            st.error(f"No se puede agregar: **{new_doc}** ya está programado para este sábado.")
-        else:
-            try:
-                dp.add_shift_to_date(
-                    excel_path=st.session_state.excel_path,
-                    sheet_name=sheet,
-                    target_date=sat_date,
-                    supernumerary_name=new_doc,
-                    observation=obs.strip(),
-                    clasificacion=clasif
-                )
-                st.success(f"Médico {new_doc} agregado con éxito.")
-                load_app_data()
-                st.rerun()
-            except Exception as e:
-                st.error(f"Error al agregar médico: {e}")
 
 # ----------------- MAIN APP INTERFACE -----------------
 
@@ -277,6 +184,29 @@ from streamlit_sortables import sort_items
 with tab_calendar:
     st.info("Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a **central@sanvicenteces.com**. Una vez sea aceptado por el correo, se verá reflejado en este cuadro.")
     
+    if st.session_state.is_admin and st.session_state.last_action is not None:
+        if st.button("↩️ Deshacer Último Movimiento", type="secondary", use_container_width=False):
+            la = st.session_state.last_action
+            try:
+                if la['action'] == 'ELIMINAR':
+                    dp.add_shift_to_date(la['excel_path'], la['sheet'], la['date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
+                    st.success("Acción revertida: Médico re-agregado.")
+                elif la['action'] == 'AGREGAR':
+                    # Need to delete it. We know date and doc.
+                    dp.delete_shift_cell(la['excel_path'], la['sheet'], 0, 0, la['date'], "", la['doc'], la.get('clasificacion', 'Secuencia Normal'))
+                    st.success("Acción revertida: Médico eliminado del día.")
+                elif la['action'] == 'MOVE':
+                    # Delete from new_date, add to old_date
+                    dp.delete_shift_cell(la['excel_path'], la['sheet'], 0, 0, la['new_date'], "", la['doc'], la.get('clasificacion', 'Secuencia Normal'))
+                    dp.add_shift_to_date(la['excel_path'], la['sheet'], la['old_date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
+                    st.success("Acción revertida: Movimiento cancelado.")
+                
+                st.session_state.last_action = None
+                load_app_data()
+                st.rerun()
+            except Exception as e:
+                st.error(f"No se pudo deshacer: {e}")
+
     col_search, _ = st.columns([1, 2])
     with col_search:
         st.markdown("<div style='margin-bottom: 5px; font-size: 0.95rem; font-weight: 600; color: #31333f;'><i class='bi bi-search' style='color: #0d47a1;'></i> Buscar Médico (resalta sus turnos):</div>", unsafe_allow_html=True)
@@ -428,6 +358,20 @@ with tab_calendar:
                             st.error(f"¡El médico {moved_doc} ya tiene un turno el {to_date}! Movimiento cancelado.")
                             st.rerun()
                             
+                        # GUARDAR ACCION EN LAST_ACTION PARA UNDO
+                        st.session_state.last_action = {
+                            'action': 'MOVE',
+                            'excel_path': st.session_state.excel_path,
+                            'sheet': sheet,
+                            'old_row': r_idx,
+                            'old_col': c_idx,
+                            'old_date': old_date,
+                            'new_date': new_date,
+                            'doc': raw_name,
+                            'obs': obs,
+                            'clasificacion': clasif
+                        }
+                            
                         # 3. Delete old
                         dp.delete_shift_cell(
                             excel_path=st.session_state.excel_path,
@@ -451,9 +395,10 @@ with tab_calendar:
                             clasificacion=clasif
                         )
                         
-                        st.success(f"✅ ¡Turno de {moved_doc} movido exitosamente al {to_date}!")
+                        st.success("Cambios consolidados correctamente en la nube.")
                         load_app_data()
                         st.rerun()
+
                         
                     except Exception as e:
                         st.error(f"Error al mover el turno: {e}")
@@ -476,12 +421,12 @@ with tab_calendar:
                                     'col': int(s_row['Excel_Col']),
                                     'sheet': s_row['Sheet']
                                 }
-                                show_selection_dialog(action_details)
+                                ui_dialogs.show_selection_dialog(action_details, load_app_data)
                                 
                         st.markdown("<div class='add-doc-btn-wrapper'></div>", unsafe_allow_html=True)
                         if st.button("Agregar Médico", key=f"add_btn_{sat_date}", use_container_width=True):
                             sheet_name = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
-                            show_add_dialog(sat_date, sheet_name)
+                            ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
 
         else:
             # PUBLIC VIEW: Read-Only Grid
@@ -704,6 +649,24 @@ if st.session_state.is_admin:
                         st.error("Error de Permisos: El archivo de Excel master ('TURNOS SABADOS.xlsx') está abierto o bloqueado por otra aplicación. Por favor, ciérralo y vuelve a intentarlo.")
                     except Exception as e:
                         st.error(f"Error al consolidar: {e}")
+                        
+            st.markdown("---")
+            st.markdown("#### 📜 Historial de Actividad (Últimos Movimientos)")
+            try:
+                df_hist = dp.load_modifications(st.session_state.excel_path)
+                if not df_hist.empty and 'TIMESTAMP' in df_hist.columns:
+                    df_hist_show = df_hist.sort_values(by='ID', ascending=False).head(15)
+                    for _, r_hist in df_hist_show.iterrows():
+                        fecha_accion = r_hist['TIMESTAMP']
+                        tipo = r_hist['TYPE']
+                        doc_inv = r_hist['NEW_NAME'] if r_hist['NEW_NAME'] else r_hist['ORIGINAL_NAME']
+                        dia_afectado = r_hist['DATE'].strftime('%d/%m/%Y') if pd.notna(r_hist['DATE']) else ""
+                        icon = "➕" if tipo == "AGREGAR" else ("❌" if tipo == "ELIMINAR" else "🔄")
+                        st.markdown(f"- **{fecha_accion}** | {icon} **{tipo}**: {doc_inv} en la fecha {dia_afectado}")
+                else:
+                    st.write("No hay historial reciente registrado.")
+            except Exception:
+                st.write("El historial no está disponible actualmente.")
 
 # Footer
 st.markdown(

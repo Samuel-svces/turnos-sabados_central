@@ -231,7 +231,7 @@ def parse_flat_date(cell):
 # ---------------------------------------------------------------------------
 
 _COLS_PERSONAL = ['ID', 'CEDULA', 'NOMBRES_Y_APELLIDOS', 'CARGO', 'CELULAR',
-                  'SEDE_CECO', 'STATUS', 'TYPE', 'FECHA_INICIO', 'OBSERVACIONES']
+                  'SEDE_CECO', 'STATUS', 'TYPE', 'FECHA_INICIO', 'OBSERVACIONES', 'TIMESTAMP']
 _SHEET_PERSONAL = 'MODIFICACIONES_PERSONAL'
 _KEY_PERSONAL   = 'modificaciones_personal'
 
@@ -284,6 +284,10 @@ def save_personal_modification(excel_path, personal_data):
         fecha_inicio = str(fecha_inicio)
     else:
         fecha_inicio = ''
+        
+    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+    if 'TIMESTAMP' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
 
     ws.append([
         next_id,
@@ -295,7 +299,8 @@ def save_personal_modification(excel_path, personal_data):
         str(personal_data.get('status', 'ACTIVO')).strip().upper(),
         str(personal_data.get('type', 'AGREGAR')).strip().upper(),
         fecha_inicio,
-        str(personal_data.get('observaciones', '')).strip()
+        str(personal_data.get('observaciones', '')).strip(),
+        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     ])
 
     _save_wb_delta(wb, _KEY_PERSONAL, local_path)
@@ -307,7 +312,7 @@ def save_personal_modification(excel_path, personal_data):
 # ---------------------------------------------------------------------------
 
 _COLS_SABADOS = ['ID', 'SHEET', 'DATE', 'ORIGINAL_NAME', 'NEW_NAME',
-                 'ROW', 'COL', 'TYPE', 'OBSERVACIONES', 'CLASIFICACION']
+                 'ROW', 'COL', 'TYPE', 'OBSERVACIONES', 'CLASIFICACION', 'TIMESTAMP']
 _SHEET_SABADOS = 'MODIFICACIONES'
 _KEY_SABADOS   = 'modificaciones_sabados'
 
@@ -344,6 +349,10 @@ def save_modification(excel_path, mod_data):
         ws.cell(row=1, column=ws.max_column + 1).value = 'CLASIFICACION'
         header.append('CLASIFICACION')
 
+    if 'TIMESTAMP' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
+        header.append('TIMESTAMP')
+
     max_id = 0
     for r in range(2, ws.max_row + 1):
         val = ws.cell(row=r, column=1).value
@@ -367,8 +376,9 @@ def save_modification(excel_path, mod_data):
         'ROW': mod_data.get('row', 0),
         'COL': mod_data.get('col', 0),
         'TYPE': mod_data['type'].strip().upper(),
-        'OBSERVACIONES': mod_data.get('observaciones', '').strip(),
-        'CLASIFICACION': mod_data.get('clasificacion', 'Secuencia Normal').strip()
+        'OBSERVACIONES': str(mod_data.get('observaciones', '')).strip(),
+        'CLASIFICACION': mod_data.get('clasificacion', 'Secuencia Normal').strip(),
+        'TIMESTAMP': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 
     row_data = [val_map.get(col_name, '') for col_name in header]
