@@ -83,14 +83,92 @@ def apply_styles():
     }
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
-        width: 40px;
-        height: 40px;
+        border-radius: 12px;
+        width: 48px;
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 15px;
-        flex-shrink: 0;
+        margin-right: 18px;
+        box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
+    }
+    
+    /* ======== SEARCH BAR BUTTONS ======== */
+    /* Search button (Blue) */
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(3) button {
+        background-color: #1a73e8 !important;
+        border-color: #1a73e8 !important;
+        position: relative;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(3) button p {
+        color: transparent !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(3) button::after {
+        content: "\\f52a"; /* bi-search */
+        font-family: "bootstrap-icons";
+        color: white;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(3) button:hover {
+        background-color: #1557b0 !important;
+        border-color: #1557b0 !important;
+    }
+
+    /* Clear button (Red) */
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(4) button {
+        background-color: transparent !important;
+        border: 1px solid #dc3545 !important;
+        position: relative;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(4) button p {
+        color: transparent !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(4) button::after {
+        content: "\\f5de"; /* bi-trash */
+        font-family: "bootstrap-icons";
+        color: #dc3545;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(4) button:hover {
+        background-color: #dc3545 !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(4) button:hover::after {
+        color: white !important;
+    }
+
+    /* Refresh button (Green) */
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(5) button {
+        background-color: transparent !important;
+        border: 1px solid #198754 !important;
+        position: relative;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(5) button p {
+        color: transparent !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(5) button::after {
+        content: "\\f116"; /* bi-arrow-clockwise */
+        font-family: "bootstrap-icons";
+        color: #198754;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(5) button:hover {
+        background-color: #198754 !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.custom-search-marker) > div[data-testid="column"]:nth-child(5) button:hover::after {
+        color: white !important;
     }
     .premium-banner-icon i {
         color: white;

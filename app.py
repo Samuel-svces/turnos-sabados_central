@@ -211,15 +211,26 @@ with tab_calendar:
             except Exception as e:
                 st.error(f"No se pudo deshacer: {e}")
 
-    col_lbl, col_search, col_refresh = st.columns([0.4, 1.5, 2.5])
+    if "search_input" not in st.session_state:
+        st.session_state["search_input"] = ""
+
+    col_lbl, col_search, col_btn_search, col_btn_clear, col_refresh = st.columns([0.4, 2.0, 0.3, 0.3, 0.3])
     with col_lbl:
-        st.markdown("<div style='margin-top: 15px; font-weight: 500; color: #7f8fa6; font-size: 0.95rem; text-align: right;'>Buscar:</div>", unsafe_allow_html=True)
+        st.markdown("<div style='display: flex; align-items: center; justify-content: flex-end; height: 38px; font-weight: 500; color: #7f8fa6; font-size: 0.95rem; margin-top: 11px;'>Buscar:</div>", unsafe_allow_html=True)
     with col_search:
         st.markdown("<div class='custom-search-marker'></div>", unsafe_allow_html=True)
-        search_query = st.text_input("Buscador", "", placeholder="", label_visibility="collapsed").strip().upper()
+        search_query = st.text_input("Buscador", key="search_input", placeholder="", label_visibility="collapsed").strip().upper()
+    with col_btn_search:
+        st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
+        st.button("B", key="btn_search", use_container_width=True)
+    with col_btn_clear:
+        st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
+        if st.button("L", key="btn_clear", use_container_width=True):
+            st.session_state["search_input"] = ""
+            st.rerun()
     with col_refresh:
         st.markdown("<div style='margin-top: 11px;'></div>", unsafe_allow_html=True)
-        if st.button("Refrescar 🔄", help="Recargar datos del Excel y limpiar caché", use_container_width=False):
+        if st.button("R", key="btn_refresh", help="Recargar datos", use_container_width=True):
             st.cache_data.clear()
             st.cache_resource.clear()
             load_app_data()
