@@ -129,7 +129,7 @@ if 'last_action' not in st.session_state:
 
 st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
-col_gear, col_spacer = st.columns([1, 11])
+col_gear, col_spacer, col_empty = st.columns([1, 10, 1])
 with col_gear:
     with st.popover("⚙️", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
