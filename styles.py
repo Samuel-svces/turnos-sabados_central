@@ -602,10 +602,15 @@ def apply_styles():
         padding-left: 0.75rem !important;
     }
     
-    /* Make default Streamlit header background transparent */
+    /* Make default Streamlit header completely hidden to remove Share/GitHub/Menu icons */
     [data-testid="stHeader"] {
-        background-color: transparent !important;
-        border-bottom: none !important;
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    [data-testid="stToolbar"] {
+        display: none !important;
+        visibility: hidden !important;
     }
     
     /* Adjust Main Title inside header */
