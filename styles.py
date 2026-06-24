@@ -17,6 +17,12 @@ def apply_styles():
         font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
+    /* Reduce top padding to remove empty space above banner */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
     h1, h2, h3 {
         font-family: 'Outfit', sans-serif;
         font-weight: 700;
