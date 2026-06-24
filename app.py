@@ -182,7 +182,8 @@ else:
 from streamlit_sortables import sort_items
 
 with tab_calendar:
-    st.info("Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a **central@sanvicenteces.com**. Una vez sea aceptado por el correo, se verá reflejado en este cuadro.")
+    if not st.session_state.is_admin:
+        st.info("Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a **central@sanvicenteces.com**. Una vez sea aceptado por el correo, se verá reflejado en este cuadro.")
     
     if st.session_state.is_admin and st.session_state.last_action is not None:
         if st.button("↩️ Deshacer Último Movimiento", type="secondary", use_container_width=False):
