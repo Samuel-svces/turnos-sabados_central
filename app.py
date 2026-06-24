@@ -480,7 +480,7 @@ with tab_calendar:
                         date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                         for _, s_row in date_shifts.reset_index().iterrows():
                             name = s_row['Supernumerary']
-                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}"):
+                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}_{s_row['Excel_Row']}"):
                                 action_details = {
                                     'date': sat_date,
                                     'doctor': name,
