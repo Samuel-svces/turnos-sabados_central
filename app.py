@@ -250,7 +250,12 @@ with col_title:
     st.markdown("<h1 class='main-title'>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>", unsafe_allow_html=True) # Hot-reload trigger v2
 
 with col_notif:
-    pass
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+    if st.button("🔄 Refrescar", help="Recargar datos del Excel y limpiar caché", use_container_width=True):
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        load_app_data()
+        st.rerun()
 if not st.session_state.data_loaded or st.session_state.load_error:
     st.error(f"### Error al cargar datos")
     st.info(f"Detalle: {st.session_state.load_error}")
