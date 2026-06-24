@@ -700,10 +700,10 @@ def apply_styles():
         transform: rotate(180deg);
     }
     
-    /* Añadir icono bi-plus al botón Agregar Médico */
+    /* Añadir icono bi-plus-square al botón Agregar Médico */
     div[data-testid="stElementContainer"]:has(.add-doc-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
     div.element-container:has(.add-doc-btn-wrapper) + div.element-container button p::before {
-        content: "\\f4fa"; /* bi-plus */
+        content: "\\f4fb"; /* bi-plus-square */
         font-family: "bootstrap-icons";
         margin-right: 0.4rem;
         font-size: 1.3rem;
