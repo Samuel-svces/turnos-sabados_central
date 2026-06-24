@@ -159,12 +159,8 @@ with col_gear:
 with col_spacer:
     st.markdown("""
         <div class="premium-banner-transparent">
-            <div class="premium-banner-icon">
-                <i class="bi bi-calendar"></i>
-            </div>
             <div class="premium-banner-text">
                 <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
-                <p>Gestión y programación de turnos de sábados</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
