@@ -586,16 +586,25 @@ def load_data(excel_path):
                                         (df_shifts['Supernumerary'] == orig))]
 
         elif m_type == 'AGREGAR':
-            new_row = {
-                'Sheet': sheet,
-                'Month_Header': MONTH_NAMES_SP.get(m_date.month, 'EXTRA'),
-                'Date': m_date, 'Year': m_date.year, 'Month': m_date.month,
-                'Supernumerary': new,
-                'Excel_Row': 0, 'Excel_Col': 0, 'Header_Row': 0,
-                'Observation': mod.get('OBSERVACIONES', ''),
-                'Classification': mod.get('CLASIFICACION', 'Secuencia Normal')
-            }
-            df_shifts = pd.concat([df_shifts, pd.DataFrame([new_row])], ignore_index=True)
+            mask = (df_shifts['Date'] == m_date) & (df_shifts['Supernumerary'] == new)
+            if mask.any():
+                df_shifts.loc[mask, 'Observation'] = mod.get('OBSERVACIONES', '')
+                df_shifts.loc[mask, 'Classification'] = mod.get('CLASIFICACION', 'Secuencia Normal')
+            else:
+                new_row = {
+                    'Sheet': sheet,
+                    'Month_Header': MONTH_NAMES_SP.get(m_date.month, 'EXTRA'),
+                    'Date': m_date, 'Year': m_date.year, 'Month': m_date.month,
+                    'Supernumerary': new,
+                    'Excel_Row': 0, 'Excel_Col': 0, 'Header_Row': 0,
+                    'Observation': mod.get('OBSERVACIONES', ''),
+                    'Classification': mod.get('CLASIFICACION', 'Secuencia Normal')
+                }
+                df_shifts = pd.concat([df_shifts, pd.DataFrame([new_row])], ignore_index=True)
+
+    # Limpieza final de seguridad contra race conditions (múltiples usuarios) o errores en el maestro
+    if not df_shifts.empty:
+        df_shifts = df_shifts.drop_duplicates(subset=['Date', 'Supernumerary'], keep='last')
 
     return df_shifts, errors
 
