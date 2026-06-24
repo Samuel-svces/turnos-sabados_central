@@ -299,7 +299,8 @@ with tab_calendar:
     
     col_search, _ = st.columns([1, 2])
     with col_search:
-        search_query = st.text_input("🔍 Buscar Médico (resalta sus turnos):", "", placeholder="Ej: Perez...").strip().upper()
+        st.markdown("<div style='margin-bottom: 5px; font-size: 0.95rem; font-weight: 600; color: #31333f;'><i class='bi bi-search' style='color: #0d47a1;'></i> Buscar Médico (resalta sus turnos):</div>", unsafe_allow_html=True)
+        search_query = st.text_input("Buscador", "", placeholder="Ej: Perez...", label_visibility="collapsed").strip().upper()
     
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
