@@ -673,10 +673,8 @@ def apply_styles():
         border: none !important;
         background: transparent !important;
         box-shadow: none !important;
-        transition: transform 0.2s;
     }
     div[data-testid="stPopover"] button:hover {
-        transform: rotate(30deg);
         color: #1976d2 !important;
     }
     div[data-testid="stPopover"] button:hover p::before {
