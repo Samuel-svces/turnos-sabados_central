@@ -377,6 +377,13 @@ with tab_calendar:
                     if search_query and search_query in name.upper():
                         display_name = "🎯 " + display_name
                         
+                    # Evitar nombres duplicados para prevenir que el componente React sortable colapse (Error #185)
+                    original_display = display_name
+                    counter = 1
+                    while display_name in docs:
+                        display_name = original_display + ("\u200B" * counter)
+                        counter += 1
+                        
                     docs.append(display_name)
                 
                 original_state.append({
@@ -421,8 +428,8 @@ with tab_calendar:
                     
                     try:
                         # 1. Find the old shift details
-                        # Remove emojis and search highlight to get raw name
-                        raw_name = moved_doc.replace("🎯 ", "").split(" 🟡")[0].split(" 💬")[0]
+                        # Remove emojis, zero-width spaces, and search highlight to get raw name
+                        raw_name = moved_doc.replace("🎯 ", "").split(" 🟡")[0].split(" 💬")[0].replace("\u200B", "")
                         old_row = df_shifts[(df_shifts['Date'] == old_date) & (df_shifts['Supernumerary'] == raw_name)].iloc[0]
                         sheet = old_row['Sheet']
                         r_idx = int(old_row['Excel_Row'])
@@ -474,9 +481,9 @@ with tab_calendar:
                     with cols_adv[idx]:
                         st.markdown(f"**{sat_date.strftime('%d/%m')}**")
                         date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
-                        for _, s_row in date_shifts.reset_index().iterrows():
+                        for d_idx, s_row in date_shifts.reset_index().iterrows():
                             name = s_row['Supernumerary']
-                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}"):
+                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}_{d_idx}"):
                                 action_details = {
                                     'date': sat_date,
                                     'doctor': name,
