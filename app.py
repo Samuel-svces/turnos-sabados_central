@@ -17,7 +17,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Force Spanish language and prevent Google translation globally
 st.components.v1.html(
     """
     <script>
@@ -31,8 +30,27 @@ st.components.v1.html(
                 meta.content = 'notranslate';
                 parentHead.appendChild(meta);
             }
+            
+            // Ocultar el botón flotante de "Gestionar la aplicación" de Streamlit Cloud
+            if (!parentHead.querySelector('#hide-badge-style')) {
+                const style = window.parent.document.createElement('style');
+                style.id = 'hide-badge-style';
+                style.innerHTML = `
+                    div[class*="viewerBadge_container"], 
+                    [class^="viewerBadge_container"],
+                    .viewerBadge_container,
+                    [data-testid="viewerBadge"],
+                    [data-testid="stAppDeployButton"] {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                    }
+                `;
+                parentHead.appendChild(style);
+            }
+            
         } catch (e) {
-            console.error("Language override failed:", e);
+            console.error("Parent override failed:", e);
         }
     </script>
     """,
