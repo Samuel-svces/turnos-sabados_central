@@ -682,7 +682,8 @@ def apply_styles():
     }
     
     /* Añadir icono bi-arrow-clockwise al botón Refrescar */
-    div[data-testid="stMarkdown"]:has(.refresh-btn-wrapper) + div[data-testid="stButton"] button p::before {
+    div[data-testid="stElementContainer"]:has(.refresh-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
+    div.element-container:has(.refresh-btn-wrapper) + div.element-container button p::before {
         content: "\\f130"; /* bi-arrow-clockwise */
         font-family: "bootstrap-icons";
         margin-right: 0.5rem;
@@ -694,7 +695,8 @@ def apply_styles():
         display: inline-block;
     }
     
-    div[data-testid="stMarkdown"]:has(.refresh-btn-wrapper) + div[data-testid="stButton"] button:hover p::before {
+    div[data-testid="stElementContainer"]:has(.refresh-btn-wrapper) + div[data-testid="stElementContainer"] button:hover p::before,
+    div.element-container:has(.refresh-btn-wrapper) + div.element-container button:hover p::before {
         transform: rotate(180deg);
     }
     </style>
