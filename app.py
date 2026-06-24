@@ -131,7 +131,7 @@ st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
 col_gear, col_spacer, col_notif = st.columns([1, 10, 2])
 with col_gear:
-    with st.popover("⚙️", help="Administración"):
+    with st.popover(" ", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
         
         if st.session_state.is_admin:
