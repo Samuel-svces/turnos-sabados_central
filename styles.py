@@ -682,6 +682,23 @@ def apply_styles():
     div[data-testid="stPopover"] button:hover p::before {
         color: #1976d2;
     }
+    
+    /* Añadir icono bi-arrow-clockwise al botón Refrescar */
+    div[data-testid="stMarkdown"]:has(.refresh-btn-wrapper) + div[data-testid="stButton"] button p::before {
+        content: "\\f130"; /* bi-arrow-clockwise */
+        font-family: "bootstrap-icons";
+        margin-right: 0.5rem;
+        font-size: 1.15rem;
+        vertical-align: middle;
+        font-weight: 800;
+        color: #0d47a1;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+    
+    div[data-testid="stMarkdown"]:has(.refresh-btn-wrapper) + div[data-testid="stButton"] button:hover p::before {
+        transform: rotate(180deg);
+    }
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])
