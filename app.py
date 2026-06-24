@@ -297,6 +297,10 @@ from streamlit_sortables import sort_items
 with tab_calendar:
     st.info("Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a **central@sanvicenteces.com**. Una vez sea aceptado por el correo, se verá reflejado en este cuadro.")
     
+    col_search, _ = st.columns([1, 2])
+    with col_search:
+        search_query = st.text_input("🔍 Buscar Médico (resalta sus turnos):", "", placeholder="Ej: Perez...").strip().upper()
+    
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
     first_sat = today + datetime.timedelta(days=days_to_sat)
@@ -372,6 +376,9 @@ with tab_calendar:
                     elif obs or personal_obs:
                         display_name += " 💬"
                         
+                    if search_query and search_query in name.upper():
+                        display_name = "🎯 " + display_name
+                        
                     docs.append(display_name)
                 
                 original_state.append({
@@ -416,8 +423,8 @@ with tab_calendar:
                     
                     try:
                         # 1. Find the old shift details
-                        # Remove emojis to get raw name
-                        raw_name = moved_doc.split(" 🟡")[0].split(" 💬")[0]
+                        # Remove emojis and search highlight to get raw name
+                        raw_name = moved_doc.replace("🎯 ", "").split(" 🟡")[0].split(" 💬")[0]
                         old_row = df_shifts[(df_shifts['Date'] == old_date) & (df_shifts['Supernumerary'] == raw_name)].iloc[0]
                         sheet = old_row['Sheet']
                         r_idx = int(old_row['Excel_Row'])
@@ -525,6 +532,9 @@ with tab_calendar:
                         
                         help_text = "<br>".join(help_lines).strip()
                         badge_classes = "doc-name-badge" + (" has-obs" if has_obs else "")
+                        if search_query and search_query in name.upper():
+                            badge_classes += " search-highlight"
+                            
                         obs_dot = "<span class='obs-dot'></span>" if has_obs else ""
                         tooltip_html = f"<div class='doc-obs-tooltip'>{help_text}</div>" if help_text else ""
                         

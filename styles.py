@@ -363,6 +363,22 @@ def apply_styles():
         color: white;
     }
 
+    /* Resaltar resultado de búsqueda */
+    .doc-name-badge.search-highlight {
+        background-color: #fff8e1;
+        border-color: #ffc107;
+        color: #ff8f00;
+        box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+        transform: scale(1.03);
+        z-index: 5;
+        font-weight: 700;
+    }
+    
+    .doc-name-badge.search-highlight:hover {
+        background-color: #ffecb3;
+        color: #e65100;
+    }
+
     /* Tooltip box – hidden by default */
     .doc-obs-tooltip {
         visibility: hidden;
