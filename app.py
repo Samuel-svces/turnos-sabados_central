@@ -154,7 +154,17 @@ with col_gear:
                     st.error("Contraseña incorrecta")
 
 with col_title:
-    st.markdown("<h1 class='main-title'>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>", unsafe_allow_html=True) # Hot-reload trigger v2
+    st.markdown("""
+        <div class="premium-banner">
+            <div class="premium-banner-icon">
+                <i class="bi bi-briefcase-fill"></i>
+            </div>
+            <div class="premium-banner-text">
+                <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
+                <p>Gestión y programación de turnos de sábados</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 with col_notif:
     st.markdown("<div class='refresh-btn-wrapper' style='margin-top: 10px;'></div>", unsafe_allow_html=True)
@@ -208,10 +218,12 @@ with tab_calendar:
             except Exception as e:
                 st.error(f"No se pudo deshacer: {e}")
 
-    col_search, _ = st.columns([1, 2])
+    col_lbl, col_search, _ = st.columns([0.4, 1.5, 2.5])
+    with col_lbl:
+        st.markdown("<div style='margin-top: 15px; font-weight: 500; color: #7f8fa6; font-size: 0.95rem; text-align: right;'>Buscar:</div>", unsafe_allow_html=True)
     with col_search:
-        st.markdown("<div style='margin-bottom: 5px; font-size: 0.95rem; font-weight: 600; color: #31333f;'><i class='bi bi-search' style='color: #0d47a1;'></i> Buscar Médico (resalta sus turnos):</div>", unsafe_allow_html=True)
-        search_query = st.text_input("Buscador", "", placeholder="Ej: Perez...", label_visibility="collapsed").strip().upper()
+        st.markdown("<div class='custom-search-marker'></div>", unsafe_allow_html=True)
+        search_query = st.text_input("Buscador", "", placeholder="", label_visibility="collapsed").strip().upper()
     
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7

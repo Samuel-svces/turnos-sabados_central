@@ -28,21 +28,52 @@ def apply_styles():
     }
     
     /* Header title styling */
-    .main-title {
-        background: linear-gradient(135deg, #0d47a1 0%, #1976d2 50%, #42a5f5 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 2.8rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.05em;
+    .premium-banner {
+        background: linear-gradient(to right, #1a2238 0%, #3a506b 60%, #b2ccd6 100%);
+        border-radius: 10px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        height: 100%;
     }
-    
-    .subtitle {
-        color: #5c6bc0;
-        font-size: 1.15rem;
-        margin-bottom: 2rem;
-        font-weight: 400;
+    .premium-banner-icon {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    .premium-banner-icon i {
+        color: white;
+        font-size: 1.3rem;
+    }
+    .premium-banner-text {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .premium-banner-text h1 {
+        color: white !important;
+        font-size: 1.4rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-weight: 700 !important;
+        letter-spacing: 0px !important;
+        line-height: 1.2 !important;
+        -webkit-text-fill-color: white !important;
+    }
+    .premium-banner-text p {
+        color: rgba(255, 255, 255, 0.85) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 0.85rem !important;
+        font-weight: 400 !important;
     }
     
     /* Premium Cards (Glassmorphism style) */
@@ -402,6 +433,27 @@ def apply_styles():
         transition: opacity 0.18s ease, visibility 0.18s ease;
         white-space: normal;
         word-break: break-word;
+    }
+    
+    /* Custom Search Bar */
+    .custom-search-marker {
+        display: none;
+    }
+    .custom-search-marker + div[data-testid="stTextInput"] input {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%232b8a8b"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: 12px center;
+        background-size: 18px;
+        padding-left: 38px !important;
+        border-radius: 12px !important;
+        border: 1px solid #d1e5e5 !important;
+        color: #2b8a8b !important;
+        font-weight: 500 !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .custom-search-marker + div[data-testid="stTextInput"] input:focus {
+        border-color: #2b8a8b !important;
+        box-shadow: 0 0 0 1px #2b8a8b !important;
     }
 
     /* Arrow pointer below the tooltip */
