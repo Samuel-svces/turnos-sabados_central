@@ -28,32 +28,15 @@ def apply_styles():
     }
     
     /* Header title styling */
-    /* Full width header banner */
-    .header-banner-marker {
-        display: none;
-    }
-    .header-banner-marker + div[data-testid="stHorizontalBlock"] {
+    .premium-banner {
         background: linear-gradient(to right, #1a2238 0%, #3a506b 60%, #b2ccd6 100%);
         border-radius: 12px;
-        padding: 8px 15px;
-        margin-bottom: 5px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        align-items: center;
-    }
-    
-    .header-banner-marker + div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-        /* Centrar contenido verticalmente y quitar márgenes extra */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    
-    /* Transparent container for title text inside banner */
-    .premium-banner-transparent {
-        display: flex;
-        align-items: center;
-        height: 100%;
-        padding-left: 10px;
+        width: 100%;
     }
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);

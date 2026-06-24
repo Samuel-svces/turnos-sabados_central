@@ -126,8 +126,19 @@ if 'last_action' not in st.session_state:
 
 # ----------------- MAIN APP INTERFACE -----------------
 
-st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
-col_gear, col_title, col_notif = st.columns([1, 10, 2])
+st.markdown("""
+    <div class="premium-banner">
+        <div class="premium-banner-icon">
+            <i class="bi bi-briefcase-fill"></i>
+        </div>
+        <div class="premium-banner-text">
+            <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
+            <p>Gestión y programación de turnos de sábados</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+col_gear, col_spacer, col_notif = st.columns([1, 10, 2])
 with col_gear:
     with st.popover("⚙️", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
@@ -154,18 +165,8 @@ with col_gear:
                 else:
                     st.error("Contraseña incorrecta")
 
-with col_title:
-    st.markdown("""
-        <div class="premium-banner-transparent">
-            <div class="premium-banner-icon">
-                <i class="bi bi-briefcase-fill"></i>
-            </div>
-            <div class="premium-banner-text">
-                <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
-                <p>Gestión y programación de turnos de sábados</p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+with col_spacer:
+    pass
 
 with col_notif:
     st.markdown("<div class='refresh-btn-wrapper' style='margin-top: 10px;'></div>", unsafe_allow_html=True)
