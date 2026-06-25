@@ -213,6 +213,10 @@ with tab_calendar:
     if "search_input" not in st.session_state:
         st.session_state["search_input"] = ""
 
+    if st.session_state.get("clear_search_flag", False):
+        st.session_state["search_input"] = ""
+        st.session_state["clear_search_flag"] = False
+
     def clear_search():
         st.session_state["search_input"] = ""
 
@@ -342,7 +346,7 @@ with tab_calendar:
             found = True
             
         if not found:
-            st.session_state["search_input"] = ""
+            st.session_state["clear_search_flag"] = True
             st.session_state["show_error_alert"] = True
             st.rerun()
 
