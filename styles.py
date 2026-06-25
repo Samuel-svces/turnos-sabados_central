@@ -553,6 +553,62 @@ def apply_styles():
         padding: 0 !important;
         line-height: 38px !important;
     }
+
+    /* Estilos para los botones con fondo blanco por defecto y color en hover/active/focus */
+    
+    /* 1. Botón de Buscar (Azul) */
+    button.custom-btn-search {
+        background-color: #ffffff !important;
+        border: 1.5px solid #1a73e8 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-search svg {
+        fill: #1a73e8 !important;
+        transition: fill 0.2s ease !important;
+    }
+    button.custom-btn-search:hover, button.custom-btn-search:active, button.custom-btn-search:focus {
+        background-color: #1a73e8 !important;
+        border-color: #1a73e8 !important;
+    }
+    button.custom-btn-search:hover svg, button.custom-btn-search:active svg, button.custom-btn-search:focus svg {
+        fill: #ffffff !important;
+    }
+    
+    /* 2. Botón de Limpiar (Rojo) */
+    button.custom-btn-clear {
+        background-color: #ffffff !important;
+        border: 1.5px solid #dc3545 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-clear svg {
+        fill: #dc3545 !important;
+        transition: fill 0.2s ease !important;
+    }
+    button.custom-btn-clear:hover, button.custom-btn-clear:active, button.custom-btn-clear:focus {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
+    }
+    button.custom-btn-clear:hover svg, button.custom-btn-clear:active svg, button.custom-btn-clear:focus svg {
+        fill: #ffffff !important;
+    }
+    
+    /* 3. Botón de Refrescar (Verde) */
+    button.custom-btn-refresh {
+        background-color: #ffffff !important;
+        border: 1.5px solid #198754 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-refresh svg {
+        fill: #198754 !important;
+        transition: fill 0.2s ease !important;
+    }
+    button.custom-btn-refresh:hover, button.custom-btn-refresh:active, button.custom-btn-refresh:focus {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+    }
+    button.custom-btn-refresh:hover svg, button.custom-btn-refresh:active svg, button.custom-btn-refresh:focus svg {
+        fill: #ffffff !important;
+    }
     .custom-search-marker + div[data-testid="stTextInput"] input {
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%232b8a8b"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
         background-repeat: no-repeat;
