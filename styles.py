@@ -44,10 +44,10 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    .premium-banner-transparent {
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
         background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
         border-radius: 8px;
-        padding: 2rem 2rem; /* Aumentado para que sea más alto */
+        padding: 2rem 2rem;
         display: flex;
         align-items: center;
         margin-bottom: 1.5rem;
