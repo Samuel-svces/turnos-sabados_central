@@ -224,18 +224,15 @@ with tab_calendar:
 
     col_lbl, col_search, col_btn_search, col_btn_clear, col_refresh = st.columns([0.4, 2.0, 0.3, 0.3, 0.3])
     with col_lbl:
-        st.markdown("<div style='display: flex; align-items: center; justify-content: flex-end; height: 38px; font-weight: 500; color: #7f8fa6; font-size: 0.95rem; margin-top: 5px;'>Buscar:</div>", unsafe_allow_html=True)
+        st.markdown("<div class='search-label'>Buscar:</div>", unsafe_allow_html=True)
     with col_search:
         search_query = st.text_input("Buscador", key="search_input", placeholder="", label_visibility="collapsed").strip().upper()
     
     with col_btn_search:
-        st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
         st.button("B", key="btn_search", use_container_width=True)
     with col_btn_clear:
-        st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
         st.button("L", key="btn_clear", use_container_width=True, on_click=clear_search)
     with col_refresh:
-        st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
         st.button("R", key="btn_refresh", help="Recargar datos", use_container_width=True, on_click=refresh_data)
 
     st.components.v1.html("""
