@@ -35,13 +35,24 @@ def apply_styles():
         margin-bottom: 2rem !important;
     }
     
-    .block-container, div[data-testid="stMainBlockContainer"], div[data-testid="stAppViewContainer"] {
+    .block-container, 
+    div[data-testid="stMainBlockContainer"], 
+    div[data-testid="stAppViewContainer"],
+    div[data-testid="stAppViewBlockContainer"],
+    div[data-testid="stMain"],
+    section.main,
+    .stAppViewContainer,
+    .stMain,
+    .block-container {
         padding-top: 0rem !important;
         padding-bottom: 0rem !important;
-        padding-left: 0rem !important;
-        padding-right: 0rem !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
         margin-top: -1rem !important;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
         max-width: 100% !important;
+        width: 100% !important;
     }
     
     h1, h2, h3 {
