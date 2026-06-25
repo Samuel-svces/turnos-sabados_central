@@ -160,8 +160,7 @@ with col_spacer:
     st.markdown("""
         <div class="premium-banner-transparent">
             <div class="premium-banner-text">
-                <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
-                <p>Consulta y gestión de asignaciones de turnos de fines de semana</p>
+                <h1>Turnos Sabados</h1>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -186,7 +185,6 @@ from streamlit_sortables import sort_items
 
 with tab_calendar:
     if not st.session_state.is_admin:
-        st.markdown("<div style='margin-top: -15px;'></div>", unsafe_allow_html=True)
         st.info("Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a **central@sanvicenteces.com**. Una vez sea aceptado por el correo, se verá reflejado en este cuadro.")
     
     if st.session_state.is_admin and st.session_state.last_action is not None:
