@@ -161,6 +161,7 @@ with col_spacer:
         <div class="premium-banner-transparent">
             <div class="premium-banner-text">
                 <h1>TURNOS SABADOS DE LOS SUPERNUMERARIOS</h1>
+                <p>Consulta y gestión de asignaciones de turnos de fines de semana</p>
             </div>
         </div>
     """, unsafe_allow_html=True)

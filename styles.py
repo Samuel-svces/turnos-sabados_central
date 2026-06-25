@@ -45,13 +45,13 @@ def apply_styles():
         display: none;
     }
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
-        border-radius: 8px;
-        padding: 2rem 2rem;
+        background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
     }
     
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) > div[data-testid="column"] {
@@ -65,7 +65,7 @@ def apply_styles():
     .premium-banner-transparent {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         height: 100%;
         padding-left: 10px;
     }
