@@ -24,11 +24,20 @@ def apply_styles():
         height: 0px !important;
     }
     
-    /* Reduce top padding to remove empty space above banner */
-    .block-container, div[data-testid="stAppViewBlockContainer"] {
-        padding-top: 1rem !important;
-        padding-bottom: 2rem !important;
-        margin-top: -1rem !important;
+    /* Contenedor principal estilizado como tarjeta unificada premium */
+    div[data-testid="stAppViewBlockContainer"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 2rem 2.5rem !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+        margin-top: 50rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 1rem !important;
     }
     
     h1, h2, h3 {
@@ -492,11 +501,27 @@ def apply_styles():
         display: none;
     }
 
-    /* Alineación de la fila de búsqueda */
+    /* Fila de búsqueda como una tarjeta interna */
     div[data-testid="stHorizontalBlock"]:has(.search-label) {
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 1.25rem 1.5rem !important;
         align-items: center !important;
         justify-content: center !important;
-        margin-bottom: -15px !important; /* <--- EDITA ESTA MARGEN para acercar/alejar la fila completa de filtros de los cuadros */
+        margin-bottom: 0.5rem !important;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
+    }
+    
+    /* Contenedor de columnas como una tarjeta interna premium (recuadro) */
+    div[data-testid="stVerticalBlock"]:has(> div[data-testid="stElementContainer"] > .columns-card-marker) {
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 0.8rem 1.5rem 1.5rem 1.5rem !important;
+        margin-top: 0.0rem !important;
+        margin-bottom: 1.5rem !important;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="column"] {
