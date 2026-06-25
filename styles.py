@@ -26,11 +26,11 @@ def apply_styles():
     
     /* Contenedor principal estilizado como tarjeta unificada premium */
     div[data-testid="stAppViewBlockContainer"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        padding: 1.0rem 2.5rem 2.0rem 2.5rem !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0px !important;
+        padding: 1.0rem 0.5rem 2.0rem 0.5rem !important;
+        box-shadow: none !important;
         margin-top: 0.5rem !important;
         margin-bottom: 2rem !important;
     }
@@ -523,7 +523,7 @@ def apply_styles():
     }
 
     /* Contenedor de columnas como una tarjeta interna premium (recuadro) */
-    div[data-testid="stVerticalBlock"]:has(> div[data-testid="stElementContainer"] > .columns-card-marker) {
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) {
         background-color: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
@@ -531,9 +531,9 @@ def apply_styles():
         /* -------------------------------------------------------------------------
            AJUSTA EL ESPACIADO AQUÍ SI DESEAS ACERCAR O ALEJAR LOS NOMBRES:
            ------------------------------------------------------------------------- */
-        padding: 0.4rem 1.5rem 1.5rem 1.5rem !important; /* El primer valor (0.4rem) es el espacio interno superior */
-        margin-top: 0.0rem !important;                  /* Espacio exterior superior */
-        margin-bottom: 1.5rem !important;               /* Espacio exterior inferior */
+        padding: 0rem 1.5rem 1.5rem 1.5rem !important; /* El primer valor (0.4rem) es el espacio interno superior */
+        margin-top: -0.82rem !important;                  /* Espacio exterior superior */
+        margin-bottom: 1rem !important;               /* Espacio exterior inferior */
         /* ------------------------------------------------------------------------- */
         
         box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
