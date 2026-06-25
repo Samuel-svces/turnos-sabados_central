@@ -53,6 +53,8 @@ def apply_styles():
         margin-right: 0px !important;
         max-width: 100% !important;
         width: 100% !important;
+        background-color: transparent !important;
+        background: transparent !important;
     }
     
     h1, h2, h3 {
