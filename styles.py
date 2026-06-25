@@ -44,13 +44,14 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
-        background: linear-gradient(to right, #1a2238 0%, #3a506b 60%, #b2ccd6 100%);
-        border-radius: 12px;
-        padding: 8px 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    .premium-banner-transparent {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+        border-radius: 8px;
+        padding: 2rem 2rem; /* Aumentado para que sea más alto */
+        display: flex;
         align-items: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) > div[data-testid="column"] {
