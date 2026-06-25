@@ -29,15 +29,16 @@ def apply_styles():
         background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
         border-radius: 16px !important;
-        padding: 2rem 2.5rem !important;
+        padding: 1.0rem 2.5rem 2.0rem 2.5rem !important;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
-        margin-top: 50rem !important;
+        margin-top: 0.5rem !important;
         margin-bottom: 2rem !important;
     }
     
-    .block-container {
+    .block-container, div[data-testid="stMainBlockContainer"], div[data-testid="stAppViewContainer"] {
         padding-top: 0rem !important;
-        padding-bottom: 1rem !important;
+        padding-bottom: 0rem !important;
+        margin-top: -1rem !important;
     }
     
     h1, h2, h3 {
@@ -513,14 +514,28 @@ def apply_styles():
         box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
     }
     
+    /* Ocultar por completo el contenedor del marcador para que no ocupe espacio vertical */
+    div[data-testid="stElementContainer"]:has(.columns-card-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     /* Contenedor de columnas como una tarjeta interna premium (recuadro) */
     div[data-testid="stVerticalBlock"]:has(> div[data-testid="stElementContainer"] > .columns-card-marker) {
         background-color: #f8fafc !important;
         border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
-        padding: 0.8rem 1.5rem 1.5rem 1.5rem !important;
-        margin-top: 0.0rem !important;
-        margin-bottom: 1.5rem !important;
+        
+        /* -------------------------------------------------------------------------
+           AJUSTA EL ESPACIADO AQUÍ SI DESEAS ACERCAR O ALEJAR LOS NOMBRES:
+           ------------------------------------------------------------------------- */
+        padding: 0.4rem 1.5rem 1.5rem 1.5rem !important; /* El primer valor (0.4rem) es el espacio interno superior */
+        margin-top: 0.0rem !important;                  /* Espacio exterior superior */
+        margin-bottom: 1.5rem !important;               /* Espacio exterior inferior */
+        /* ------------------------------------------------------------------------- */
+        
         box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
     }
     

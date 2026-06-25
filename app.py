@@ -433,13 +433,15 @@ with tab_calendar:
                     'date': sat_date.strftime('%Y-%m-%d')
                 })
                 
-            # Render sortable columns
-            returned_state = sort_items(
-                [{'header': c['header'], 'items': c['items']} for c in original_state],
-                multi_containers=True,
-                direction='horizontal',
-                key=f"sortable_sats_{offset}_{st.session_state.get('last_load_time', '0')}"
-            )
+            # Render sortable columns inside container
+            with st.container():
+                st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)
+                returned_state = sort_items(
+                    [{'header': c['header'], 'items': c['items']} for c in original_state],
+                    multi_containers=True,
+                    direction='horizontal',
+                    key=f"sortable_sats_{offset}_{st.session_state.get('last_load_time', '0')}"
+                )
             
             # Diff calculation to detect drag and drop
             if returned_state:
@@ -555,55 +557,57 @@ with tab_calendar:
                             ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
 
         else:
-            # PUBLIC VIEW: Read-Only Grid
-            st.markdown("<div class='calendar-grid'>", unsafe_allow_html=True)
-            cols = st.columns(len(saturdays))
-            for idx, sat_date in enumerate(saturdays):
-                with cols[idx]:
-                    is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
-                    holiday_class = " holiday" if is_holiday else ""
-                    
-                    date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
-                    num_doctors = len(date_shifts)
-                    
-                    header_text = sat_date.strftime('%d de %b, %Y').upper()
-                    header_text += f" ({num_doctors} Médicos)"
-                    if is_holiday:
-                        header_text += " (FESTIVO)"
+            # PUBLIC VIEW: Read-Only Grid inside container
+            with st.container():
+                st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)
+                st.markdown("<div class='calendar-grid'>", unsafe_allow_html=True)
+                cols = st.columns(len(saturdays))
+                for idx, sat_date in enumerate(saturdays):
+                    with cols[idx]:
+                        is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
+                        holiday_class = " holiday" if is_holiday else ""
                         
-                    st.markdown(f"<div class='saturday-col'><div class='sat-header{holiday_class}'>{header_text}</div>", unsafe_allow_html=True)
-                    
-                    for _, s_row in date_shifts.reset_index().iterrows():
-                        name = s_row['Supernumerary']
-                        shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
-                        clasif = s_row.get('Classification', 'Secuencia Normal')
-                        is_compensation = "Compensación" in str(clasif)
+                        date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
+                        num_doctors = len(date_shifts)
                         
-                        personal_obs = ""
-                        if not df_super.empty:
-                            doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
-                            if not doc_match.empty:
-                                personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
-                                
-                        has_obs = (clasif and clasif != "Secuencia Normal") or shift_obs or personal_obs
-                        help_lines = []
-                        if is_compensation: help_lines.append("⚠️ Turno de compensación")
-                        if clasif and clasif != "Secuencia Normal": help_lines.append(f"ℹ️ {clasif}")
-                        if shift_obs: help_lines.append(f"💬 {shift_obs}")
-                        if personal_obs: help_lines.append(f"👤 {personal_obs}")
-                        
-                        help_text = "<br>".join(help_lines).strip()
-                        badge_classes = "doc-name-badge" + (" has-obs" if has_obs else "")
-                        if search_query and search_query in name.upper():
-                            badge_classes += " search-highlight"
+                        header_text = sat_date.strftime('%d de %b, %Y').upper()
+                        header_text += f" ({num_doctors} Médicos)"
+                        if is_holiday:
+                            header_text += " (FESTIVO)"
                             
-                        obs_dot = "<span class='obs-dot'></span>" if has_obs else ""
-                        tooltip_html = f"<div class='doc-obs-tooltip'>{help_text}</div>" if help_text else ""
+                        st.markdown(f"<div class='saturday-col'><div class='sat-header{holiday_class}'>{header_text}</div>", unsafe_allow_html=True)
                         
-                        st.markdown(f"<div class='doc-btn-wrap'><div class='{badge_classes}'>{obs_dot}{name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
-                        
-                    st.markdown("</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+                        for _, s_row in date_shifts.reset_index().iterrows():
+                            name = s_row['Supernumerary']
+                            shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
+                            clasif = s_row.get('Classification', 'Secuencia Normal')
+                            is_compensation = "Compensación" in str(clasif)
+                            
+                            personal_obs = ""
+                            if not df_super.empty:
+                                doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
+                                if not doc_match.empty:
+                                    personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
+                                    
+                            has_obs = (clasif and clasif != "Secuencia Normal") or shift_obs or personal_obs
+                            help_lines = []
+                            if is_compensation: help_lines.append("⚠️ Turno de compensación")
+                            if clasif and clasif != "Secuencia Normal": help_lines.append(f"ℹ️ {clasif}")
+                            if shift_obs: help_lines.append(f"💬 {shift_obs}")
+                            if personal_obs: help_lines.append(f"👤 {personal_obs}")
+                            
+                            help_text = "<br>".join(help_lines).strip()
+                            badge_classes = "doc-name-badge" + (" has-obs" if has_obs else "")
+                            if search_query and search_query in name.upper():
+                                badge_classes += " search-highlight"
+                                
+                            obs_dot = "<span class='obs-dot'></span>" if has_obs else ""
+                            tooltip_html = f"<div class='doc-obs-tooltip'>{help_text}</div>" if help_text else ""
+                            
+                            st.markdown(f"<div class='doc-btn-wrap'><div class='{badge_classes}'>{obs_dot}{name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
+                            
+                        st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ----------------- TAB 3: ADMIN CONTROL PANEL -----------------
