@@ -237,6 +237,7 @@ with tab_calendar:
     st.components.v1.html("""
     <script>
     function styleButtons() {
+        // 1. Estilizar botones de la barra de búsqueda
         const buttons = window.parent.document.querySelectorAll('button');
         buttons.forEach(btn => {
             const text = btn.innerText.trim();
@@ -270,6 +271,40 @@ with tab_calendar:
                 btn.style.removeProperty('background-color');
                 btn.style.removeProperty('border-color');
                 btn.style.removeProperty('background');
+            }
+        });
+
+        // 2. Estilizar tarjetas de sortables (drag & drop) en modo Administrador
+        const iframes = window.parent.document.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!iframeDoc) return;
+                
+                const elements = iframeDoc.querySelectorAll('div, span, li, p');
+                elements.forEach(el => {
+                    if (el.innerText && el.innerText.trim().startsWith('🎯')) {
+                        // Estilos para el elemento de texto
+                        el.style.setProperty('background-color', '#fff8e1', 'important');
+                        el.style.setProperty('color', '#e65100', 'important');
+                        el.style.setProperty('border-color', '#ffc107', 'important');
+                        el.style.setProperty('box-shadow', '0 0 12px rgba(255, 193, 7, 0.4)', 'important');
+                        el.style.setProperty('font-weight', '700', 'important');
+                        
+                        // Propagar los estilos a los contenedores padre para colorear la tarjeta completa
+                        let parent = el.parentElement;
+                        for (let d = 0; d < 2; d++) {
+                            if (parent && parent.tagName !== 'BODY') {
+                                parent.style.setProperty('background-color', '#fff8e1', 'important');
+                                parent.style.setProperty('color', '#e65100', 'important');
+                                parent.style.setProperty('border-color', '#ffc107', 'important');
+                                parent = parent.parentElement;
+                            }
+                        }
+                    }
+                });
+            } catch (e) {
+                // Evitar errores de sandbox de iframe
             }
         });
     }
