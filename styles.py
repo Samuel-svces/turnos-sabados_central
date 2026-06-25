@@ -29,7 +29,7 @@ def apply_styles():
         background-color: transparent !important;
         border: none !important;
         border-radius: 0px !important;
-        padding: 1.0rem 0.5rem 2.0rem 0.5rem !important;
+        padding: 1.0rem 0px 2.0rem 0px !important;
         box-shadow: none !important;
         margin-top: 0.5rem !important;
         margin-bottom: 2rem !important;
@@ -38,7 +38,10 @@ def apply_styles():
     .block-container, div[data-testid="stMainBlockContainer"], div[data-testid="stAppViewContainer"] {
         padding-top: 0rem !important;
         padding-bottom: 0rem !important;
+        padding-left: 0rem !important;
+        padding-right: 0rem !important;
         margin-top: -1rem !important;
+        max-width: 100% !important;
     }
     
     h1, h2, h3 {
