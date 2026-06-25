@@ -271,6 +271,12 @@ with tab_calendar:
                 btn.style.removeProperty('background-color');
                 btn.style.removeProperty('border-color');
                 btn.style.removeProperty('background');
+            } else if(text === 'Iniciar Sesión') {
+                btn.classList.add('custom-btn-login');
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('background');
+                btn.style.removeProperty('color');
             }
         });
 

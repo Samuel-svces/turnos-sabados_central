@@ -617,6 +617,32 @@ def apply_styles():
     button.custom-btn-refresh:hover svg, button.custom-btn-refresh:active svg, button.custom-btn-refresh:focus svg {
         fill: #ffffff !important;
     }
+
+    /* 4. Botón de Iniciar Sesión (Azul con texto) */
+    button.custom-btn-login {
+        background-color: #ffffff !important;
+        color: #1a73e8 !important;
+        border: 1.5px solid #1a73e8 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
+        font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    button.custom-btn-login p {
+        color: #1a73e8 !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    button.custom-btn-login:hover, button.custom-btn-login:active, button.custom-btn-login:focus {
+        background-color: #1a73e8 !important;
+        border-color: #1a73e8 !important;
+        color: #ffffff !important;
+    }
+    button.custom-btn-login:hover p, button.custom-btn-login:active p, button.custom-btn-login:focus p {
+        color: #ffffff !important;
+    }
     .custom-search-marker + div[data-testid="stTextInput"] input {
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%232b8a8b"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
         background-repeat: no-repeat;
