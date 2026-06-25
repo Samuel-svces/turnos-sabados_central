@@ -81,10 +81,34 @@ def apply_styles():
         box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
     }
     
-    /* Resetear margen superior de alertas y notificaciones */
-    div[data-testid="stNotification"], div[data-testid="stAlert"], .stAlert {
-        margin-top: 0 !important;
-        padding-top: 0 !important;
+    /* Resetear margen, bordes y sombras de alertas y notificaciones y sus contenedores */
+    div[data-testid="stElementContainer"]:has(div[data-testid="stAlert"]),
+    div[data-testid="stElementContainer"]:has(div[data-testid="stNotification"]),
+    div[data-testid="stElementContainer"]:has(div[role="alert"]),
+    div.element-container:has(.stAlert),
+    div.element-container:has(.stNotification),
+    div.element-container:has([role="alert"]) {
+        margin: 0px !important;
+        padding: 0px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    div[data-testid="stNotification"], div[data-testid="stAlert"], .stAlert, div[role="alert"],
+    div[data-testid="stNotification"] *, div[data-testid="stAlert"] *, .stAlert *, div[role="alert"] * {
+        margin: 0px !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    /* Quitar el borde del panel de pestañas (contenedor exterior) */
+    div[data-testid="stTabPanel"],
+    div[role="tabpanel"],
+    div[data-baseweb="tab-panel"],
+    .stTabs > div {
+        border: none !important;
+        box-shadow: none !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) > div[data-testid="column"] {

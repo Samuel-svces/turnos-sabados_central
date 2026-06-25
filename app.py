@@ -320,23 +320,31 @@ with tab_calendar:
     </script>
     """, height=0)
 
+    # Renderizar alerta de error si el flag está activo (después de limpiar el filtro)
+    if st.session_state.get("show_error_alert", False):
+        st.components.v1.html("""
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                title: "Error",
+                text: "El nombre no existe, ingrese un nuevo nombre",
+                icon: "error",
+                draggable: true,
+                confirmButtonColor: '#1a73e8'
+            });
+        </script>
+        """, height=0)
+        st.session_state["show_error_alert"] = False
+
     if search_query:
         found = False
         if not df_shifts.empty and df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():
             found = True
             
         if not found:
-            st.components.v1.html(f"""
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <script>
-                Swal.fire({{
-                    icon: 'warning',
-                    title: 'No encontrado',
-                    text: 'El nombre "{search_query}" no está en la base de datos de turnos.',
-                    confirmButtonColor: '#1a73e8'
-                }});
-            </script>
-            """, height=0)
+            st.session_state["search_input"] = ""
+            st.session_state["show_error_alert"] = True
+            st.rerun()
 
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
