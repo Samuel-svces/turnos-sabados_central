@@ -1,5 +1,6 @@
 # Styles and Custom CSS for TURNOS SABADOS Application
 
+# pyrefly: ignore [missing-import]
 import streamlit as st
 import textwrap
 
@@ -50,8 +51,14 @@ def apply_styles():
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.0rem !important;
         box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
+    }
+    
+    /* Resetear margen superior de alertas y notificaciones */
+    div[data-testid="stNotification"], div[data-testid="stAlert"], .stAlert {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) > div[data-testid="column"] {
@@ -105,7 +112,7 @@ def apply_styles():
     }
     .premium-banner-text h1 {
         color: white !important;
-        font-size: 1.4rem !important;
+        font-size: 1.85rem !important;
         margin: 0 !important;
         padding: 0 !important;
         font-weight: 700 !important;
@@ -229,7 +236,7 @@ def apply_styles():
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 1.25rem;
-        margin-top: 1rem;
+        margin-top: 0.4rem; /* <--- EDITA ESTA MARGEN (Vista pública) para acercar/alejar los cuadros de los filtros */
     }
     
     .saturday-col {
@@ -489,6 +496,7 @@ def apply_styles():
     div[data-testid="stHorizontalBlock"]:has(.search-label) {
         align-items: center !important;
         justify-content: center !important;
+        margin-bottom: -15px !important; /* <--- EDITA ESTA MARGEN para acercar/alejar la fila completa de filtros de los cuadros */
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="column"] {
