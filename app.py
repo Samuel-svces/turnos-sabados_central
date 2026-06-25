@@ -222,7 +222,7 @@ with tab_calendar:
         st.cache_resource.clear()
         # load_app_data() happens on rerun
 
-    col_lbl, col_search, col_btn_search, col_btn_clear, col_refresh = st.columns([0.4, 2.0, 0.3, 0.3, 0.3])
+    col_spacer1, col_lbl, col_search, col_btn_search, col_btn_clear, col_refresh, col_spacer2 = st.columns([1.2, 0.5, 2.2, 0.3, 0.3, 0.3, 1.2])
     with col_lbl:
         st.markdown("<div class='search-label'>Buscar:</div>", unsafe_allow_html=True)
     with col_search:
