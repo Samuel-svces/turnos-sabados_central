@@ -599,94 +599,52 @@ with tab_calendar:
                         if st.button("Agregar Médico", key=f"add_btn_{sat_date}", use_container_width=True):
                             sheet_name = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
                             ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
-            
-            st.markdown("---")
-            with st.expander("👯 Duplicar Programación de Sábado"):
-                st.info("Copia la programación de médicos de un sábado y duplícala en otros sábados de tu elección.")
-                
-                col_dup_orig, col_dup_dest = st.columns(2)
-                
-                with col_dup_orig:
-                    st.markdown("##### 1. Origen")
-                    source_date = st.selectbox(
-                        "Seleccione Sábado Origen:",
-                        all_visible_saturdays,
-                        format_func=lambda d: d.strftime('%d de %b, %Y').upper(),
-                        key="dup_source_date"
-                    )
-                    
-                    source_shifts = df_shifts[df_shifts['Date'] == source_date] if not df_shifts.empty else pd.DataFrame()
-                    
-                    if source_shifts.empty:
-                        st.warning("No hay médicos programados en este sábado.")
-                        doctors_to_dup = []
-                    else:
-                        doctors_list = source_shifts['Supernumerary'].unique().tolist()
-                        doctors_to_dup = st.multiselect(
-                            "Seleccione Médicos a Duplicar:",
-                            doctors_list,
-                            default=doctors_list,
-                            key="dup_doctors_list"
-                        )
-                
-                with col_dup_dest:
-                    st.markdown("##### 2. Destino")
-                    target_dates = st.multiselect(
-                        "Duplicar en (Seleccione uno o más Sábados):",
-                        [d for d in all_visible_saturdays if d != source_date],
-                        format_func=lambda d: d.strftime('%d de %b, %Y').upper(),
-                        key="dup_target_dates"
-                    )
-                    
-                    overwrite_target = st.checkbox(
-                        "¿Sobrescribir programación existente en los sábados destino?",
-                        value=False,
-                        help="Si se marca, se eliminarán los médicos programados en los sábados destino seleccionados antes de duplicar."
-                    )
-                
-                if st.button("Duplicar Programación", type="primary", use_container_width=True, disabled=not doctors_to_dup or not target_dates, key="btn_execute_duplication"):
-                    with st.spinner("Duplicando programación..."):
-                        try:
-                            for t_date in target_dates:
-                                t_shifts = df_shifts[df_shifts['Date'] == t_date] if not df_shifts.empty else pd.DataFrame()
-                                target_sheet = t_shifts.iloc[0]['Sheet'] if not t_shifts.empty else f"SABADOS {t_date.year}"
-                                
-                                if overwrite_target and not t_shifts.empty:
-                                    for _, row_to_del in t_shifts.iterrows():
-                                        dp.delete_shift_cell(
-                                            excel_path=st.session_state.excel_path,
-                                            sheet_name=row_to_del['Sheet'],
-                                            row_idx=int(row_to_del['Excel_Row']),
-                                            col_idx=int(row_to_del['Excel_Col']),
-                                            date_val=t_date,
-                                            observation="",
-                                            original_name=row_to_del['Supernumerary'],
-                                            clasificacion="Secuencia Normal"
-                                        )
-                                
-                                for doc_name in doctors_to_dup:
-                                    orig_row = source_shifts[source_shifts['Supernumerary'] == doc_name].iloc[0]
-                                    obs = orig_row.get('Observation', '')
-                                    clasif = orig_row.get('Classification', 'Secuencia Normal')
-                                    
-                                    if not overwrite_target and not t_shifts.empty:
-                                        if doc_name in t_shifts['Supernumerary'].values:
-                                            continue
+                            
+                        # Botón para duplicar la programación de hace 2 semanas
+                        two_weeks_ago = sat_date - datetime.timedelta(weeks=2)
+                        prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
+                        
+                        if not prev_shifts.empty:
+                            st.markdown("<div style='margin-top: 0.3rem;'></div>", unsafe_allow_html=True)
+                            label_dup = f"👯 Duplicar del {two_weeks_ago.strftime('%d/%m')}"
+                            if st.button(label_dup, key=f"dup_prev_{sat_date}", use_container_width=True):
+                                with st.spinner("Duplicando..."):
+                                    try:
+                                        target_sheet = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
+                                        
+                                        # 1. Eliminar programación actual si existe
+                                        if not date_shifts.empty:
+                                            for _, row_to_del in date_shifts.iterrows():
+                                                dp.delete_shift_cell(
+                                                    excel_path=st.session_state.excel_path,
+                                                    sheet_name=row_to_del['Sheet'],
+                                                    row_idx=int(row_to_del['Excel_Row']),
+                                                    col_idx=int(row_to_del['Excel_Col']),
+                                                    date_val=sat_date,
+                                                    observation="",
+                                                    original_name=row_to_del['Supernumerary'],
+                                                    clasificacion="Secuencia Normal"
+                                                )
+                                        
+                                        # 2. Copiar los turnos del sábado de hace 2 semanas
+                                        for _, row_to_copy in prev_shifts.iterrows():
+                                            doc_name = row_to_copy['Supernumerary']
+                                            obs = row_to_copy.get('Observation', '')
+                                            clasif = row_to_copy.get('Classification', 'Secuencia Normal')
                                             
-                                    dp.add_shift_to_date(
-                                        excel_path=st.session_state.excel_path,
-                                        sheet_name=target_sheet,
-                                        target_date=t_date,
-                                        supernumerary_name=doc_name,
-                                        observation=obs,
-                                        clasificacion=clasif
-                                    )
-                                    
-                            st.success("¡Programación duplicada con éxito!")
-                            load_app_data()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al duplicar la programación: {e}")
+                                            dp.add_shift_to_date(
+                                                excel_path=st.session_state.excel_path,
+                                                sheet_name=target_sheet,
+                                                target_date=sat_date,
+                                                supernumerary_name=doc_name,
+                                                observation=obs,
+                                                clasificacion=clasif
+                                            )
+                                        st.success(f"¡Programación duplicada del {two_weeks_ago.strftime('%d/%m')}!")
+                                        load_app_data()
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Error al duplicar: {e}")
 
         else:
             # PUBLIC VIEW: Read-Only Grid inside container
