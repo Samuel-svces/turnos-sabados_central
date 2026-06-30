@@ -138,6 +138,8 @@ with col_gear:
             st.success("Sesión Iniciada (Admin)")
             if st.button("Cerrar Sesión", use_container_width=True, key="btn_popover_logout"):
                 st.session_state.is_admin = False
+                if 'saturday_offset' in st.session_state:
+                    del st.session_state.saturday_offset
                 st.rerun()
         else:
             admin_password = "Central1234.*"
@@ -151,6 +153,8 @@ with col_gear:
             if st.button("Iniciar Sesión", use_container_width=True, key="btn_popover_login"):
                 if pwd_input == admin_password:
                     st.session_state.is_admin = True
+                    if 'saturday_offset' in st.session_state:
+                        del st.session_state.saturday_offset
                     st.success("¡Acceso concedido!")
                     st.rerun()
                 else:
@@ -369,24 +373,38 @@ with tab_calendar:
     first_sat = today + datetime.timedelta(days=days_to_sat)
     generated_sats = [first_sat + datetime.timedelta(weeks=w) for w in range(52)]
     
-    db_future_sats = []
-    if not df_shifts.empty and 'Date' in df_shifts.columns:
-        db_future_sats = [d for d in df_shifts['Date'].unique() if d >= today]
+    if st.session_state.is_admin:
+        db_sats = []
+        if not df_shifts.empty and 'Date' in df_shifts.columns:
+            db_sats = [d for d in df_shifts['Date'].unique() if isinstance(d, (datetime.date, datetime.datetime))]
+            db_sats = [d.date() if isinstance(d, datetime.datetime) else d for d in db_sats]
+        all_visible_saturdays = sorted(list(set(db_sats + generated_sats)))
+    else:
+        db_future_sats = []
+        if not df_shifts.empty and 'Date' in df_shifts.columns:
+            db_future_sats = [d for d in df_shifts['Date'].unique() if d >= today]
+            db_future_sats = [d.date() if isinstance(d, datetime.datetime) else d for d in db_future_sats]
+        all_visible_saturdays = sorted(list(set(db_future_sats + generated_sats)))
     
-    all_future_saturdays = sorted(list(set(db_future_sats + generated_sats)))
-    
-    if not all_future_saturdays:
-        st.info("No se encontraron turnos de sábados futuros programados.")
+    if not all_visible_saturdays:
+        st.info("No se encontraron turnos de sábados programados.")
     else:
         if st.session_state.is_admin:
-            if 'saturday_offset' not in st.session_state:
-                st.session_state.saturday_offset = 0
+            # Encontrar el índice del primer sábado futuro (>= today) para inicializar el offset si no existe
+            next_sat_idx = 0
+            for idx, sat in enumerate(all_visible_saturdays):
+                if sat >= today:
+                    next_sat_idx = idx
+                    break
             
-            if st.session_state.saturday_offset >= len(all_future_saturdays):
-                st.session_state.saturday_offset = max(0, ((len(all_future_saturdays) - 1) // 4) * 4)
+            if 'saturday_offset' not in st.session_state:
+                st.session_state.saturday_offset = next_sat_idx
+            
+            if st.session_state.saturday_offset >= len(all_visible_saturdays):
+                st.session_state.saturday_offset = max(0, ((len(all_visible_saturdays) - 1) // 4) * 4)
                 
             offset = st.session_state.saturday_offset
-            saturdays = all_future_saturdays[offset:offset+4]
+            saturdays = all_visible_saturdays[offset:offset+4]
             
             col_nav_prev, col_nav_info, col_nav_next = st.columns([1.2, 2, 1.2])
             with col_nav_prev:
@@ -396,15 +414,15 @@ with tab_calendar:
                     st.rerun()
             with col_nav_info:
                 start_sat = offset + 1
-                end_sat = min(len(all_future_saturdays), offset + 4)
-                st.markdown(f"<div style='text-align: center; font-weight: bold; padding: 0.5rem; color: #1565c0; font-family: Outfit; font-size: 1.05rem;'>Sábados {start_sat} a {end_sat} de {len(all_future_saturdays)} futuros</div>", unsafe_allow_html=True)
+                end_sat = min(len(all_visible_saturdays), offset + 4)
+                st.markdown(f"<div style='text-align: center; font-weight: bold; padding: 0.5rem; color: #1565c0; font-family: Outfit; font-size: 1.05rem;'>Sábados {start_sat} a {end_sat} de {len(all_visible_saturdays)} programados</div>", unsafe_allow_html=True)
             with col_nav_next:
-                has_next = offset + 4 < len(all_future_saturdays)
+                has_next = offset + 4 < len(all_visible_saturdays)
                 if st.button("Siguientes Sábados ▶", use_container_width=True, disabled=not has_next, key="btn_next_sats"):
                     st.session_state.saturday_offset = offset + 4
                     st.rerun()
         else:
-            saturdays = all_future_saturdays[:4]
+            saturdays = all_visible_saturdays[:4]
             
         month_shifts = df_shifts[df_shifts['Date'].isin(saturdays)] if not df_shifts.empty else pd.DataFrame()
         
