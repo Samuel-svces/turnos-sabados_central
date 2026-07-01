@@ -370,7 +370,7 @@ with tab_calendar:
                 console.error("SweetAlert2 parent injection failed:", e);
             }}
         </script>
-        """, height=0, width=0, key=f"error_alert_{alert_id}")
+        """, height=0)
         st.session_state["show_error_alert"] = False
 
     if search_query:
