@@ -259,26 +259,29 @@ with tab_calendar:
     if "filter_class" not in st.session_state:
         st.session_state["filter_class"] = "Todos"
 
-    # Fila de píldoras/botones de filtro dinámico
-    st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
-    col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_f_spacer = st.columns([1.5, 2.0, 2.0, 2.2, 4.3])
-    with col_lbl_f:
-        st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
-    with col_btn_f1:
-        f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
-        if st.button("🔵 Todos", key="btn_filter_all", use_container_width=True, type=f_style_all):
-            st.session_state["filter_class"] = "Todos"
-            st.rerun()
-    with col_btn_f2:
-        f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
-        if st.button("🟢 Normal", key="btn_filter_normal", use_container_width=True, type=f_style_normal):
-            st.session_state["filter_class"] = "Secuencia Normal"
-            st.rerun()
-    with col_btn_f3:
-        f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
-        if st.button("🟡 Compensación", key="btn_filter_comp", use_container_width=True, type=f_style_comp):
-            st.session_state["filter_class"] = "Compensación"
-            st.rerun()
+    if not st.session_state.is_admin:
+        # Fila de píldoras/botones de filtro dinámico
+        st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
+        col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_f_spacer = st.columns([1.5, 2.0, 2.0, 2.2, 4.3])
+        with col_lbl_f:
+            st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
+        with col_btn_f1:
+            f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
+            if st.button("🔵 Todos", key="btn_filter_all", use_container_width=True, type=f_style_all):
+                st.session_state["filter_class"] = "Todos"
+                st.rerun()
+        with col_btn_f2:
+            f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
+            if st.button("🟢 Normal", key="btn_filter_normal", use_container_width=True, type=f_style_normal):
+                st.session_state["filter_class"] = "Secuencia Normal"
+                st.rerun()
+        with col_btn_f3:
+            f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
+            if st.button("🟡 Compensación", key="btn_filter_comp", use_container_width=True, type=f_style_comp):
+                st.session_state["filter_class"] = "Compensación"
+                st.rerun()
+    else:
+        st.session_state["filter_class"] = "Todos"
 
     st.components.v1.html("""
     <script>
@@ -323,6 +326,36 @@ with tab_calendar:
                 btn.style.removeProperty('border-color');
                 btn.style.removeProperty('background');
                 btn.style.removeProperty('color');
+            } else if(text.includes('Todos')) {
+                btn.classList.add('custom-btn-filter-all');
+                if (btn.getAttribute('data-testid') === 'baseButton-primary') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('background');
+            } else if(text.includes('Normal')) {
+                btn.classList.add('custom-btn-filter-normal');
+                if (btn.getAttribute('data-testid') === 'baseButton-primary') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('background');
+            } else if(text.includes('Compensación')) {
+                btn.classList.add('custom-btn-filter-comp');
+                if (btn.getAttribute('data-testid') === 'baseButton-primary') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('background');
             }
         });
 

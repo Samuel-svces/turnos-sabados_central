@@ -698,6 +698,66 @@ def apply_styles():
         fill: #ffffff !important;
     }
 
+    /* 5. Botón de Filtro Todos (Azul) */
+    button.custom-btn-filter-all {
+        background-color: #ffffff !important;
+        border: 1.5px solid #1a73e8 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-filter-all p {
+        color: #1a73e8 !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    button.custom-btn-filter-all:hover, button.custom-btn-filter-all:active, button.custom-btn-filter-all:focus, button.custom-btn-filter-all.active {
+        background-color: #1a73e8 !important;
+        border-color: #1a73e8 !important;
+    }
+    button.custom-btn-filter-all:hover p, button.custom-btn-filter-all:active p, button.custom-btn-filter-all:focus p, button.custom-btn-filter-all.active p {
+        color: #ffffff !important;
+    }
+
+    /* 6. Botón de Filtro Normal (Verde) */
+    button.custom-btn-filter-normal {
+        background-color: #ffffff !important;
+        border: 1.5px solid #198754 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-filter-normal p {
+        color: #198754 !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    button.custom-btn-filter-normal:hover, button.custom-btn-filter-normal:active, button.custom-btn-filter-normal:focus, button.custom-btn-filter-normal.active {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+    }
+    button.custom-btn-filter-normal:hover p, button.custom-btn-filter-normal:active p, button.custom-btn-filter-normal:focus p, button.custom-btn-filter-normal.active p {
+        color: #ffffff !important;
+    }
+
+    /* 7. Botón de Filtro Compensación (Naranja) */
+    button.custom-btn-filter-comp {
+        background-color: #ffffff !important;
+        border: 1.5px solid #e65100 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-filter-comp p {
+        color: #e65100 !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    button.custom-btn-filter-comp:hover, button.custom-btn-filter-comp:active, button.custom-btn-filter-comp:focus, button.custom-btn-filter-comp.active {
+        background-color: #e65100 !important;
+        border-color: #e65100 !important;
+    }
+    button.custom-btn-filter-comp:hover p, button.custom-btn-filter-comp:active p, button.custom-btn-filter-comp:focus p, button.custom-btn-filter-comp.active p {
+        color: #ffffff !important;
+    }
+
     /* 4. Botón de Iniciar Sesión (Azul con texto) */
     button.custom-btn-login {
         background-color: #ffffff !important;
