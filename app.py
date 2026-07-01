@@ -416,11 +416,14 @@ with tab_calendar:
             btn.style.setProperty('border-style', 'solid', 'important');
             btn.style.setProperty('border-width', '1px', 'important');
             btn.style.setProperty('border-radius', '8px', 'important');
-            btn.style.setProperty('font-weight', '600', 'important');
-            btn.style.setProperty('padding', '0.38rem 0.65rem', 'important');
+            btn.style.setProperty('font-weight', '500', 'important');
+            btn.style.setProperty('font-size', '0.8rem', 'important');
+            btn.style.setProperty('padding', '0.22rem 0.5rem', 'important');
             btn.style.setProperty('width', '100%', 'important');
             btn.style.setProperty('display', 'block', 'important');
-            btn.style.setProperty('margin-bottom', '0.4rem', 'important');
+            btn.style.setProperty('margin-bottom', '0.2rem', 'important');
+            btn.style.setProperty('min-height', 'auto', 'important');
+            btn.style.setProperty('line-height', '1.15', 'important');
 
             const childs = btn.querySelectorAll('*');
             childs.forEach(c => {

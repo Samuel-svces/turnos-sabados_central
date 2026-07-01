@@ -533,12 +533,8 @@ def apply_styles():
         box-shadow: 0 10px 25px rgba(0,0,0,0.35);
         border: 1px solid rgba(255,255,255,0.1);
         transition: opacity 0.18s ease, visibility 0.18s ease;
-    }
-    
-    /* Reducir espacio vertical entre botones de médicos para juntarlos más */
-    div[data-testid="column"]:has(.doc-btn-wrap) > div[data-testid="element-container"],
-    div[data-testid="column"]:has(.admin-badge-container) > div[data-testid="element-container"] {
-        margin-bottom: -0.42rem !important;
+        white-space: normal;
+        word-break: break-word;
     }
     
     /* Custom Search Bar */
@@ -581,6 +577,11 @@ def apply_styles():
         /* ------------------------------------------------------------------------- */
         
         box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
+    }
+    
+    /* Reducir el espaciado vertical entre las tarjetas en el calendario */
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stVerticalBlock"] {
+        gap: 0.3rem !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="column"] {

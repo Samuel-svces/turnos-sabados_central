@@ -30,17 +30,6 @@ def show_selection_dialog(action_details, load_app_data_func):
     st.write(f"**Fecha:** {action_details['date'].strftime('%d/%m/%Y')}")
     st.markdown("---")
     
-    allowed = get_allowed_doctors()
-    current_doc = action_details['doctor']
-    
-    # Asegurar que el médico actual esté en la lista y encontrar su índice
-    if current_doc not in allowed:
-        allowed = sorted(list(set(allowed + [current_doc])))
-    
-    try:
-        default_idx = allowed.index(current_doc)
-    except ValueError:
-        default_idx = 0
     clasif_options = ["Secuencia Normal", "Compensación / Pago de turno", "Cambio de turno"]
     current_clasif = action_details.get('classification', 'Secuencia Normal')
     if "Compensación" in current_clasif:
@@ -51,9 +40,16 @@ def show_selection_dialog(action_details, load_app_data_func):
         default_clasif_idx = 0
     new_clasif = st.radio("Clasificación del Turno:", clasif_options, index=default_clasif_idx, horizontal=True)
     
-    # Deshabilitar selector si es Cambio de turno
-    disable_medico = (new_clasif == "Cambio de turno")
-    new_doc = st.selectbox("Médico Programado:", allowed, index=default_idx, disabled=disable_medico)
+    allowed = get_allowed_doctors()
+    current_doc = action_details['doctor']
+    if current_doc not in allowed:
+        allowed = sorted(list(set(allowed + [current_doc])))
+    try:
+        default_idx = allowed.index(current_doc)
+    except ValueError:
+        default_idx = 0
+        
+    new_doc = st.selectbox("Médico Programado:", allowed, index=default_idx, disabled=(new_clasif == "Cambio de turno"))
     new_obs = st.text_input("Observaciones:", value=action_details.get('observation', ''))
     
     swap_target = None
