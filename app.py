@@ -448,7 +448,7 @@ with tab_calendar:
             for sat_date in saturdays:
                 date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                 
-                header_text = sat_date.strftime('%d de %b, %Y').upper()
+                header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
                 is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
                 if is_holiday:
                     header_text += " (FESTIVO)"
@@ -597,7 +597,7 @@ with tab_calendar:
                 DIAS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
                 MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
                 
-                sat_labels = [f"{sat.strftime('%d/%m')}" for sat in saturdays]
+                sat_labels = [f"{sat.day} {dp.MONTH_NAMES_SP[sat.month]}" for sat in saturdays]
                 adv_tabs = st.tabs(sat_labels)
                 
                 for idx, sat_date in enumerate(saturdays):
@@ -605,7 +605,7 @@ with tab_calendar:
                         date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                         num_docs = len(date_shifts)
                         
-                        fecha_es = f"{DIAS_ES[sat_date.weekday()]}, {sat_date.day:02d} de {MESES_ES[sat_date.month-1]} de {sat_date.year}"
+                        fecha_es = f"{DIAS_ES[sat_date.weekday()]}, {sat_date.day} de {dp.MONTH_NAMES_SP[sat_date.month]} de {sat_date.year}"
                         st.markdown(f"##### Programación para el {fecha_es} ({num_docs} Médicos)")
                         
                         # Barra de herramientas superior para este día
@@ -621,7 +621,8 @@ with tab_calendar:
                             prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
                             
                             if not prev_shifts.empty:
-                                label_dup = f"👯 Duplicar del {two_weeks_ago.strftime('%d/%m')}"
+                                st.markdown("<div class='dup-btn-wrapper'></div>", unsafe_allow_html=True)
+                                label_dup = f"Duplicar del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}"
                                 if st.button(label_dup, key=f"dup_prev_tab_{sat_date}", use_container_width=True):
                                     with st.spinner("Duplicando..."):
                                         try:
@@ -655,7 +656,7 @@ with tab_calendar:
                                                     observation=obs,
                                                     clasificacion=clasif
                                                 )
-                                            st.success(f"¡Programación duplicada del {two_weeks_ago.strftime('%d/%m')}!")
+                                            st.success(f"¡Programación duplicada del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}!")
                                             load_app_data()
                                             st.rerun()
                                         except Exception as e:
@@ -747,7 +748,7 @@ with tab_calendar:
                         date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                         num_doctors = len(date_shifts)
                         
-                        header_text = sat_date.strftime('%d de %b, %Y').upper()
+                        header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
                         header_text += f" ({num_doctors} Médicos)"
                         if is_holiday:
                             header_text += " (FESTIVO)"

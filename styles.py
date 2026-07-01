@@ -1095,6 +1095,28 @@ def apply_styles():
         mask-size: contain;
         vertical-align: middle;
     }
+    
+    /* Añadir icono bi-copy al botón Duplicar Programación */
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
+    div.element-container:has(.dup-btn-wrapper) + div.element-container button p::before {
+        content: "\\f2c2"; /* bi-copy */
+        font-family: "bootstrap-icons";
+        margin-right: 0.4rem;
+        font-size: 1.15rem;
+        vertical-align: middle;
+        font-weight: 800;
+        color: #1976d2;
+        display: inline-block;
+    }
+    
+    /* Ocultar el contenedor inyectado de dup-btn-wrapper */
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper),
+    div.element-container:has(.dup-btn-wrapper) {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])
