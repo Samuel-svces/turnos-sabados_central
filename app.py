@@ -597,7 +597,7 @@ with tab_calendar:
                 DIAS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
                 MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
                 
-                sat_labels = [f"📅 {sat.strftime('%d/%m')}" for sat in saturdays]
+                sat_labels = [f"{sat.strftime('%d/%m')}" for sat in saturdays]
                 adv_tabs = st.tabs(sat_labels)
                 
                 for idx, sat_date in enumerate(saturdays):
