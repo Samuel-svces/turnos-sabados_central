@@ -205,7 +205,7 @@ if st.session_state.is_admin:
 else:
     tab_calendar = st.container()
 
-from streamlit_sortables import sort_items
+# Unification layout: click-to-edit instead of sortables
 
 with tab_calendar:
     if not st.session_state.is_admin:
@@ -379,58 +379,54 @@ with tab_calendar:
             }
         });
 
-        // 2. Estilizar tarjetas de sortables (drag & drop) en modo Administrador
-        const iframes = window.parent.document.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            try {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                if (!iframeDoc) return;
-                
-                const elements = iframeDoc.querySelectorAll('li');
-                elements.forEach(el => {
-                    const text = (el.innerText || "").trim();
-                    if (!text) return;
+        // 2. Estilizar botones de médico en modo Administrador (admin-badge-container)
+        const adminBadges = window.parent.document.querySelectorAll('.admin-badge-container button');
+        adminBadges.forEach(btn => {
+            const text = (btn.innerText || "").trim();
+            if (!text) return;
 
-                    let bg = '#fbf6eb'; // crema premium
-                    let fg = '#5c4d3c'; // marrón oscuro elegante
-                    let border = '#e6dec9';
-                    let shadow = '0 1px 3px rgba(0,0,0,0.05)';
-                    let font_weight = '600';
+            let bg = '#fbf6eb'; // crema premium
+            let fg = '#5c4d3c'; // marrón oscuro elegante
+            let border = '#e6dec9';
+            let shadow = '0 1px 3px rgba(0,0,0,0.05)';
 
-                    if (text.includes('🎯')) {
-                        bg = '#fff8e1';
-                        fg = '#e65100';
-                        border = '#ffc107';
-                        shadow = '0 0 12px rgba(255, 193, 7, 0.4)';
-                    } else if (text.includes('DUPLICADO') || text.includes('🚨')) {
-                        bg = '#ffebee';
-                        fg = '#c62828';
-                        border = '#ffcdd2';
-                    } else if (text.includes('COMP') || text.includes('🟡')) {
-                        bg = '#fffde6';
-                        fg = '#b58900';
-                        border = '#ffecb3';
-                    }
-
-                    el.style.setProperty('background-color', bg, 'important');
-                    el.style.setProperty('color', fg, 'important');
-                    el.style.setProperty('border-color', border, 'important');
-                    el.style.setProperty('box-shadow', shadow, 'important');
-                    el.style.setProperty('font-weight', font_weight, 'important');
-                    el.style.setProperty('border-style', 'solid', 'important');
-                    el.style.setProperty('border-width', '1px', 'important');
-                    el.style.setProperty('border-radius', '8px', 'important');
-
-                    // Propagar color a los hijos
-                    const childs = el.querySelectorAll('*');
-                    childs.forEach(c => {
-                        c.style.setProperty('color', fg, 'important');
-                        c.style.setProperty('background-color', 'transparent', 'important');
-                    });
-                });
-            } catch (e) {
-                // Evitar errores de sandbox de iframe
+            if (text.includes('🎯')) {
+                bg = '#fff8e1';
+                fg = '#e65100';
+                border = '#ffc107';
+                shadow = '0 0 12px rgba(255, 193, 7, 0.4)';
+            } else if (text.includes('DUPLICADO') || text.includes('🚨')) {
+                bg = '#ffebee';
+                fg = '#c62828';
+                border = '#ffcdd2';
+            } else if (text.includes('COMP') || text.includes('🟡')) {
+                bg = '#fffde6';
+                fg = '#b58900';
+                border = '#ffecb3';
+            } else if (text.includes('Cambio') || text.includes('🔄')) {
+                bg = '#e8f5e9'; // verde/teal suave
+                fg = '#2e7d32';
+                border = '#c8e6c9';
             }
+
+            btn.style.setProperty('background-color', bg, 'important');
+            btn.style.setProperty('color', fg, 'important');
+            btn.style.setProperty('border-color', border, 'important');
+            btn.style.setProperty('box-shadow', shadow, 'important');
+            btn.style.setProperty('border-style', 'solid', 'important');
+            btn.style.setProperty('border-width', '1px', 'important');
+            btn.style.setProperty('border-radius', '8px', 'important');
+            btn.style.setProperty('font-weight', '600', 'important');
+            btn.style.setProperty('padding', '0.38rem 0.65rem', 'important');
+            btn.style.setProperty('width', '100%', 'important');
+            btn.style.setProperty('display', 'block', 'important');
+            btn.style.setProperty('margin-bottom', '0.4rem', 'important');
+
+            const childs = btn.querySelectorAll('*');
+            childs.forEach(c => {
+                c.style.setProperty('color', fg, 'important');
+                c.style.setProperty('background-color', 'transparent', 'important');
+            });
         });
     }
     styleButtons();
@@ -540,314 +536,129 @@ with tab_calendar:
         month_shifts = df_shifts[df_shifts['Date'].isin(saturdays)] if not df_shifts.empty else pd.DataFrame()
         
         if st.session_state.is_admin:
-            st.markdown("<p style='text-align: center; color: #666; font-size: 0.95rem; margin-top: 1rem;'><i class='bi bi-info-circle'></i> <b>Modo Administrador:</b> Arrastra las tarjetas de los médicos entre las columnas para reasignar sus turnos.</p>", unsafe_allow_html=True)
-            
-            # Prepare sortable items
-            original_state = []
-            global_docs_seen = set()
-            for sat_date in saturdays:
-                date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
-                
-                # Contar asignaciones para detectar duplicados en este sábado
-                doc_counts = date_shifts['Supernumerary'].value_counts() if not date_shifts.empty else pd.Series()
-                
-                header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
-                is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
-                if is_holiday:
-                    header_text += " (FESTIVO)"
+            # ADMIN VIEW: Interactive Grid inside container (Click to edit)
+            st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)
+            st.markdown("<div class='calendar-grid'>", unsafe_allow_html=True)
+            cols = st.columns(len(saturdays))
+            for idx, sat_date in enumerate(saturdays):
+                with cols[idx]:
+                    is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
+                    holiday_class = " holiday" if is_holiday else ""
                     
-                docs = []
-                for _, row in date_shifts.iterrows():
-                    name = row['Supernumerary']
-                    clasif = row.get('Classification', 'Secuencia Normal')
-                    obs = str(row.get('Observation', '')) if pd.notna(row.get('Observation')) else ''
+                    date_shifts_all = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
+                    num_doctors_all = len(date_shifts_all)
                     
-                    personal_obs = ""
-                    if not df_super.empty:
-                        doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
-                        if not doc_match.empty:
-                            personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
-                            
-                    display_name = name
-                    has_conflict = doc_counts.get(name, 0) > 1
+                    # Contar asignaciones para detectar duplicados en este sábado
+                    doc_counts = date_shifts_all['Supernumerary'].value_counts() if not date_shifts_all.empty else pd.Series()
                     
-                    if has_conflict:
-                        display_name += " 🚨(DUPLICADO)"
+                    header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
+                    header_text += f" ({num_doctors_all} Médicos)"
+                    if is_holiday:
+                        header_text += " (FESTIVO)"
+                        
+                    st.markdown(f"<div class='saturday-col'><div class='sat-header{holiday_class}'>{header_text}</div>", unsafe_allow_html=True)
                     
-                    if "Compensación" in str(clasif):
-                        display_name += " 🟡(COMP)"
-                    elif obs or personal_obs:
-                        display_name += " 💬"
+                    # Render doctor list as clickable buttons
+                    for s_idx, s_row in date_shifts_all.reset_index().iterrows():
+                        name = s_row['Supernumerary']
+                        shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
+                        clasif = s_row.get('Classification', 'Secuencia Normal')
                         
-                    if search_query and search_query in name.upper():
-                        display_name = "🎯 " + display_name
-                        
-                    # Evitar nombres duplicados GLOBALMENTE en todos los sábados (Error #185 de React)
-                    original_display = display_name
-                    counter = 1
-                    while display_name in global_docs_seen:
-                        display_name = original_display + ("\u200B" * counter)
-                        counter += 1
-                        
-                    global_docs_seen.add(display_name)
-                    docs.append(display_name)
-                
-                original_state.append({
-                    'header': header_text,
-                    'items': docs,
-                    'date': sat_date.strftime('%Y-%m-%d')
-                })
-                
-            # Render sortable columns inside container
-            with st.container():
-                st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)
-                returned_state = sort_items(
-                    [{'header': c['header'], 'items': c['items']} for c in original_state],
-                    multi_containers=True,
-                    direction='horizontal',
-                    key=f"sortable_sats_{offset}_{st.session_state.get('last_load_time', '0')}"
-                )
-            
-            # Diff calculation to detect drag and drop
-            if returned_state:
-                moved_doc = None
-                from_date = None
-                to_date = None
-                
-                for i in range(len(original_state)):
-                    orig_items = set(original_state[i]['items'])
-                    new_items = set(returned_state[i]['items'])
-                    
-                    added = new_items - orig_items
-                    removed = orig_items - new_items
-                    
-                    if removed:
-                        from_date = original_state[i]['date']
-                        moved_doc = list(removed)[0]
-                    if added:
-                        to_date = original_state[i]['date']
-                        if not moved_doc:
-                            moved_doc = list(added)[0]
-                            
-                if moved_doc and from_date and to_date and from_date != to_date:
-                    # Execute DB Move
-                    old_date = datetime.datetime.strptime(from_date, "%Y-%m-%d").date()
-                    new_date = datetime.datetime.strptime(to_date, "%Y-%m-%d").date()
-                    
-                    try:
-                        # 1. Find the old shift details
-                        # Remove emojis, zero-width spaces, and search highlight to get raw name
-                        raw_name = moved_doc.replace("🎯 ", "").split(" 🟡")[0].split(" 💬")[0].replace("\u200B", "")
-                        old_row = df_shifts[(df_shifts['Date'] == old_date) & (df_shifts['Supernumerary'] == raw_name)].iloc[0]
-                        sheet = old_row['Sheet']
-                        r_idx = int(old_row['Excel_Row'])
-                        c_idx = int(old_row['Excel_Col'])
-                        obs = str(old_row.get('Observation', '')) if pd.notna(old_row.get('Observation')) else ''
-                        clasif = old_row.get('Classification', 'Secuencia Normal')
-                        
-                        # 2. Check if the doc is already in the new date (duplicate)
-                        new_date_shifts = month_shifts[month_shifts['Date'] == new_date]
-                        if not new_date_shifts.empty and raw_name in new_date_shifts['Supernumerary'].values:
-                            st.error(f"¡El médico {moved_doc} ya tiene un turno el {to_date}! Movimiento cancelado.")
-                            st.rerun()
-                            
-                        # GUARDAR ACCION EN LAST_ACTION PARA UNDO
-                        st.session_state.last_action = {
-                            'action': 'MOVE',
-                            'excel_path': st.session_state.excel_path,
-                            'sheet': sheet,
-                            'old_row': r_idx,
-                            'old_col': c_idx,
-                            'old_date': old_date,
-                            'new_date': new_date,
-                            'doc': raw_name,
-                            'obs': obs,
-                            'clasificacion': clasif
-                        }
-                            
-                        # 3. Delete old
-                        dp.delete_shift_cell(
-                            excel_path=st.session_state.excel_path,
-                            sheet_name=sheet,
-                            row_idx=r_idx,
-                            col_idx=c_idx,
-                            date_val=old_date,
-                            observation="",
-                            original_name=raw_name,
-                            clasificacion="Secuencia Normal"
-                        )
-                        
-                        # 4. Add new
-                        target_sheet = sheet
-                        dp.add_shift_to_date(
-                            excel_path=st.session_state.excel_path,
-                            sheet_name=target_sheet,
-                            target_date=new_date,
-                            supernumerary_name=raw_name,
-                            observation=obs,
-                            clasificacion=clasif
-                        )
-                        
-                        st.success("Cambios consolidados correctamente en la nube.")
-                        load_app_data()
-                        st.rerun()
-
-                        
-                    except Exception as e:
-                        st.error(f"Error al mover el turno: {e}")
-                        
-            st.markdown("---")
-            st.markdown("---")
-            with st.expander("🛠️ Centro de Gestión de Turnos (Modificar, Eliminar, Agregar)", expanded=True):
-                st.info("Para editar clasificaciones, ver detalles, cambiar médicos o agregar un médico manualmente, selecciona el sábado correspondiente.")
-                
-                # Definiciones para nombres en español
-                DIAS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-                MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-                
-                sat_labels = [f"{sat.day} {dp.MONTH_NAMES_SP[sat.month]}" for sat in saturdays]
-                adv_tabs = st.tabs(sat_labels)
-                
-                for idx, sat_date in enumerate(saturdays):
-                    with adv_tabs[idx]:
-                        date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
-                        num_docs = len(date_shifts)
-                        
-                        fecha_es = f"{DIAS_ES[sat_date.weekday()]}, {sat_date.day} de {dp.MONTH_NAMES_SP[sat_date.month]} de {sat_date.year}"
-                        st.markdown(f"##### Programación para el {fecha_es} ({num_docs} Médicos)")
-                        
-                        # Barra de herramientas superior para este día
-                        col_tb1, col_tb2, col_tb_spacer = st.columns([2.5, 3.5, 4.0])
-                        with col_tb1:
-                            if st.button("➕ Agregar Médico Adicional", key=f"add_btn_tab_{sat_date}", use_container_width=True, type="primary"):
-                                sheet_name = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
-                                ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
-                        
-                        with col_tb2:
-                            # Botón para duplicar la programación de hace 2 semanas
-                            two_weeks_ago = sat_date - datetime.timedelta(weeks=2)
-                            prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
-                            
-                            if not prev_shifts.empty:
-                                st.markdown("<div class='dup-btn-wrapper'></div>", unsafe_allow_html=True)
-                                label_dup = f"Duplicar del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}"
-                                if st.button(label_dup, key=f"dup_prev_tab_{sat_date}", use_container_width=True):
-                                    with st.spinner("Duplicando..."):
-                                        try:
-                                            target_sheet = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
-                                            
-                                            # 1. Eliminar programación actual si existe
-                                            if not date_shifts.empty:
-                                                for _, row_to_del in date_shifts.iterrows():
-                                                    dp.delete_shift_cell(
-                                                        excel_path=st.session_state.excel_path,
-                                                        sheet_name=row_to_del['Sheet'],
-                                                        row_idx=int(row_to_del['Excel_Row']),
-                                                        col_idx=int(row_to_del['Excel_Col']),
-                                                        date_val=sat_date,
-                                                        observation="",
-                                                        original_name=row_to_del['Supernumerary'],
-                                                        clasificacion="Secuencia Normal"
-                                                    )
-                                            
-                                            # 2. Copiar los turnos del sábado de hace 2 semanas
-                                            for _, row_to_copy in prev_shifts.iterrows():
-                                                doc_name = row_to_copy['Supernumerary']
-                                                obs = row_to_copy.get('Observation', '')
-                                                clasif = row_to_copy.get('Classification', 'Secuencia Normal')
-                                                
-                                                dp.add_shift_to_date(
-                                                    excel_path=st.session_state.excel_path,
-                                                    sheet_name=target_sheet,
-                                                    target_date=sat_date,
-                                                    supernumerary_name=doc_name,
-                                                    observation=obs,
-                                                    clasificacion=clasif
-                                                )
-                                            st.success(f"¡Programación duplicada del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}!")
-                                            load_app_data()
-                                            st.rerun()
-                                        except Exception as e:
-                                            st.error(f"Error al duplicar: {e}")
-                            else:
-                                st.info("No hay programación previa para duplicar de hace 2 semanas.")
-                        
-                        st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
-                        
-                        # Mostrar la tabla de médicos asignados
-                        if date_shifts.empty:
-                            st.warning("No hay médicos programados para este sábado.")
-                        else:
-                            # Encabezados de tabla estilizados con st.columns
-                            h_col1, h_col2, h_col3, h_col4 = st.columns([3.5, 2.5, 3.5, 1.5])
-                            with h_col1:
-                                st.markdown("**Médico**")
-                            with h_col2:
-                                st.markdown("**Clasificación**")
-                            with h_col3:
-                                st.markdown("**Observaciones**")
-                            with h_col4:
-                                st.markdown("<div style='text-align: center;'><b>Acciones</b></div>", unsafe_allow_html=True)
-                            
-                            st.markdown("<hr style='margin: 0.2rem 0 0.6rem 0; border-top: 2px solid #ccc;'/>", unsafe_allow_html=True)
-                            
-                            for d_idx, s_row in date_shifts.reset_index().iterrows():
-                                name = s_row['Supernumerary']
-                                clasif = s_row.get('Classification', 'Secuencia Normal')
-                                shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
+                        personal_obs = ""
+                        if not df_super.empty:
+                            doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
+                            if not doc_match.empty:
+                                personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
                                 
-                                # Obtener observaciones del directorio personal
-                                personal_obs = ""
-                                if not df_super.empty:
-                                    doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
-                                    if not doc_match.empty:
-                                        personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
-                                
-                                # Renderizar fila
-                                r_col1, r_col2, r_col3, r_col4 = st.columns([3.5, 2.5, 3.5, 1.5])
-                                
-                                # Contar duplicados para advertencia en la tabla
-                                doc_counts_tab = date_shifts['Supernumerary'].value_counts() if not date_shifts.empty else pd.Series()
-                                has_conflict = doc_counts_tab.get(name, 0) > 1
-                                
-                                with r_col1:
-                                    if has_conflict:
-                                        st.markdown(f"**{name}** <br/><span style='background-color: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; border: 1px solid #ffcdd2;' title='El médico está asignado más de una vez en esta fecha'>⚠️ Doble Turno</span>", unsafe_allow_html=True)
-                                    else:
-                                        st.write(name)
+                        has_conflict = doc_counts.get(name, 0) > 1
+                        
+                        # Prepare display name with suffixes for the admin button
+                        display_name = name
+                        if has_conflict:
+                            display_name += " 🚨(DUPLICADO)"
+                        if "Compensación" in str(clasif):
+                            display_name += " 🟡(COMP)"
+                        elif "Cambio" in str(clasif):
+                            display_name += f" 🔄({clasif.split(' con ')[0]})"  # extract just prefix
+                            
+                        if search_query and search_query in name.upper():
+                            display_name = "🎯 " + display_name
+                            
+                        if shift_obs or personal_obs:
+                            display_name += " 💬"
+                            
+                        # Help tooltip
+                        has_obs = (clasif and clasif != "Secuencia Normal") or shift_obs or personal_obs
+                        help_lines = []
+                        if "Compensación" in str(clasif): help_lines.append("⚠️ Turno de compensación")
+                        if clasif and clasif != "Secuencia Normal": help_lines.append(f"ℹ️ {clasif}")
+                        if shift_obs: help_lines.append(f"💬 {shift_obs}")
+                        if personal_obs: help_lines.append(f"👤 {personal_obs}")
+                        
+                        help_text = "<br>".join(help_lines).strip()
+                        tooltip_html = f"<div class='doc-obs-tooltip'>{help_text}</div>" if help_text else ""
+                        
+                        # Clickable button styled as badge
+                        st.markdown(f"<div class='doc-btn-wrap'><div class='admin-badge-container'>", unsafe_allow_html=True)
+                        if st.button(display_name, key=f"edit_btn_{sat_date}_{name}_{s_idx}", use_container_width=True):
+                            action_details = {
+                                'date': sat_date,
+                                'doctor': name,
+                                'row': int(s_row['Excel_Row']),
+                                'col': int(s_row['Excel_Col']),
+                                'sheet': s_row['Sheet'],
+                                'observation': shift_obs,
+                                'classification': clasif
+                            }
+                            ui_dialogs.show_selection_dialog(action_details, load_app_data)
+                        st.markdown(f"</div>{tooltip_html}</div>", unsafe_allow_html=True)
+                        
+                    st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
+                    
+                    # 1. Agregar Médico button
+                    sheet_name = date_shifts_all.iloc[0]['Sheet'] if not date_shifts_all.empty else f"SABADOS {sat_date.year}"
+                    if st.button("➕ Agregar Médico", key=f"add_btn_col_{sat_date}", use_container_width=True, type="primary"):
+                        ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
+                        
+                    # 2. Duplicar button (if prev shifts exist)
+                    two_weeks_ago = sat_date - datetime.timedelta(weeks=2)
+                    prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
+                    if not prev_shifts.empty:
+                        label_dup = f"📋 Duplicar del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}"
+                        if st.button(label_dup, key=f"dup_btn_col_{sat_date}", use_container_width=True):
+                            with st.spinner("Duplicando..."):
+                                try:
+                                    target_sheet = date_shifts_all.iloc[0]['Sheet'] if not date_shifts_all.empty else f"SABADOS {sat_date.year}"
+                                    # Delete current
+                                    if not date_shifts_all.empty:
+                                        for _, row_to_del in date_shifts_all.iterrows():
+                                            dp.delete_shift_cell(
+                                                excel_path=st.session_state.excel_path,
+                                                sheet_name=row_to_del['Sheet'],
+                                                row_idx=int(row_to_del['Excel_Row']),
+                                                col_idx=int(row_to_del['Excel_Col']),
+                                                date_val=sat_date,
+                                                original_name=row_to_del['Supernumerary'],
+                                                clasificacion="Secuencia Normal"
+                                            )
+                                    # Copy previous
+                                    for _, row_to_copy in prev_shifts.iterrows():
+                                        dp.add_shift_to_date(
+                                            excel_path=st.session_state.excel_path,
+                                            sheet_name=target_sheet,
+                                            target_date=sat_date,
+                                            supernumerary_name=row_to_copy['Supernumerary'],
+                                            observation=row_to_copy.get('Observation', ''),
+                                            clasificacion=row_to_copy.get('Classification', 'Secuencia Normal')
+                                        )
+                                    st.success(f"Programación duplicada del {two_weeks_ago.day} de {dp.MONTH_NAMES_SP[two_weeks_ago.month]}")
+                                    load_app_data()
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Error al duplicar: {e}")
                                     
-                                with r_col2:
-                                    if "Compensación" in str(clasif):
-                                        st.markdown("<span style='background-color: #fff8e1; color: #b78103; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold;'>🟡 Compensación</span>", unsafe_allow_html=True)
-                                    else:
-                                        st.markdown("<span style='background-color: #e8f5e9; color: #2e7d32; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold;'>🟢 Secuencia Normal</span>", unsafe_allow_html=True)
-                                        
-                                with r_col3:
-                                    obs_parts = []
-                                    if shift_obs:
-                                        obs_parts.append(f"Turno: {shift_obs}")
-                                    if personal_obs:
-                                        obs_parts.append(f"Médico: {personal_obs}")
-                                    if obs_parts:
-                                        st.write(" | ".join(obs_parts))
-                                    else:
-                                        st.write("-")
-                                        
-                                with r_col4:
-                                    # Botón para abrir el diálogo
-                                    if st.button("✏️ Editar", key=f"edit_btn_tab_{sat_date}_{name}_{d_idx}", use_container_width=True):
-                                        action_details = {
-                                            'date': sat_date,
-                                            'doctor': name,
-                                            'row': int(s_row['Excel_Row']),
-                                            'col': int(s_row['Excel_Col']),
-                                            'sheet': s_row['Sheet'],
-                                            'observation': shift_obs,
-                                            'classification': clasif
-                                        }
-                                        ui_dialogs.show_selection_dialog(action_details, load_app_data)
-                                
-                                st.markdown("<hr style='margin: 0.4rem 0; border-top: 1px solid #eee;'/>", unsafe_allow_html=True)
+                    st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
         else:
             # PUBLIC VIEW: Read-Only Grid inside container
@@ -908,7 +719,12 @@ with tab_calendar:
                             obs_dot = "<span class='obs-dot'></span>" if has_obs else ""
                             tooltip_html = f"<div class='doc-obs-tooltip'>{help_text}</div>" if help_text else ""
                             
-                            st.markdown(f"<div class='doc-btn-wrap'><div class='{badge_classes}'>{obs_dot}{name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
+                            # Add suffix to public view name if swap/change is active
+                            display_name = name
+                            if "Cambio" in str(clasif):
+                                display_name += f" ({clasif})"
+                            
+                            st.markdown(f"<div class='doc-btn-wrap'><div class='{badge_classes}'>{obs_dot}{display_name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
                             
                         st.markdown("</div>", unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
