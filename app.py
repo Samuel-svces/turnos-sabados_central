@@ -255,6 +255,31 @@ with tab_calendar:
     with col_refresh:
         st.button("R", key="btn_refresh", help="Recargar datos", use_container_width=True, on_click=refresh_data)
 
+    # Inicializar estado para el filtro de clasificación si no existe
+    if "filter_class" not in st.session_state:
+        st.session_state["filter_class"] = "Todos"
+
+    # Fila de píldoras/botones de filtro dinámico
+    st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
+    col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_f_spacer = st.columns([1.5, 2.0, 2.0, 2.2, 4.3])
+    with col_lbl_f:
+        st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
+    with col_btn_f1:
+        f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
+        if st.button("🔵 Todos", key="btn_filter_all", use_container_width=True, type=f_style_all):
+            st.session_state["filter_class"] = "Todos"
+            st.rerun()
+    with col_btn_f2:
+        f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
+        if st.button("🟢 Normal", key="btn_filter_normal", use_container_width=True, type=f_style_normal):
+            st.session_state["filter_class"] = "Secuencia Normal"
+            st.rerun()
+    with col_btn_f3:
+        f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
+        if st.button("🟡 Compensación", key="btn_filter_comp", use_container_width=True, type=f_style_comp):
+            st.session_state["filter_class"] = "Compensación"
+            st.rerun()
+
     st.components.v1.html("""
     <script>
     function styleButtons() {
@@ -450,6 +475,9 @@ with tab_calendar:
             for sat_date in saturdays:
                 date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                 
+                # Contar asignaciones para detectar duplicados en este sábado
+                doc_counts = date_shifts['Supernumerary'].value_counts() if not date_shifts.empty else pd.Series()
+                
                 header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
                 is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
                 if is_holiday:
@@ -468,6 +496,11 @@ with tab_calendar:
                             personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
                             
                     display_name = name
+                    has_conflict = doc_counts.get(name, 0) > 1
+                    
+                    if has_conflict:
+                        display_name += " 🚨(DUPLICADO)"
+                    
                     if "Compensación" in str(clasif):
                         display_name += " 🟡(COMP)"
                     elif obs or personal_obs:
@@ -700,8 +733,15 @@ with tab_calendar:
                                 # Renderizar fila
                                 r_col1, r_col2, r_col3, r_col4 = st.columns([3.5, 2.5, 3.5, 1.5])
                                 
+                                # Contar duplicados para advertencia en la tabla
+                                doc_counts_tab = date_shifts['Supernumerary'].value_counts() if not date_shifts.empty else pd.Series()
+                                has_conflict = doc_counts_tab.get(name, 0) > 1
+                                
                                 with r_col1:
-                                    st.write(name)
+                                    if has_conflict:
+                                        st.markdown(f"**{name}** <br/><span style='background-color: #ffebee; color: #c62828; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; border: 1px solid #ffcdd2;' title='El médico está asignado más de una vez en esta fecha'>⚠️ Doble Turno</span>", unsafe_allow_html=True)
+                                    else:
+                                        st.write(name)
                                     
                                 with r_col2:
                                     if "Compensación" in str(clasif):
@@ -747,11 +787,22 @@ with tab_calendar:
                         is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
                         holiday_class = " holiday" if is_holiday else ""
                         
-                        date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
-                        num_doctors = len(date_shifts)
+                        date_shifts_all = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
+                        num_doctors_all = len(date_shifts_all)
+                        
+                        # Aplicar filtro de clasificación
+                        date_shifts = date_shifts_all.copy()
+                        filter_val = st.session_state.get("filter_class", "Todos")
+                        if filter_val != "Todos":
+                            date_shifts = date_shifts[date_shifts['Classification'].str.contains(filter_val, na=False, case=False)]
+                        
+                        num_doctors_filtered = len(date_shifts)
                         
                         header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
-                        header_text += f" ({num_doctors} Médicos)"
+                        if filter_val != "Todos":
+                            header_text += f" ({num_doctors_filtered}/{num_doctors_all} Médicos)"
+                        else:
+                            header_text += f" ({num_doctors_all} Médicos)"
                         if is_holiday:
                             header_text += " (FESTIVO)"
                             
