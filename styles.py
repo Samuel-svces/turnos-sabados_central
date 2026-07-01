@@ -533,8 +533,12 @@ def apply_styles():
         box-shadow: 0 10px 25px rgba(0,0,0,0.35);
         border: 1px solid rgba(255,255,255,0.1);
         transition: opacity 0.18s ease, visibility 0.18s ease;
-        white-space: normal;
-        word-break: break-word;
+    }
+    
+    /* Reducir espacio vertical entre botones de médicos para juntarlos más */
+    div[data-testid="column"]:has(.doc-btn-wrap) > div[data-testid="element-container"],
+    div[data-testid="column"]:has(.admin-badge-container) > div[data-testid="element-container"] {
+        margin-bottom: -0.42rem !important;
     }
     
     /* Custom Search Bar */
