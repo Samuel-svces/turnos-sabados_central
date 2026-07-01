@@ -431,6 +431,22 @@ with tab_calendar:
                 c.style.setProperty('background-color', 'transparent', 'important');
             });
         });
+        
+        // 3. Compactar los contenedores Streamlit que envuelven los botones de médico en admin
+        const adminWrappers = window.parent.document.querySelectorAll('.admin-badge-container');
+        adminWrappers.forEach(wrapper => {
+            // Subir hasta stElementContainer y colapsar sus márgenes
+            let el = wrapper.parentElement;
+            for (let i = 0; i < 5; i++) {
+                if (!el) break;
+                el.style.setProperty('margin-top', '0', 'important');
+                el.style.setProperty('margin-bottom', '0', 'important');
+                el.style.setProperty('padding-top', '0', 'important');
+                el.style.setProperty('padding-bottom', '0', 'important');
+                if (el.getAttribute && el.getAttribute('data-testid') === 'stElementContainer') break;
+                el = el.parentElement;
+            }
+        });
     }
     styleButtons();
     const observer = new MutationObserver(styleButtons);

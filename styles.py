@@ -579,9 +579,27 @@ def apply_styles():
         box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
     }
     
-    /* Reducir el espaciado vertical entre las tarjetas en el calendario */
+    /* ---- Admin Grid: compactar botones de médico ---- */
+    /* Eliminar el espacio vertical que Streamlit agrega entre cada stElementContainer */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stVerticalBlock"] {
-        gap: 0.3rem !important;
+        gap: 0rem !important;
+    }
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stElementContainer"]:has(.admin-badge-container) {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] .admin-badge-container {
+        margin: 0 0 0.15rem 0 !important;
+        padding: 0 !important;
+    }
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] .admin-badge-container button {
+        margin: 0 !important;
+        min-height: unset !important;
+        height: auto !important;
+    }
+    /* Quitar el margen del doc-btn-wrap en modo admin */
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] .doc-btn-wrap {
+        margin-bottom: 0.1rem !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="column"] {
