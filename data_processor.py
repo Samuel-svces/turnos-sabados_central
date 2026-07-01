@@ -236,6 +236,7 @@ _SHEET_PERSONAL = 'MODIFICACIONES_PERSONAL'
 _KEY_PERSONAL   = 'modificaciones_personal'
 
 
+@st.cache_data(show_spinner=False)
 def load_personal_modifications(excel_path):
     local_path = _get_personal_modifications_path(excel_path)
     df = _read_delta_df(_KEY_PERSONAL, local_path, _SHEET_PERSONAL, _COLS_PERSONAL)
@@ -304,6 +305,7 @@ def save_personal_modification(excel_path, personal_data):
     ])
 
     _save_wb_delta(wb, _KEY_PERSONAL, local_path)
+    load_personal_modifications.clear()
     return next_id
 
 
@@ -317,6 +319,7 @@ _SHEET_SABADOS = 'MODIFICACIONES'
 _KEY_SABADOS   = 'modificaciones_sabados'
 
 
+@st.cache_data(show_spinner=False)
 def load_modifications(excel_path):
     local_path = _get_modifications_path(excel_path)
     df = _read_delta_df(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
@@ -385,6 +388,7 @@ def save_modification(excel_path, mod_data):
     ws.append(row_data)
 
     _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    load_modifications.clear()
     return next_id
 
 
@@ -893,4 +897,6 @@ def consolidate_changes_to_excel(excel_path):
         gc.upload_excel(_KEY_PERSONAL, buf_p)
         wb_p.close()
 
+    load_modifications.clear()
+    load_personal_modifications.clear()
     return True
