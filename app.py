@@ -207,6 +207,19 @@ with tab_calendar:
                     dp.delete_shift_cell(la['excel_path'], la['sheet'], 0, 0, la['new_date'], "", la['doc'], la.get('clasificacion', 'Secuencia Normal'))
                     dp.add_shift_to_date(la['excel_path'], la['sheet'], la['old_date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
                     st.success("Acción revertida: Movimiento cancelado.")
+                elif la['action'] == 'REPLACE':
+                    dp.update_shift_cell(
+                        excel_path=la['excel_path'],
+                        sheet_name=la['sheet'],
+                        row_idx=la['row'],
+                        col_idx=la['col'],
+                        new_name=la['old_doc'],
+                        date_val=la['date'],
+                        observation=la['old_obs'],
+                        original_name=la['new_doc'],
+                        clasificacion=la['old_clasif']
+                    )
+                    st.success("Acción revertida: Reemplazo / edición cancelado.")
                 
                 st.session_state.last_action = None
                 load_app_data()
@@ -576,75 +589,149 @@ with tab_calendar:
                         st.error(f"Error al mover el turno: {e}")
                         
             st.markdown("---")
-            with st.expander("Modificar Detalles / Eliminar / Agregar Médico (Avanzado)"):
-                st.info("Para editar clasificaciones, ver detalles o agregar un médico manualmente, usa las opciones de abajo.")
-                cols_adv = st.columns(len(saturdays))
+            st.markdown("---")
+            with st.expander("🛠️ Centro de Gestión de Turnos (Modificar, Eliminar, Agregar)", expanded=True):
+                st.info("Para editar clasificaciones, ver detalles, cambiar médicos o agregar un médico manualmente, selecciona el sábado correspondiente.")
+                
+                # Definiciones para nombres en español
+                DIAS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+                MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+                
+                sat_labels = [f"📅 {sat.strftime('%d/%m')}" for sat in saturdays]
+                adv_tabs = st.tabs(sat_labels)
+                
                 for idx, sat_date in enumerate(saturdays):
-                    with cols_adv[idx]:
-                        st.markdown(f"**{sat_date.strftime('%d/%m')}**")
+                    with adv_tabs[idx]:
                         date_shifts = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
-                        for d_idx, s_row in date_shifts.reset_index().iterrows():
-                            name = s_row['Supernumerary']
-                            if st.button(f"Editar {name}", key=f"edit_btn_{sat_date}_{name}_{d_idx}"):
-                                action_details = {
-                                    'date': sat_date,
-                                    'doctor': name,
-                                    'row': int(s_row['Excel_Row']),
-                                    'col': int(s_row['Excel_Col']),
-                                    'sheet': s_row['Sheet']
-                                }
-                                ui_dialogs.show_selection_dialog(action_details, load_app_data)
-                                
-                        st.markdown("<div class='add-doc-btn-wrapper'></div>", unsafe_allow_html=True)
-                        if st.button("Agregar Médico", key=f"add_btn_{sat_date}", use_container_width=True):
-                            sheet_name = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
-                            ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
-                            
-                        # Botón para duplicar la programación de hace 2 semanas
-                        two_weeks_ago = sat_date - datetime.timedelta(weeks=2)
-                        prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
+                        num_docs = len(date_shifts)
                         
-                        if not prev_shifts.empty:
-                            st.markdown("<div style='margin-top: 0.3rem;'></div>", unsafe_allow_html=True)
-                            label_dup = f"👯 Duplicar del {two_weeks_ago.strftime('%d/%m')}"
-                            if st.button(label_dup, key=f"dup_prev_{sat_date}", use_container_width=True):
-                                with st.spinner("Duplicando..."):
-                                    try:
-                                        target_sheet = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
-                                        
-                                        # 1. Eliminar programación actual si existe
-                                        if not date_shifts.empty:
-                                            for _, row_to_del in date_shifts.iterrows():
-                                                dp.delete_shift_cell(
-                                                    excel_path=st.session_state.excel_path,
-                                                    sheet_name=row_to_del['Sheet'],
-                                                    row_idx=int(row_to_del['Excel_Row']),
-                                                    col_idx=int(row_to_del['Excel_Col']),
-                                                    date_val=sat_date,
-                                                    observation="",
-                                                    original_name=row_to_del['Supernumerary'],
-                                                    clasificacion="Secuencia Normal"
-                                                )
-                                        
-                                        # 2. Copiar los turnos del sábado de hace 2 semanas
-                                        for _, row_to_copy in prev_shifts.iterrows():
-                                            doc_name = row_to_copy['Supernumerary']
-                                            obs = row_to_copy.get('Observation', '')
-                                            clasif = row_to_copy.get('Classification', 'Secuencia Normal')
+                        fecha_es = f"{DIAS_ES[sat_date.weekday()]}, {sat_date.day:02d} de {MESES_ES[sat_date.month-1]} de {sat_date.year}"
+                        st.markdown(f"##### Programación para el {fecha_es} ({num_docs} Médicos)")
+                        
+                        # Barra de herramientas superior para este día
+                        col_tb1, col_tb2, col_tb_spacer = st.columns([2.5, 3.5, 4.0])
+                        with col_tb1:
+                            if st.button("➕ Agregar Médico Adicional", key=f"add_btn_tab_{sat_date}", use_container_width=True, type="primary"):
+                                sheet_name = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
+                                ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
+                        
+                        with col_tb2:
+                            # Botón para duplicar la programación de hace 2 semanas
+                            two_weeks_ago = sat_date - datetime.timedelta(weeks=2)
+                            prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
+                            
+                            if not prev_shifts.empty:
+                                label_dup = f"👯 Duplicar del {two_weeks_ago.strftime('%d/%m')}"
+                                if st.button(label_dup, key=f"dup_prev_tab_{sat_date}", use_container_width=True):
+                                    with st.spinner("Duplicando..."):
+                                        try:
+                                            target_sheet = date_shifts.iloc[0]['Sheet'] if not date_shifts.empty else f"SABADOS {sat_date.year}"
                                             
-                                            dp.add_shift_to_date(
-                                                excel_path=st.session_state.excel_path,
-                                                sheet_name=target_sheet,
-                                                target_date=sat_date,
-                                                supernumerary_name=doc_name,
-                                                observation=obs,
-                                                clasificacion=clasif
-                                            )
-                                        st.success(f"¡Programación duplicada del {two_weeks_ago.strftime('%d/%m')}!")
-                                        load_app_data()
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"Error al duplicar: {e}")
+                                            # 1. Eliminar programación actual si existe
+                                            if not date_shifts.empty:
+                                                for _, row_to_del in date_shifts.iterrows():
+                                                    dp.delete_shift_cell(
+                                                        excel_path=st.session_state.excel_path,
+                                                        sheet_name=row_to_del['Sheet'],
+                                                        row_idx=int(row_to_del['Excel_Row']),
+                                                        col_idx=int(row_to_del['Excel_Col']),
+                                                        date_val=sat_date,
+                                                        observation="",
+                                                        original_name=row_to_del['Supernumerary'],
+                                                        clasificacion="Secuencia Normal"
+                                                    )
+                                            
+                                            # 2. Copiar los turnos del sábado de hace 2 semanas
+                                            for _, row_to_copy in prev_shifts.iterrows():
+                                                doc_name = row_to_copy['Supernumerary']
+                                                obs = row_to_copy.get('Observation', '')
+                                                clasif = row_to_copy.get('Classification', 'Secuencia Normal')
+                                                
+                                                dp.add_shift_to_date(
+                                                    excel_path=st.session_state.excel_path,
+                                                    sheet_name=target_sheet,
+                                                    target_date=sat_date,
+                                                    supernumerary_name=doc_name,
+                                                    observation=obs,
+                                                    clasificacion=clasif
+                                                )
+                                            st.success(f"¡Programación duplicada del {two_weeks_ago.strftime('%d/%m')}!")
+                                            load_app_data()
+                                            st.rerun()
+                                        except Exception as e:
+                                            st.error(f"Error al duplicar: {e}")
+                            else:
+                                st.info("No hay programación previa para duplicar de hace 2 semanas.")
+                        
+                        st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
+                        
+                        # Mostrar la tabla de médicos asignados
+                        if date_shifts.empty:
+                            st.warning("No hay médicos programados para este sábado.")
+                        else:
+                            # Encabezados de tabla estilizados con st.columns
+                            h_col1, h_col2, h_col3, h_col4 = st.columns([3.5, 2.5, 3.5, 1.5])
+                            with h_col1:
+                                st.markdown("**Médico**")
+                            with h_col2:
+                                st.markdown("**Clasificación**")
+                            with h_col3:
+                                st.markdown("**Observaciones**")
+                            with h_col4:
+                                st.markdown("<div style='text-align: center;'><b>Acciones</b></div>", unsafe_allow_html=True)
+                            
+                            st.markdown("<hr style='margin: 0.2rem 0 0.6rem 0; border-top: 2px solid #ccc;'/>", unsafe_allow_html=True)
+                            
+                            for d_idx, s_row in date_shifts.reset_index().iterrows():
+                                name = s_row['Supernumerary']
+                                clasif = s_row.get('Classification', 'Secuencia Normal')
+                                shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
+                                
+                                # Obtener observaciones del directorio personal
+                                personal_obs = ""
+                                if not df_super.empty:
+                                    doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
+                                    if not doc_match.empty:
+                                        personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
+                                
+                                # Renderizar fila
+                                r_col1, r_col2, r_col3, r_col4 = st.columns([3.5, 2.5, 3.5, 1.5])
+                                
+                                with r_col1:
+                                    st.write(name)
+                                    
+                                with r_col2:
+                                    if "Compensación" in str(clasif):
+                                        st.markdown("<span style='background-color: #fff8e1; color: #b78103; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold;'>🟡 Compensación</span>", unsafe_allow_html=True)
+                                    else:
+                                        st.markdown("<span style='background-color: #e8f5e9; color: #2e7d32; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85rem; font-weight: bold;'>🟢 Secuencia Normal</span>", unsafe_allow_html=True)
+                                        
+                                with r_col3:
+                                    obs_parts = []
+                                    if shift_obs:
+                                        obs_parts.append(f"Turno: {shift_obs}")
+                                    if personal_obs:
+                                        obs_parts.append(f"Médico: {personal_obs}")
+                                    if obs_parts:
+                                        st.write(" | ".join(obs_parts))
+                                    else:
+                                        st.write("-")
+                                        
+                                with r_col4:
+                                    # Botón para abrir el diálogo
+                                    if st.button("✏️ Editar", key=f"edit_btn_tab_{sat_date}_{name}_{d_idx}", use_container_width=True):
+                                        action_details = {
+                                            'date': sat_date,
+                                            'doctor': name,
+                                            'row': int(s_row['Excel_Row']),
+                                            'col': int(s_row['Excel_Col']),
+                                            'sheet': s_row['Sheet'],
+                                            'observation': shift_obs,
+                                            'classification': clasif
+                                        }
+                                        ui_dialogs.show_selection_dialog(action_details, load_app_data)
+                                
+                                st.markdown("<hr style='margin: 0.4rem 0; border-top: 1px solid #eee;'/>", unsafe_allow_html=True)
 
         else:
             # PUBLIC VIEW: Read-Only Grid inside container

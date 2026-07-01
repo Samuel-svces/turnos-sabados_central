@@ -26,19 +26,69 @@ def show_selection_dialog(action_details, load_app_data_func):
     if not st.session_state.is_admin:
         st.error("Acceso denegado: Se requieren permisos de administrador.")
         st.stop()
-    st.markdown(f"### Opciones para el Sábado")
-    st.write(f"**Médico:** {action_details['doctor']}")
+    st.markdown(f"### ✏️ Editar Turno")
     st.write(f"**Fecha:** {action_details['date'].strftime('%d/%m/%Y')}")
     st.markdown("---")
     
-    col_change, col_delete = st.columns(2)
-    with col_change:
-        st.markdown("<div class='change-btn-wrapper'></div>", unsafe_allow_html=True)
-        if st.button("Cambiar / Reemplazar", use_container_width=True):
-            st.session_state.replacement_target = action_details
-            st.rerun()
+    allowed = get_allowed_doctors()
+    current_doc = action_details['doctor']
+    
+    # Asegurar que el médico actual esté en la lista y encontrar su índice
+    if current_doc not in allowed:
+        allowed = sorted(list(set(allowed + [current_doc])))
+    
+    try:
+        default_idx = allowed.index(current_doc)
+    except ValueError:
+        default_idx = 0
+        
+    new_doc = st.selectbox("Médico Programado:", allowed, index=default_idx)
+    new_obs = st.text_input("Observaciones:", value=action_details.get('observation', ''))
+    
+    clasif_options = ["Secuencia Normal", "Compensación / Pago de turno"]
+    current_clasif = action_details.get('classification', 'Secuencia Normal')
+    default_clasif_idx = 1 if "Compensación" in current_clasif else 0
+    new_clasif = st.radio("Clasificación del Turno:", clasif_options, index=default_clasif_idx, horizontal=True)
+    
+    st.markdown("---")
+    col_save, col_delete = st.columns(2)
+    
+    with col_save:
+        if st.button("💾 Guardar Cambios", use_container_width=True, type="primary"):
+            try:
+                # GUARDAR ACCIÓN EN LAST_ACTION PARA UNDO
+                st.session_state.last_action = {
+                    'action': 'REPLACE',
+                    'excel_path': st.session_state.excel_path,
+                    'sheet': action_details['sheet'],
+                    'row': action_details['row'],
+                    'col': action_details['col'],
+                    'date': action_details['date'],
+                    'old_doc': current_doc,
+                    'new_doc': new_doc,
+                    'old_obs': action_details.get('observation', ''),
+                    'old_clasif': current_clasif
+                }
+                
+                dp.update_shift_cell(
+                    excel_path=st.session_state.excel_path,
+                    sheet_name=action_details['sheet'],
+                    row_idx=action_details['row'],
+                    col_idx=action_details['col'],
+                    new_name=new_doc,
+                    date_val=action_details['date'],
+                    observation=new_obs.strip(),
+                    original_name=current_doc,
+                    clasificacion=new_clasif
+                )
+                st.success(f"Turno de {current_doc} actualizado.")
+                load_app_data_func()
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error al guardar cambios: {e}")
+                
     with col_delete:
-        if st.button("❌ Eliminar Asignación", use_container_width=True, type="primary"):
+        if st.button("❌ Eliminar Asignación", use_container_width=True, type="secondary"):
             try:
                 # GUARDAR ACCION EN LAST_ACTION PARA UNDO
                 st.session_state.last_action = {
@@ -48,8 +98,8 @@ def show_selection_dialog(action_details, load_app_data_func):
                     'row': action_details['row'],
                     'col': action_details['col'],
                     'date': action_details['date'],
-                    'doc': action_details['doctor'],
-                    'clasificacion': 'Secuencia Normal'
+                    'doc': current_doc,
+                    'clasificacion': current_clasif
                 }
 
                 dp.delete_shift_cell(
@@ -59,10 +109,10 @@ def show_selection_dialog(action_details, load_app_data_func):
                     col_idx=action_details['col'],
                     date_val=action_details['date'],
                     observation="",
-                    original_name=action_details['doctor'],
-                    clasificacion="Secuencia Normal"
+                    original_name=current_doc,
+                    clasificacion=current_clasif
                 )
-                st.success(f"Turno de {action_details['doctor']} eliminado.")
+                st.success(f"Turno de {current_doc} eliminado.")
                 load_app_data_func()
                 st.rerun()
             except Exception as e:
