@@ -343,32 +343,34 @@ with tab_calendar:
 
     # Renderizar alerta de error en la ventana padre si el flag está activo
     if st.session_state.get("show_error_alert", False):
-        st.components.v1.html("""
+        alert_id = datetime.datetime.now().timestamp()
+        st.components.v1.html(f"""
         <script>
-            try {
-                const runAlert = () => {
-                    window.parent.Swal.fire({
+            // Alert ID: {alert_id}
+            try {{
+                const runAlert = () => {{
+                    window.parent.Swal.fire({{
                         title: "Error",
                         text: "El nombre no existe, ingrese un nuevo nombre",
                         icon: "error",
                         draggable: true,
                         confirmButtonColor: '#1a73e8'
-                    });
-                };
+                    }});
+                }};
 
-                if (!window.parent.Swal) {
+                if (!window.parent.Swal) {{
                     const script = window.parent.document.createElement('script');
                     script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
                     script.onload = runAlert;
                     window.parent.document.head.appendChild(script);
-                } else {
+                }} else {{
                     runAlert();
-                }
-            } catch (e) {
+                }}
+            }} catch (e) {{
                 console.error("SweetAlert2 parent injection failed:", e);
-            }
+            }}
         </script>
-        """, height=0, width=0)
+        """, height=0, width=0, key=f"error_alert_{alert_id}")
         st.session_state["show_error_alert"] = False
 
     if search_query:
