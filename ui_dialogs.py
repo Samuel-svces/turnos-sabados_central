@@ -56,43 +56,59 @@ def show_selection_dialog(action_details, load_app_data_func):
     if new_clasif == "Cambio de turno":
         df_s = st.session_state.shifts_df
         current_date = action_details['date']
+        today = datetime.date.today()
         
-        # Filtrar médicos en fechas diferentes a la actual
-        other_shifts = df_s[df_s['Date'] != current_date] if not df_s.empty else pd.DataFrame()
+        # Determinar la secuencia del sábado actual:
+        # Los sábados se alternan cada 2 semanas (secuencia A = semana 1,3,5... / secuencia B = semana 2,4,6...)
+        # Calculamos el número de semana ISO y si es par o impar
+        # para identificar a cuál grupo pertenece el sábado actual.
+        current_week_parity = (current_date.isocalendar()[1]) % 2  # 0 = par, 1 = impar
         
-        if not other_shifts.empty:
-            other_shifts = other_shifts.sort_values(by='Date')
+        # Solo sábados FUTUROS (> hoy) con paridad OPUESTA (secuencia contraria)
+        future_opposite = df_s[
+            (df_s['Date'] > today) &
+            (df_s['Date'] != current_date) &
+            (df_s['Date'].apply(lambda d: (d.isocalendar()[1]) % 2) != current_week_parity)
+        ] if not df_s.empty else pd.DataFrame()
+        
+        if not future_opposite.empty:
+            future_opposite = future_opposite.sort_values(by='Date')
             other_docs = []
             other_docs_map = {}
-            for _, row in other_shifts.iterrows():
+            for _, row in future_opposite.iterrows():
                 doc_name = row['Supernumerary']
                 d_val = row['Date']
                 d_str = d_val.strftime('%d/%m/%Y')
                 label = f"{doc_name} ({d_str})"
-                other_docs.append(label)
-                other_docs_map[label] = {
-                    'doctor': doc_name,
-                    'date': d_val,
-                    'sheet': row['Sheet'],
-                    'row': int(row['Excel_Row']),
-                    'col': int(row['Excel_Col']),
-                    'classification': row.get('Classification', 'Secuencia Normal'),
-                    'observation': row.get('Observation', '')
-                }
-            other_docs = sorted(list(set(other_docs)))
+                # Evitar duplicados (mismo médico y misma fecha)
+                if label not in other_docs_map:
+                    other_docs.append(label)
+                    other_docs_map[label] = {
+                        'doctor': doc_name,
+                        'date': d_val,
+                        'sheet': row['Sheet'],
+                        'row': int(row['Excel_Row']),
+                        'col': int(row['Excel_Col']),
+                        'classification': row.get('Classification', 'Secuencia Normal'),
+                        'observation': row.get('Observation', '')
+                    }
+            other_docs = sorted(other_docs)
             
-            default_other_idx = 0
-            if "Cambio de turno con" in current_clasif:
-                match_name = current_clasif.replace("Cambio de turno con ", "").strip()
-                for idx, lbl in enumerate(other_docs):
-                    if match_name in lbl:
-                        default_other_idx = idx
-                        break
-            
-            selected_swap_label = st.selectbox("Seleccione Médico con quien cambia:", other_docs, index=default_other_idx)
-            swap_target = other_docs_map[selected_swap_label]
+            if other_docs:
+                default_other_idx = 0
+                if "Cambio de turno con" in current_clasif:
+                    match_name = current_clasif.replace("Cambio de turno con ", "").strip()
+                    for idx, lbl in enumerate(other_docs):
+                        if match_name in lbl:
+                            default_other_idx = idx
+                            break
+                
+                selected_swap_label = st.selectbox("Seleccione Médico con quien cambia:", other_docs, index=default_other_idx)
+                swap_target = other_docs_map[selected_swap_label]
+            else:
+                st.info("No hay médicos en sábados futuros de la secuencia contraria disponibles para el cambio.")
         else:
-            st.info("No hay médicos programados en otros sábados para realizar el cambio.")
+            st.info("No hay médicos en sábados futuros de la secuencia contraria disponibles para el cambio.")
             
     st.markdown("---")
     col_save, col_delete = st.columns(2)
