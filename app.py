@@ -262,7 +262,7 @@ with tab_calendar:
     if not st.session_state.is_admin:
         # Fila de píldoras/botones de filtro dinámico
         st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
-        col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_f_spacer = st.columns([1.5, 2.0, 2.0, 2.2, 4.3])
+        col_spacer_l, col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_spacer_r = st.columns([2.2, 1.2, 1.8, 1.8, 2.2, 2.2])
         with col_lbl_f:
             st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
         with col_btn_f1:
