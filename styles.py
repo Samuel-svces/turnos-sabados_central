@@ -799,6 +799,12 @@ def apply_styles():
         border-color: #2b8a8b !important;
         box-shadow: 0 0 0 1px #2b8a8b !important;
     }
+    
+    /* Estilo de foco para campos de texto por defecto (crema) */
+    div[data-testid="stTextInput"] input:focus {
+        border-color: #dfd5c6 !important;
+        box-shadow: 0 0 0 1px #dfd5c6 !important;
+    }
 
     /* Arrow pointer below the tooltip */
     .doc-obs-tooltip::after {

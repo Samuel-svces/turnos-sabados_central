@@ -148,17 +148,37 @@ with col_gear:
                     admin_password = st.secrets["admin_password"]
             except Exception:
                 pass
-                
-            pwd_input = st.text_input("Contraseña de Admin:", type="password", key="admin_pwd_popover")
-            if st.button("Iniciar Sesión", use_container_width=True, key="btn_popover_login"):
-                if pwd_input == admin_password:
+
+            if 'pwd_error' not in st.session_state:
+                st.session_state.pwd_error = None
+
+            def on_pwd_enter():
+                val = st.session_state.admin_pwd_popover
+                if val == admin_password:
                     st.session_state.is_admin = True
                     if 'saturday_offset' in st.session_state:
                         del st.session_state.saturday_offset
-                    st.success("¡Acceso concedido!")
-                    st.rerun()
+                    st.session_state.pwd_error = None
+                elif val:
+                    st.session_state.pwd_error = "Contraseña incorrecta"
                 else:
-                    st.error("Contraseña incorrecta")
+                    st.session_state.pwd_error = None
+
+            pwd_input = st.text_input(
+                "Contraseña de Admin:", 
+                type="password", 
+                key="admin_pwd_popover", 
+                on_change=on_pwd_enter
+            )
+            
+            login_clicked = st.button("Iniciar Sesión", use_container_width=True, key="btn_popover_login")
+            if login_clicked:
+                on_pwd_enter()
+                if st.session_state.is_admin:
+                    st.rerun()
+                    
+            if st.session_state.pwd_error:
+                st.error(st.session_state.pwd_error)
 
 with col_spacer:
     st.markdown("""
@@ -366,27 +386,47 @@ with tab_calendar:
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                 if (!iframeDoc) return;
                 
-                const elements = iframeDoc.querySelectorAll('div, span, li, p');
+                const elements = iframeDoc.querySelectorAll('li');
                 elements.forEach(el => {
-                    if (el.innerText && el.innerText.trim().startsWith('🎯')) {
-                        // Estilos para el elemento de texto
-                        el.style.setProperty('background-color', '#fff8e1', 'important');
-                        el.style.setProperty('color', '#e65100', 'important');
-                        el.style.setProperty('border-color', '#ffc107', 'important');
-                        el.style.setProperty('box-shadow', '0 0 12px rgba(255, 193, 7, 0.4)', 'important');
-                        el.style.setProperty('font-weight', '700', 'important');
-                        
-                        // Propagar los estilos a los contenedores padre para colorear la tarjeta completa
-                        let parent = el.parentElement;
-                        for (let d = 0; d < 2; d++) {
-                            if (parent && parent.tagName !== 'BODY') {
-                                parent.style.setProperty('background-color', '#fff8e1', 'important');
-                                parent.style.setProperty('color', '#e65100', 'important');
-                                parent.style.setProperty('border-color', '#ffc107', 'important');
-                                parent = parent.parentElement;
-                            }
-                        }
+                    const text = (el.innerText || "").trim();
+                    if (!text) return;
+
+                    let bg = '#fbf6eb'; // crema premium
+                    let fg = '#5c4d3c'; // marrón oscuro elegante
+                    let border = '#e6dec9';
+                    let shadow = '0 1px 3px rgba(0,0,0,0.05)';
+                    let font_weight = '600';
+
+                    if (text.includes('🎯')) {
+                        bg = '#fff8e1';
+                        fg = '#e65100';
+                        border = '#ffc107';
+                        shadow = '0 0 12px rgba(255, 193, 7, 0.4)';
+                    } else if (text.includes('DUPLICADO') || text.includes('🚨')) {
+                        bg = '#ffebee';
+                        fg = '#c62828';
+                        border = '#ffcdd2';
+                    } else if (text.includes('COMP') || text.includes('🟡')) {
+                        bg = '#fffde6';
+                        fg = '#b58900';
+                        border = '#ffecb3';
                     }
+
+                    el.style.setProperty('background-color', bg, 'important');
+                    el.style.setProperty('color', fg, 'important');
+                    el.style.setProperty('border-color', border, 'important');
+                    el.style.setProperty('box-shadow', shadow, 'important');
+                    el.style.setProperty('font-weight', font_weight, 'important');
+                    el.style.setProperty('border-style', 'solid', 'important');
+                    el.style.setProperty('border-width', '1px', 'important');
+                    el.style.setProperty('border-radius', '8px', 'important');
+
+                    // Propagar color a los hijos
+                    const childs = el.querySelectorAll('*');
+                    childs.forEach(c => {
+                        c.style.setProperty('color', fg, 'important');
+                        c.style.setProperty('background-color', 'transparent', 'important');
+                    });
                 });
             } catch (e) {
                 // Evitar errores de sandbox de iframe
