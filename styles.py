@@ -127,17 +127,16 @@ def apply_styles():
         padding-left: 10px;
     }
     
-    /* Style the popover button (gear) to be white */
+    /* Style the popover button (gear) - use dark color since Streamlit forces cream background via inline styles */
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button {
-        color: white !important;
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button:hover {
-        background-color: rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
     }
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p {
-        filter: brightness(0) invert(1);
+        filter: none !important;
+        color: #102a43 !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p::before {
+        color: #102a43 !important;
     }
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);
