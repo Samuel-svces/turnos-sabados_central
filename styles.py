@@ -127,16 +127,24 @@ def apply_styles():
         padding-left: 10px;
     }
     
-    /* Style the popover button (gear) - use dark color since Streamlit forces cream background via inline styles */
+    /* Botón del Engranaje (Popover de Administración) - Diseño Premium Dark */
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button {
-        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        background-color: #0d1b2a !important;
+        border: 1.5px solid rgba(249, 115, 22, 0.35) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 12px rgba(249, 115, 22, 0.18), 0 2px 8px rgba(0,0,0,0.35) !important;
+        padding: 0.4rem 0.7rem !important;
+        transition: all 0.2s ease !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button:hover {
+        background-color: #162032 !important;
+        box-shadow: 0 0 18px rgba(249, 115, 22, 0.35), 0 4px 12px rgba(0,0,0,0.4) !important;
+        border-color: rgba(249, 115, 22, 0.6) !important;
     }
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p {
-        filter: none !important;
-        color: #102a43 !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p::before {
-        color: #102a43 !important;
+        filter: sepia(1) saturate(4) hue-rotate(330deg) brightness(1.1) !important;
+        font-size: 1.25rem !important;
+        line-height: 1 !important;
     }
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);

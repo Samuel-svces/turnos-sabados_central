@@ -310,6 +310,32 @@ with tab_calendar:
         const buttons = window.parent.document.querySelectorAll('button');
         buttons.forEach(btn => {
             const text = btn.innerText.trim();
+            // Estilizar el botón del engranaje (Popover de Administración)
+            if (text.includes('⚙️')) {
+                btn.style.setProperty('background-color', '#0d1b2a', 'important');
+                btn.style.setProperty('border', '1.5px solid rgba(249,115,22,0.35)', 'important');
+                btn.style.setProperty('border-radius', '12px', 'important');
+                btn.style.setProperty('box-shadow', '0 0 12px rgba(249,115,22,0.18), 0 2px 8px rgba(0,0,0,0.35)', 'important');
+                btn.style.setProperty('padding', '0.4rem 0.7rem', 'important');
+                btn.style.setProperty('transition', 'all 0.2s ease', 'important');
+                const pGear = btn.querySelector('p');
+                if (pGear) {
+                    pGear.style.setProperty('font-size', '1.25rem', 'important');
+                    pGear.style.setProperty('line-height', '1', 'important');
+                    pGear.style.setProperty('filter', 'sepia(1) saturate(4) hue-rotate(330deg) brightness(1.1)', 'important');
+                }
+                btn.onmouseenter = function() {
+                    btn.style.setProperty('background-color', '#162032', 'important');
+                    btn.style.setProperty('box-shadow', '0 0 18px rgba(249,115,22,0.35), 0 4px 12px rgba(0,0,0,0.4)', 'important');
+                    btn.style.setProperty('border-color', 'rgba(249,115,22,0.6)', 'important');
+                };
+                btn.onmouseleave = function() {
+                    btn.style.setProperty('background-color', '#0d1b2a', 'important');
+                    btn.style.setProperty('box-shadow', '0 0 12px rgba(249,115,22,0.18), 0 2px 8px rgba(0,0,0,0.35)', 'important');
+                    btn.style.setProperty('border-color', 'rgba(249,115,22,0.35)', 'important');
+                };
+                return;
+            }
             if(text === 'B') {
                 btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1.2rem" height="1.2rem"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>';
                 btn.classList.add('custom-btn-search');
