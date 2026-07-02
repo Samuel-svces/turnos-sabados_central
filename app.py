@@ -312,30 +312,58 @@ with tab_calendar:
             const text = btn.innerText.trim();
             // Estilizar el botón del engranaje (Popover de Administración)
             if (text.includes('⚙️')) {
-                btn.style.setProperty('background-color', '#0d1b2a', 'important');
-                btn.style.setProperty('border', '1.5px solid rgba(249,115,22,0.35)', 'important');
-                btn.style.setProperty('border-radius', '12px', 'important');
-                btn.style.setProperty('box-shadow', '0 0 12px rgba(249,115,22,0.18), 0 2px 8px rgba(0,0,0,0.35)', 'important');
-                btn.style.setProperty('padding', '0.4rem 0.7rem', 'important');
-                btn.style.setProperty('transition', 'all 0.2s ease', 'important');
+                // Aplicar estilos del engranaje premium
+                const applyGearStyle = (b) => {
+                    b.style.setProperty('background-color', '#0f172a', 'important');
+                    b.style.setProperty('border', '1.5px solid rgba(251,146,60,0.45)', 'important');
+                    b.style.setProperty('border-radius', '10px', 'important');
+                    b.style.setProperty('box-shadow', '0 0 14px rgba(251,146,60,0.22), 0 2px 8px rgba(0,0,0,0.4)', 'important');
+                    b.style.setProperty('padding', '0.35rem 0.65rem', 'important');
+                    b.style.setProperty('min-width', '60px', 'important');
+                    b.style.setProperty('display', 'inline-flex', 'important');
+                    b.style.setProperty('align-items', 'center', 'important');
+                    b.style.setProperty('gap', '4px', 'important');
+                };
+                applyGearStyle(btn);
+                // Colorear el emoji ⚙️ de ámbar/naranja
                 const pGear = btn.querySelector('p');
                 if (pGear) {
-                    pGear.style.setProperty('font-size', '1.25rem', 'important');
+                    pGear.style.setProperty('font-size', '1.1rem', 'important');
                     pGear.style.setProperty('line-height', '1', 'important');
-                    pGear.style.setProperty('filter', 'sepia(1) saturate(4) hue-rotate(330deg) brightness(1.1)', 'important');
+                    pGear.style.setProperty('margin', '0', 'important');
+                    pGear.style.setProperty('filter', 'sepia(1) saturate(5) hue-rotate(320deg) brightness(1.2)', 'important');
                 }
-                btn.onmouseenter = function() {
-                    btn.style.setProperty('background-color', '#162032', 'important');
-                    btn.style.setProperty('box-shadow', '0 0 18px rgba(249,115,22,0.35), 0 4px 12px rgba(0,0,0,0.4)', 'important');
-                    btn.style.setProperty('border-color', 'rgba(249,115,22,0.6)', 'important');
-                };
-                btn.onmouseleave = function() {
-                    btn.style.setProperty('background-color', '#0d1b2a', 'important');
-                    btn.style.setProperty('box-shadow', '0 0 12px rgba(249,115,22,0.18), 0 2px 8px rgba(0,0,0,0.35)', 'important');
-                    btn.style.setProperty('border-color', 'rgba(249,115,22,0.35)', 'important');
-                };
+                // Colorear el ícono de flecha expand_more de Streamlit (span con SVG)
+                const spans = btn.querySelectorAll('span, svg');
+                spans.forEach(s => {
+                    s.style.setProperty('color', '#fb923c', 'important');
+                    s.style.setProperty('fill', '#fb923c', 'important');
+                });
+                // Observer dedicado para revertir cuando Streamlit reinyecte el estilo inline
+                if (!btn._gearObserver) {
+                    btn._gearObserver = new MutationObserver(() => {
+                        applyGearStyle(btn);
+                        if (pGear) pGear.style.setProperty('filter', 'sepia(1) saturate(5) hue-rotate(320deg) brightness(1.2)', 'important');
+                    });
+                    btn._gearObserver.observe(btn, { attributes: true, attributeFilter: ['style'] });
+                }
+                // Hover
+                if (!btn._gearHover) {
+                    btn._gearHover = true;
+                    btn.addEventListener('mouseenter', () => {
+                        btn.style.setProperty('background-color', '#1e293b', 'important');
+                        btn.style.setProperty('box-shadow', '0 0 20px rgba(251,146,60,0.4), 0 4px 12px rgba(0,0,0,0.5)', 'important');
+                        btn.style.setProperty('border-color', 'rgba(251,146,60,0.7)', 'important');
+                    });
+                    btn.addEventListener('mouseleave', () => {
+                        btn.style.setProperty('background-color', '#0f172a', 'important');
+                        btn.style.setProperty('box-shadow', '0 0 14px rgba(251,146,60,0.22), 0 2px 8px rgba(0,0,0,0.4)', 'important');
+                        btn.style.setProperty('border-color', 'rgba(251,146,60,0.45)', 'important');
+                    });
+                }
                 return;
             }
+
             if(text === 'B') {
                 btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1.2rem" height="1.2rem"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>';
                 btn.classList.add('custom-btn-search');
@@ -434,6 +462,8 @@ with tab_calendar:
         colButtons.forEach(btn => {
             const text = (btn.innerText || "").trim();
             if (!text) return;
+            // Ignorar el botón del engranaje (Popover Admin) para que no se sobreescriba
+            if (text.includes('⚙️')) return;
             
             // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
             if (/^\d/.test(text)) {
