@@ -379,13 +379,54 @@ with tab_calendar:
             }
         });
 
-        // 2. Estilizar botones de médico en modo Administrador (en la grilla de columnas)
+        // 2. Estilizar botones de médico y encabezados en modo Administrador/Público (en la grilla de columnas)
         const colButtons = window.parent.document.querySelectorAll('div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] button');
         colButtons.forEach(btn => {
             const text = (btn.innerText || "").trim();
             if (!text) return;
             
-            // Ignorar los botones de control de columna
+            // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
+            if (/^\d/.test(text)) {
+                btn.style.setProperty('font-family', "'Outfit', sans-serif", 'important');
+                btn.style.setProperty('font-size', '0.92rem', 'important');
+                btn.style.setProperty('font-weight', '700', 'important');
+                btn.style.setProperty('color', 'white', 'important');
+                btn.style.setProperty('background-color', '#005eb8', 'important');
+                btn.style.setProperty('border-radius', '8px', 'important');
+                btn.style.setProperty('border', 'none', 'important');
+                btn.style.setProperty('padding', '0.55rem 0.6rem', 'important');
+                btn.style.setProperty('text-align', 'center', 'important');
+                btn.style.setProperty('min-height', 'unset', 'important');
+                btn.style.setProperty('height', 'auto', 'important');
+                btn.style.setProperty('line-height', '1.3', 'important');
+                btn.style.setProperty('box-shadow', '0 4px 10px rgba(0, 94, 184, 0.15)', 'important');
+                btn.style.setProperty('width', '100%', 'important');
+                btn.style.setProperty('display', 'block', 'important');
+                btn.style.setProperty('margin-bottom', '0.75rem', 'important');
+                
+                const childs = btn.querySelectorAll('*');
+                childs.forEach(c => {
+                    c.style.setProperty('color', 'white', 'important');
+                    c.style.setProperty('background-color', 'transparent', 'important');
+                });
+                
+                // Colapsar el contenedor Streamlit de este encabezado
+                let el = btn.parentElement;
+                for (let i = 0; i < 5; i++) {
+                    if (!el) break;
+                    if (el.getAttribute && el.getAttribute('data-testid') === 'stElementContainer') {
+                        el.style.setProperty('margin-top', '0', 'important');
+                        el.style.setProperty('margin-bottom', '0px', 'important');
+                        el.style.setProperty('padding-top', '0', 'important');
+                        el.style.setProperty('padding-bottom', '0', 'important');
+                        break;
+                    }
+                    el = el.parentElement;
+                }
+                return;
+            }
+
+            // Ignorar los botones de control de columna (Agregar / Duplicar)
             if (text.includes("Agregar Médico") || text.includes("Duplicar")) {
                 return;
             }
@@ -569,19 +610,28 @@ with tab_calendar:
                     
                     date_shifts_all = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                     num_doctors_all = len(date_shifts_all)
-                    
-                    # Contar asignaciones para detectar duplicados en este sábado
                     doc_counts = date_shifts_all['Supernumerary'].value_counts() if not date_shifts_all.empty else pd.Series()
                     
+                    # Initialize column_sorts state if not exists
+                    if 'column_sorts' not in st.session_state:
+                        st.session_state.column_sorts = {}
+                    sort_type = st.session_state.column_sorts.get(sat_date, "natural")
+
                     header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
                     header_text += f" ({num_doctors_all} Médicos)"
                     if is_holiday:
                         header_text += " (FESTIVO)"
+                    if sort_type == "asc":
+                        header_text += " 🔤"
                         
-                    st.markdown(f"<div class='saturday-col'><div class='sat-header{holiday_class}'>{header_text}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='saturday-col'>", unsafe_allow_html=True)
+                    if st.button(header_text, key=f"header_sort_admin_{sat_date}", use_container_width=True):
+                        st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
+                        st.rerun()
                     
                     # Render doctor list as clickable buttons
-                    for s_idx, s_row in date_shifts_all.reset_index().iterrows():
+                    date_shifts_loop = date_shifts_all.sort_values(by='Supernumerary') if sort_type == "asc" else date_shifts_all
+                    for s_idx, s_row in date_shifts_loop.reset_index().iterrows():
                         name = s_row['Supernumerary']
                         shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
                         clasif = s_row.get('Classification', 'Secuencia Normal')
@@ -701,6 +751,11 @@ with tab_calendar:
                         
                         num_doctors_filtered = len(date_shifts)
                         
+                        # Initialize column_sorts state if not exists
+                        if 'column_sorts' not in st.session_state:
+                            st.session_state.column_sorts = {}
+                        sort_type = st.session_state.column_sorts.get(sat_date, "natural")
+
                         header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
                         if filter_val != "Todos":
                             header_text += f" ({num_doctors_filtered}/{num_doctors_all} Médicos)"
@@ -708,10 +763,16 @@ with tab_calendar:
                             header_text += f" ({num_doctors_all} Médicos)"
                         if is_holiday:
                             header_text += " (FESTIVO)"
+                        if sort_type == "asc":
+                            header_text += " 🔤"
                             
-                        st.markdown(f"<div class='saturday-col'><div class='sat-header{holiday_class}'>{header_text}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='saturday-col'>", unsafe_allow_html=True)
+                        if st.button(header_text, key=f"header_sort_pub_{sat_date}", use_container_width=True):
+                            st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
+                            st.rerun()
                         
-                        for _, s_row in date_shifts.reset_index().iterrows():
+                        date_shifts_loop = date_shifts.sort_values(by='Supernumerary') if sort_type == "asc" else date_shifts
+                        for _, s_row in date_shifts_loop.reset_index().iterrows():
                             name = s_row['Supernumerary']
                             shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
                             clasif = s_row.get('Classification', 'Secuencia Normal')
