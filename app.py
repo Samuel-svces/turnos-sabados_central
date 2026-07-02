@@ -325,25 +325,22 @@ with tab_calendar:
                     b.style.setProperty('gap', '4px', 'important');
                 };
                 applyGearStyle(btn);
-                // Colorear el emoji ⚙️ de ámbar/naranja
+                // Colorear el engranaje de blanco
                 const pGear = btn.querySelector('p');
                 if (pGear) {
-                    pGear.style.setProperty('font-size', '1.1rem', 'important');
-                    pGear.style.setProperty('line-height', '1', 'important');
-                    pGear.style.setProperty('margin', '0', 'important');
-                    pGear.style.setProperty('filter', 'sepia(1) saturate(5) hue-rotate(320deg) brightness(1.2)', 'important');
+                    pGear.style.setProperty('display', 'none', 'important');
                 }
-                // Colorear el ícono de flecha expand_more de Streamlit (span con SVG)
-                const spans = btn.querySelectorAll('span, svg');
+                // Colorear el ícono de Streamlit de blanco
+                const spans = btn.querySelectorAll('span, svg, [data-testid]');
                 spans.forEach(s => {
-                    s.style.setProperty('color', '#fb923c', 'important');
-                    s.style.setProperty('fill', '#fb923c', 'important');
+                    s.style.setProperty('color', '#ffffff', 'important');
+                    s.style.setProperty('fill', '#ffffff', 'important');
                 });
                 // Observer dedicado para revertir cuando Streamlit reinyecte el estilo inline
                 if (!btn._gearObserver) {
                     btn._gearObserver = new MutationObserver(() => {
                         applyGearStyle(btn);
-                        if (pGear) pGear.style.setProperty('filter', 'sepia(1) saturate(5) hue-rotate(320deg) brightness(1.2)', 'important');
+                        if (pGear) pGear.style.setProperty('display', 'none', 'important');
                     });
                     btn._gearObserver.observe(btn, { attributes: true, attributeFilter: ['style'] });
                 }

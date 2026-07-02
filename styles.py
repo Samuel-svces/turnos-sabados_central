@@ -129,22 +129,25 @@ def apply_styles():
     
     /* Botón del Engranaje (Popover de Administración) - Diseño Premium Dark */
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button {
-        background-color: #0d1b2a !important;
-        border: 1.5px solid rgba(249, 115, 22, 0.35) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 0 12px rgba(249, 115, 22, 0.18), 0 2px 8px rgba(0,0,0,0.35) !important;
-        padding: 0.4rem 0.7rem !important;
+        background-color: #0f172a !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 0 10px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4) !important;
+        padding: 0.35rem 0.65rem !important;
         transition: all 0.2s ease !important;
     }
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button:hover {
-        background-color: #162032 !important;
-        box-shadow: 0 0 18px rgba(249, 115, 22, 0.35), 0 4px 12px rgba(0,0,0,0.4) !important;
-        border-color: rgba(249, 115, 22, 0.6) !important;
+        background-color: #1e293b !important;
+        box-shadow: 0 0 16px rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.5) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
     }
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p {
-        filter: sepia(1) saturate(4) hue-rotate(330deg) brightness(1.1) !important;
-        font-size: 1.25rem !important;
-        line-height: 1 !important;
+        display: none !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button span,
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);
