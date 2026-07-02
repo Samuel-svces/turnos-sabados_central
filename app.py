@@ -575,7 +575,6 @@ with tab_calendar:
                     if sort_type == "asc":
                         header_text += " 🔤"
                         
-                    st.markdown(f"<div class='saturday-col'>", unsafe_allow_html=True)
                     if st.button(header_text, key=f"header_sort_admin_{sat_date}", use_container_width=True):
                         st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
                         st.rerun()
@@ -677,7 +676,6 @@ with tab_calendar:
                                 except Exception as e:
                                     st.error(f"Error al duplicar: {e}")
                                     
-                    st.markdown("</div>", unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
         else:
@@ -717,7 +715,6 @@ with tab_calendar:
                         if sort_type == "asc":
                             header_text += " 🔤"
                             
-                        st.markdown(f"<div class='saturday-col'>", unsafe_allow_html=True)
                         if st.button(header_text, key=f"header_sort_pub_{sat_date}", use_container_width=True):
                             st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
                             st.rerun()
@@ -757,7 +754,6 @@ with tab_calendar:
                             
                             st.markdown(f"<div class='doc-btn-wrap'><div class='{badge_classes}'>{obs_dot}{display_name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
                             
-                        st.markdown("</div>", unsafe_allow_html=True)
                 st.markdown("</div>", unsafe_allow_html=True)
 
 

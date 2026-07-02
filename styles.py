@@ -289,20 +289,19 @@ def apply_styles():
         margin-top: 0.4rem; /* <--- EDITA ESTA MARGEN (Vista pública) para acercar/alejar los cuadros de los filtros */
     }
     
-    .saturday-col {
-        background: #f0f4ff;
-        border: 1px solid #c2dcf6;
-        border-radius: 14px;
-        padding: 1rem;
-        box-shadow: 0 2px 10px rgba(13, 71, 161, 0.02);
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        transition: border-color 0.2s;
+    /* ---- Saturday Column Card Styling ---- */
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] {
+        background: #f0f4ff !important;
+        border: 1px solid #c2dcf6 !important;
+        border-radius: 14px !important;
+        padding: 0.8rem !important;
+        box-shadow: 0 2px 10px rgba(13, 71, 161, 0.02) !important;
+        transition: border-color 0.2s !important;
+        box-sizing: border-box !important;
     }
     
-    .saturday-col:hover {
-        border-color: #0d47a1;
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"]:hover {
+        border-color: #0d47a1 !important;
     }
     
     .sat-header {
