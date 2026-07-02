@@ -380,35 +380,14 @@ with tab_calendar:
         });
 
         // 2. Estilizar botones de médico y encabezados en modo Administrador/Público (en la grilla de columnas)
-        const colButtons = window.parent.document.querySelectorAll('div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] button');
+        const colButtons = window.parent.document.querySelectorAll('div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] button');
         colButtons.forEach(btn => {
             const text = (btn.innerText || "").trim();
             if (!text) return;
             
             // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
             if (/^\d/.test(text)) {
-                btn.style.setProperty('font-family', "'Outfit', sans-serif", 'important');
-                btn.style.setProperty('font-size', '0.92rem', 'important');
-                btn.style.setProperty('font-weight', '700', 'important');
-                btn.style.setProperty('color', 'white', 'important');
-                btn.style.setProperty('background-color', '#005eb8', 'important');
-                btn.style.setProperty('border-radius', '8px', 'important');
-                btn.style.setProperty('border', 'none', 'important');
-                btn.style.setProperty('padding', '0.55rem 0.6rem', 'important');
-                btn.style.setProperty('text-align', 'center', 'important');
-                btn.style.setProperty('min-height', 'unset', 'important');
-                btn.style.setProperty('height', 'auto', 'important');
-                btn.style.setProperty('line-height', '1.3', 'important');
-                btn.style.setProperty('box-shadow', '0 4px 10px rgba(0, 94, 184, 0.15)', 'important');
-                btn.style.setProperty('width', '100%', 'important');
-                btn.style.setProperty('display', 'block', 'important');
-                btn.style.setProperty('margin-bottom', '0.75rem', 'important');
-                
-                const childs = btn.querySelectorAll('*');
-                childs.forEach(c => {
-                    c.style.setProperty('color', 'white', 'important');
-                    c.style.setProperty('background-color', 'transparent', 'important');
-                });
+                btn.classList.add('custom-header-btn');
                 
                 // Colapsar el contenedor Streamlit de este encabezado
                 let el = btn.parentElement;

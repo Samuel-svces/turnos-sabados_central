@@ -580,16 +580,16 @@ def apply_styles():
     }
     
     /* ---- Admin Grid: compactar botones de médico ---- */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stVerticalBlock"] {
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] div[data-testid="stVerticalBlock"] {
         gap: 0rem !important;
     }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stElementContainer"] {
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] div[data-testid="stElementContainer"] {
         margin-top: 0px !important;
         margin-bottom: 0.18rem !important;
         padding-top: 0px !important;
         padding-bottom: 0px !important;
     }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] button {
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] button {
         min-height: unset !important;
         height: auto !important;
         margin: 0 !important;
@@ -799,6 +799,38 @@ def apply_styles():
     button.custom-btn-login:hover p, button.custom-btn-login:active p, button.custom-btn-login:focus p {
         color: #ffffff !important;
     }
+    
+    /* 8. Botón de Encabezado de Fecha (Azul) */
+    button.custom-header-btn {
+        background-color: #005eb8 !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 10px rgba(0, 94, 184, 0.15) !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.92rem !important;
+        line-height: 1.3 !important;
+        padding: 0.55rem 0.6rem !important;
+        width: 100% !important;
+        display: block !important;
+        margin-bottom: 0.75rem !important;
+        border-radius: 8px !important;
+        min-height: unset !important;
+        height: auto !important;
+        transition: background-color 0.15s ease, transform 0.1s ease !important;
+    }
+    button.custom-header-btn:hover, button.custom-header-btn:active, button.custom-header-btn:focus {
+        background-color: #004b93 !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 6px 14px rgba(0, 75, 147, 0.25) !important;
+    }
+    button.custom-header-btn p, button.custom-header-btn span, button.custom-header-btn * {
+        color: white !important;
+        background-color: transparent !important;
+        font-weight: 700 !important;
+    }
+    
     .custom-search-marker + div[data-testid="stTextInput"] input {
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%232b8a8b"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
         background-repeat: no-repeat;
