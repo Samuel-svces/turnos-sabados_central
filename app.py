@@ -556,6 +556,7 @@ with tab_calendar:
             cols = st.columns(len(saturdays))
             for idx, sat_date in enumerate(saturdays):
                 with cols[idx]:
+                    st.markdown("<div class='saturday-col-marker'></div>", unsafe_allow_html=True)
                     is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
                     holiday_class = " holiday" if is_holiday else ""
                     
@@ -686,6 +687,7 @@ with tab_calendar:
                 cols = st.columns(len(saturdays))
                 for idx, sat_date in enumerate(saturdays):
                     with cols[idx]:
+                        st.markdown("<div class='saturday-col-marker'></div>", unsafe_allow_html=True)
                         is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
                         holiday_class = " holiday" if is_holiday else ""
                         

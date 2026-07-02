@@ -290,7 +290,7 @@ def apply_styles():
     }
     
     /* ---- Saturday Column Card Styling ---- */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) {
         background: #f0f4ff !important;
         border: 1px solid #c2dcf6 !important;
         border-radius: 14px !important;
@@ -300,8 +300,16 @@ def apply_styles():
         box-sizing: border-box !important;
     }
     
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"]:hover {
+    div[data-testid="stColumn"]:has(.saturday-col-marker):hover {
         border-color: #0d47a1 !important;
+    }
+    
+    /* Ocultar el marcador de columna de sábados */
+    div[data-testid="stElementContainer"]:has(.saturday-col-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .sat-header {
@@ -579,15 +587,15 @@ def apply_styles():
     }
     
     /* ---- Calendar Grid: compactar elementos ---- */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] div[data-testid="stVerticalBlock"] {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stVerticalBlock"] {
         gap: 0.35rem !important;
     }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] button {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button {
         min-height: unset !important;
         height: auto !important;
     }
     /* Resolver el margen negativo de Streamlit en Markdown que causa el solapamiento */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stMarkdownContainer"] {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stMarkdownContainer"] {
         margin-bottom: 0px !important;
     }
     
