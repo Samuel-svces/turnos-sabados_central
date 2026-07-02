@@ -348,34 +348,58 @@ with tab_calendar:
                 btn.style.removeProperty('color');
             } else if(text.includes('Todos')) {
                 btn.classList.add('custom-btn-filter-all');
-                if (btn.getAttribute('data-testid') === 'baseButton-primary') {
+                const isActiveAll = btn.getAttribute('data-testid') === 'baseButton-primary';
+                if (isActiveAll) {
                     btn.classList.add('active');
+                    btn.style.setProperty('background-color', '#1a73e8', 'important');
+                    btn.style.setProperty('border-color', '#1a73e8', 'important');
+                    const pAll = btn.querySelector('p');
+                    if (pAll) pAll.style.setProperty('color', '#ffffff', 'important');
                 } else {
                     btn.classList.remove('active');
+                    btn.style.setProperty('background-color', '#ffffff', 'important');
+                    btn.style.setProperty('border-color', '#1a73e8', 'important');
+                    const pAll = btn.querySelector('p');
+                    if (pAll) pAll.style.setProperty('color', '#1a73e8', 'important');
                 }
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
+                btn.style.setProperty('border-style', 'solid', 'important');
+                btn.style.setProperty('border-width', '1.5px', 'important');
             } else if(text.includes('Normal')) {
                 btn.classList.add('custom-btn-filter-normal');
-                if (btn.getAttribute('data-testid') === 'baseButton-primary') {
+                const isActiveNormal = btn.getAttribute('data-testid') === 'baseButton-primary';
+                if (isActiveNormal) {
                     btn.classList.add('active');
+                    btn.style.setProperty('background-color', '#198754', 'important');
+                    btn.style.setProperty('border-color', '#198754', 'important');
+                    const pNorm = btn.querySelector('p');
+                    if (pNorm) pNorm.style.setProperty('color', '#ffffff', 'important');
                 } else {
                     btn.classList.remove('active');
+                    btn.style.setProperty('background-color', '#ffffff', 'important');
+                    btn.style.setProperty('border-color', '#198754', 'important');
+                    const pNorm = btn.querySelector('p');
+                    if (pNorm) pNorm.style.setProperty('color', '#198754', 'important');
                 }
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
+                btn.style.setProperty('border-style', 'solid', 'important');
+                btn.style.setProperty('border-width', '1.5px', 'important');
             } else if(text.includes('Compensación')) {
                 btn.classList.add('custom-btn-filter-comp');
-                if (btn.getAttribute('data-testid') === 'baseButton-primary') {
+                const isActiveComp = btn.getAttribute('data-testid') === 'baseButton-primary';
+                if (isActiveComp) {
                     btn.classList.add('active');
+                    btn.style.setProperty('background-color', '#f59e0b', 'important');
+                    btn.style.setProperty('border-color', '#f59e0b', 'important');
+                    const pComp = btn.querySelector('p');
+                    if (pComp) pComp.style.setProperty('color', '#1a1a1a', 'important');
                 } else {
                     btn.classList.remove('active');
+                    btn.style.setProperty('background-color', '#ffffff', 'important');
+                    btn.style.setProperty('border-color', '#d97706', 'important');
+                    const pComp = btn.querySelector('p');
+                    if (pComp) pComp.style.setProperty('color', '#d97706', 'important');
                 }
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
+                btn.style.setProperty('border-style', 'solid', 'important');
+                btn.style.setProperty('border-width', '1.5px', 'important');
             }
         });
 

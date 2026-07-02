@@ -757,24 +757,24 @@ def apply_styles():
         color: #ffffff !important;
     }
 
-    /* 7. Botón de Filtro Compensación (Naranja) */
+    /* 7. Botón de Filtro Compensación (Amarillo) */
     button.custom-btn-filter-comp {
         background-color: #ffffff !important;
-        border: 1.5px solid #e65100 !important;
+        border: 1.5px solid #d97706 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
     button.custom-btn-filter-comp p {
-        color: #e65100 !important;
+        color: #d97706 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
     button.custom-btn-filter-comp:hover, button.custom-btn-filter-comp:active, button.custom-btn-filter-comp:focus, button.custom-btn-filter-comp.active {
-        background-color: #e65100 !important;
-        border-color: #e65100 !important;
+        background-color: #f59e0b !important;
+        border-color: #f59e0b !important;
     }
     button.custom-btn-filter-comp:hover p, button.custom-btn-filter-comp:active p, button.custom-btn-filter-comp:focus p, button.custom-btn-filter-comp.active p {
-        color: #ffffff !important;
+        color: #1a1a1a !important;
     }
 
     /* 4. Botón de Iniciar Sesión (Azul con texto) */
