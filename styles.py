@@ -434,7 +434,7 @@ def apply_styles():
     .doc-btn-wrap {
         position: relative;
         width: 100%;
-        margin-bottom: 0.18rem;
+        margin-bottom: 0px;
     }
 
     /* The clickable name badge */
@@ -579,20 +579,17 @@ def apply_styles():
         box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
     }
     
-    /* ---- Admin Grid: compactar botones de médico ---- */
+    /* ---- Calendar Grid: compactar elementos ---- */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] div[data-testid="stVerticalBlock"] {
-        gap: 0rem !important;
-    }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] div[data-testid="stElementContainer"] {
-        margin-top: 0px !important;
-        margin-bottom: 0.18rem !important;
-        padding-top: 0px !important;
-        padding-bottom: 0px !important;
+        gap: 0.35rem !important;
     }
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] button {
         min-height: unset !important;
         height: auto !important;
-        margin: 0 !important;
+    }
+    /* Resolver el margen negativo de Streamlit en Markdown que causa el solapamiento */
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stMarkdownContainer"] {
+        margin-bottom: 0px !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="column"] {

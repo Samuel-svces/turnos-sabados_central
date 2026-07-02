@@ -388,20 +388,6 @@ with tab_calendar:
             // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
             if (/^\d/.test(text)) {
                 btn.classList.add('custom-header-btn');
-                
-                // Colapsar el contenedor Streamlit de este encabezado
-                let el = btn.parentElement;
-                for (let i = 0; i < 5; i++) {
-                    if (!el) break;
-                    if (el.getAttribute && el.getAttribute('data-testid') === 'stElementContainer') {
-                        el.style.setProperty('margin-top', '0', 'important');
-                        el.style.setProperty('margin-bottom', '0px', 'important');
-                        el.style.setProperty('padding-top', '0', 'important');
-                        el.style.setProperty('padding-bottom', '0', 'important');
-                        break;
-                    }
-                    el = el.parentElement;
-                }
                 return;
             }
 
@@ -455,20 +441,6 @@ with tab_calendar:
                 c.style.setProperty('color', fg, 'important');
                 c.style.setProperty('background-color', 'transparent', 'important');
             });
-
-            // 3. Compactar los contenedores Streamlit que envuelven estos botones de médico
-            let el = btn.parentElement;
-            for (let i = 0; i < 5; i++) {
-                if (!el) break;
-                if (el.getAttribute && el.getAttribute('data-testid') === 'stElementContainer') {
-                    el.style.setProperty('margin-top', '0', 'important');
-                    el.style.setProperty('margin-bottom', '0.18rem', 'important');
-                    el.style.setProperty('padding-top', '0', 'important');
-                    el.style.setProperty('padding-bottom', '0', 'important');
-                    break;
-                }
-                el = el.parentElement;
-            }
         });
     }
     styleButtons();
