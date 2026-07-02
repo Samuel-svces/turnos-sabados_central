@@ -434,7 +434,7 @@ def apply_styles():
     .doc-btn-wrap {
         position: relative;
         width: 100%;
-        margin-bottom: 0.4rem;
+        margin-bottom: 0.18rem;
     }
 
     /* The clickable name badge */
@@ -445,7 +445,7 @@ def apply_styles():
         gap: 6px;
         width: 100%;
         box-sizing: border-box;
-        padding: 0.38rem 0.65rem;
+        padding: 0.22rem 0.5rem;
         border-radius: 8px;
         font-size: 0.8rem;
         font-weight: 500;
@@ -580,26 +580,19 @@ def apply_styles():
     }
     
     /* ---- Admin Grid: compactar botones de médico ---- */
-    /* Eliminar el espacio vertical que Streamlit agrega entre cada stElementContainer */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stVerticalBlock"] {
         gap: 0rem !important;
     }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stElementContainer"]:has(.admin-badge-container) {
-        margin: 0 !important;
-        padding: 0 !important;
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] div[data-testid="stElementContainer"] {
+        margin-top: 0px !important;
+        margin-bottom: 0.18rem !important;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
     }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] .admin-badge-container {
-        margin: 0 0 0.15rem 0 !important;
-        padding: 0 !important;
-    }
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] .admin-badge-container button {
-        margin: 0 !important;
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] button {
         min-height: unset !important;
         height: auto !important;
-    }
-    /* Quitar el margen del doc-btn-wrap en modo admin */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] .doc-btn-wrap {
-        margin-bottom: 0.1rem !important;
+        margin: 0 !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="column"] {

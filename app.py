@@ -379,11 +379,16 @@ with tab_calendar:
             }
         });
 
-        // 2. Estilizar botones de médico en modo Administrador (admin-badge-container)
-        const adminBadges = window.parent.document.querySelectorAll('.admin-badge-container button');
-        adminBadges.forEach(btn => {
+        // 2. Estilizar botones de médico en modo Administrador (en la grilla de columnas)
+        const colButtons = window.parent.document.querySelectorAll('div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="column"] button');
+        colButtons.forEach(btn => {
             const text = (btn.innerText || "").trim();
             if (!text) return;
+            
+            // Ignorar los botones de control de columna
+            if (text.includes("Agregar Médico") || text.includes("Duplicar")) {
+                return;
+            }
 
             let bg = '#fbf6eb'; // crema premium
             let fg = '#5c4d3c'; // marrón oscuro elegante
@@ -421,7 +426,7 @@ with tab_calendar:
             btn.style.setProperty('padding', '0.22rem 0.5rem', 'important');
             btn.style.setProperty('width', '100%', 'important');
             btn.style.setProperty('display', 'block', 'important');
-            btn.style.setProperty('margin-bottom', '0.2rem', 'important');
+            btn.style.setProperty('margin-bottom', '0px', 'important');
             btn.style.setProperty('min-height', 'auto', 'important');
             btn.style.setProperty('line-height', '1.15', 'important');
 
@@ -430,20 +435,18 @@ with tab_calendar:
                 c.style.setProperty('color', fg, 'important');
                 c.style.setProperty('background-color', 'transparent', 'important');
             });
-        });
-        
-        // 3. Compactar los contenedores Streamlit que envuelven los botones de médico en admin
-        const adminWrappers = window.parent.document.querySelectorAll('.admin-badge-container');
-        adminWrappers.forEach(wrapper => {
-            // Subir hasta stElementContainer y colapsar sus márgenes
-            let el = wrapper.parentElement;
+
+            // 3. Compactar los contenedores Streamlit que envuelven estos botones de médico
+            let el = btn.parentElement;
             for (let i = 0; i < 5; i++) {
                 if (!el) break;
-                el.style.setProperty('margin-top', '0', 'important');
-                el.style.setProperty('margin-bottom', '0', 'important');
-                el.style.setProperty('padding-top', '0', 'important');
-                el.style.setProperty('padding-bottom', '0', 'important');
-                if (el.getAttribute && el.getAttribute('data-testid') === 'stElementContainer') break;
+                if (el.getAttribute && el.getAttribute('data-testid') === 'stElementContainer') {
+                    el.style.setProperty('margin-top', '0', 'important');
+                    el.style.setProperty('margin-bottom', '0.18rem', 'important');
+                    el.style.setProperty('padding-top', '0', 'important');
+                    el.style.setProperty('padding-bottom', '0', 'important');
+                    break;
+                }
                 el = el.parentElement;
             }
         });
@@ -614,12 +617,10 @@ with tab_calendar:
                         if shift_obs: help_lines.append(f"💬 {shift_obs}")
                         if personal_obs: help_lines.append(f"👤 {personal_obs}")
                         
-                        help_text = "<br>".join(help_lines).strip()
-                        tooltip_html = f"<div class='doc-obs-tooltip'>{help_text}</div>" if help_text else ""
+                        help_text = "\n".join(help_lines).strip()
                         
                         # Clickable button styled as badge
-                        st.markdown(f"<div class='doc-btn-wrap'><div class='admin-badge-container'>", unsafe_allow_html=True)
-                        if st.button(display_name, key=f"edit_btn_{sat_date}_{name}_{s_idx}", use_container_width=True):
+                        if st.button(display_name, key=f"edit_btn_{sat_date}_{name}_{s_idx}", use_container_width=True, help=help_text if help_text else None):
                             action_details = {
                                 'date': sat_date,
                                 'doctor': name,
@@ -630,7 +631,6 @@ with tab_calendar:
                                 'classification': clasif
                             }
                             ui_dialogs.show_selection_dialog(action_details, load_app_data)
-                        st.markdown(f"</div>{tooltip_html}</div>", unsafe_allow_html=True)
                         
                     st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
                     
