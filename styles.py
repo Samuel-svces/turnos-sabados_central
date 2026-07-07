@@ -1006,11 +1006,11 @@ def apply_styles():
     /* Footer */
     .app-footer {
         text-align: center;
-        padding: 2rem 0;
+        padding: 0.8rem 0;
         color: #90a4ae;
         font-size: 0.8rem;
         border-top: 1px solid rgba(0,0,0,0.05);
-        margin-top: 4rem;
+        margin-top: 1rem;
     }
     
     /* Custom style for Streamlit standard components */
