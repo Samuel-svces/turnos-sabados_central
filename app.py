@@ -142,7 +142,7 @@ with col_gear:
                     del st.session_state.saturday_offset
                 st.rerun()
         else:
-            admin_password = "Central1234.*"
+            admin_password = "C3ntr4l1234.*"
             try:
                 if "admin_password" in st.secrets:
                     admin_password = st.secrets["admin_password"]
