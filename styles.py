@@ -1011,6 +1011,16 @@ def apply_styles():
         font-size: 0.8rem;
         margin-top: 1rem;
     }
+
+    /* Eliminar borde inferior del último bloque antes del footer */
+    section.main > div:last-child {
+        border-bottom: none !important;
+        box-shadow: none !important;
+    }
+    .stMainBlockContainer > div > div > div:last-child {
+        border-bottom: none !important;
+        box-shadow: none !important;
+    }
     
     /* Custom style for Streamlit standard components */
     .stTabs [data-baseweb="tab-list"] {
