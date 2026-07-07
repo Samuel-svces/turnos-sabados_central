@@ -210,7 +210,7 @@ else:
 with tab_calendar:
     if not st.session_state.is_admin:
         st.markdown("""
-        <div style="background-color:#e8f4fd; border:1px solid #b8d9f0; border-radius:8px; padding:12px; text-align:center;">
+        <div style="background-color:#e8f4fd; border-radius:8px; padding:12px; text-align:center;">
             Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a 
             <a href="mailto:central@sanvicenteces.com"><strong>central@sanvicenteces.com</strong></a>. 
             Una vez sea aceptado por el correo, se verá reflejado en este cuadro.
