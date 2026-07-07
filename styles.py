@@ -1009,7 +1009,6 @@ def apply_styles():
         padding: 0.8rem 0;
         color: #90a4ae;
         font-size: 0.8rem;
-        border-top: 1px solid rgba(0,0,0,0.05);
         margin-top: 1rem;
     }
     
