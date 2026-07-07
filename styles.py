@@ -110,6 +110,15 @@ def apply_styles():
         border: none !important;
         box-shadow: none !important;
     }
+
+    /* Quitar borde alrededor de columnas y bloques verticales del calendario */
+    div[data-testid="stVerticalBlock"],
+    div[data-testid="stVerticalBlockBorderWrapper"],
+    div[data-testid="column"] {
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
     
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) > div[data-testid="column"] {
         /* Centrar contenido verticalmente y quitar márgenes extra */
