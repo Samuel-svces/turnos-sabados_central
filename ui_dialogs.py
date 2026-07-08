@@ -264,7 +264,7 @@ def show_selection_dialog(action_details, load_app_data_func):
     except ValueError:
         default_idx = 0
         
-    new_doc = st.selectbox("Médico Programado:", allowed, index=default_idx, disabled=(new_clasif == "Cambio de turno"))
+    new_doc = st.selectbox("Médico Programado:", allowed, index=default_idx, disabled=True)
     new_obs = st.text_input("Observaciones:", value=action_details.get('observation', ''))
     
     swap_target = None
