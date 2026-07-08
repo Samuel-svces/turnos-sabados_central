@@ -1,6 +1,7 @@
 import streamlit as st
 import datetime
 import data_processor as dp
+import pandas as pd
 
 def get_allowed_doctors():
     df_s = st.session_state.shifts_df
