@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-st.components.v1.html(
+st.html(
     """
     <script>
         try {
@@ -55,9 +55,7 @@ st.components.v1.html(
             console.error("Parent override failed:", e);
         }
     </script>
-    """,
-    height=0,
-    width=0
+    """
 )
 
 # Apply custom premium styles
@@ -309,7 +307,7 @@ with tab_calendar:
     else:
         st.session_state["filter_class"] = "Todos"
 
-    st.components.v1.html("""
+    st.html("""
     <script>
     function styleButtons() {
         // 1. Estilizar botones de la barra de búsqueda
@@ -530,12 +528,12 @@ with tab_calendar:
     const observer = new MutationObserver(styleButtons);
     observer.observe(window.parent.document.body, { childList: true, subtree: true });
     </script>
-    """, height=0)
+    """)
 
     # Renderizar alerta de error en la ventana padre si el flag está activo
     if st.session_state.get("show_error_alert", False):
         alert_id = datetime.datetime.now().timestamp()
-        st.components.v1.html(f"""
+        st.html(f"""
         <script>
             // Alert ID: {alert_id}
             try {{
@@ -561,7 +559,7 @@ with tab_calendar:
                 console.error("SweetAlert2 parent injection failed:", e);
             }}
         </script>
-        """, height=0)
+        """)
         st.session_state["show_error_alert"] = False
 
     if search_query:
