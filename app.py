@@ -170,10 +170,12 @@ with col_gear:
                 on_change=on_pwd_enter
             )
             
-            login_clicked = st.button("Iniciar Sesión", use_container_width=True, key="btn_popover_login")
-            if login_clicked:
-                on_pwd_enter()
-                st.rerun()
+            st.button(
+                "Iniciar Sesión", 
+                use_container_width=True, 
+                key="btn_popover_login",
+                on_click=on_pwd_enter
+            )
                     
             if st.session_state.pwd_error:
                 st.error(st.session_state.pwd_error)
