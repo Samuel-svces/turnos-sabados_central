@@ -392,6 +392,60 @@ def save_modification(excel_path, mod_data):
     return next_id
 
 
+def save_modifications_batch(excel_path, mods_list):
+    if not mods_list:
+        return True
+    local_path = _get_modifications_path(excel_path)
+    wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
+
+    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+    if 'OBSERVACIONES' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'OBSERVACIONES'
+        header.append('OBSERVACIONES')
+    if 'CLASIFICACION' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'CLASIFICACION'
+        header.append('CLASIFICACION')
+    if 'TIMESTAMP' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
+        header.append('TIMESTAMP')
+
+    max_id = 0
+    for r in range(2, ws.max_row + 1):
+        val = ws.cell(row=r, column=1).value
+        if val is not None:
+            try:
+                max_id = max(max_id, int(val))
+            except ValueError:
+                pass
+    next_id = max_id + 1
+
+    for mod_data in mods_list:
+        date_val = mod_data['date']
+        if isinstance(date_val, (datetime.date, datetime.datetime)):
+            date_val = date_val.strftime('%Y-%m-%d')
+
+        val_map = {
+            'ID': next_id,
+            'SHEET': mod_data['sheet'],
+            'DATE': date_val,
+            'ORIGINAL_NAME': mod_data.get('original_name', '').strip().upper(),
+            'NEW_NAME': mod_data.get('new_name', '').strip().upper(),
+            'ROW': mod_data.get('row', 0),
+            'COL': mod_data.get('col', 0),
+            'TYPE': mod_data['type'].strip().upper(),
+            'OBSERVACIONES': str(mod_data.get('observaciones', '')).strip(),
+            'CLASIFICACION': mod_data.get('clasificacion', 'Secuencia Normal').strip(),
+            'TIMESTAMP': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        row_data = [val_map.get(col_name, '') for col_name in header]
+        ws.append(row_data)
+        next_id += 1
+
+    _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    load_modifications.clear()
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Carga del Excel maestro (solo lectura — igual que el despliegue anterior)
 # ---------------------------------------------------------------------------
@@ -777,6 +831,42 @@ def add_shift_to_date(excel_path, sheet_name, target_date, supernumerary_name,
         'observaciones': observation, 'clasificacion': clasificacion
     }
     save_modification(excel_path, mod_data)
+    return True
+
+
+def duplicate_schedule_batch(excel_path, target_sheet, target_date, shifts_to_delete_list, shifts_to_add_list):
+    mods_list = []
+    
+    # 1. Preparar las eliminaciones
+    for s_del in shifts_to_delete_list:
+        mods_list.append({
+            'sheet': s_del['sheet'],
+            'date': target_date,
+            'original_name': s_del['doctor'],
+            'new_name': '',
+            'row': s_del['row'],
+            'col': s_del['col'],
+            'type': 'ELIMINAR',
+            'observaciones': '',
+            'clasificacion': 'Secuencia Normal'
+        })
+        
+    # 2. Preparar las adiciones
+    for s_add in shifts_to_add_list:
+        mods_list.append({
+            'sheet': target_sheet,
+            'date': target_date,
+            'original_name': '',
+            'new_name': s_add['doctor'],
+            'row': 0,
+            'col': 0,
+            'type': 'AGREGAR',
+            'observaciones': s_add.get('observation', ''),
+            'clasificacion': s_add.get('classification', 'Secuencia Normal')
+        })
+        
+    if mods_list:
+        save_modifications_batch(excel_path, mods_list)
     return True
 
 

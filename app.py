@@ -759,36 +759,38 @@ with tab_calendar:
                             with st.spinner("Duplicando..."):
                                 try:
                                     target_sheet = date_shifts_all.iloc[0]['Sheet'] if not date_shifts_all.empty else f"SABADOS {sat_date.year}"
-                                    # Delete current (preserving compensation and swap shifts)
+                                    
+                                    shifts_to_delete_list = []
                                     if not date_shifts_all.empty:
                                         for _, row_to_del in date_shifts_all.iterrows():
                                             clasif_dest = str(row_to_del.get('Classification', 'Secuencia Normal'))
                                             if "Compensación" in clasif_dest or "Cambio" in clasif_dest:
-                                                continue  # Keep compensation or swap shifts, do not delete them
+                                                continue  # Keep compensation or swap shifts
+                                            shifts_to_delete_list.append({
+                                                'sheet': row_to_del['Sheet'],
+                                                'doctor': row_to_del['Supernumerary'],
+                                                'row': int(row_to_del['Excel_Row']),
+                                                'col': int(row_to_del['Excel_Col'])
+                                            })
                                             
-                                            dp.delete_shift_cell(
-                                                excel_path=st.session_state.excel_path,
-                                                sheet_name=row_to_del['Sheet'],
-                                                row_idx=int(row_to_del['Excel_Row']),
-                                                col_idx=int(row_to_del['Excel_Col']),
-                                                date_val=sat_date,
-                                                original_name=row_to_del['Supernumerary'],
-                                                clasificacion="Secuencia Normal"
-                                            )
-                                    # Copy previous shifts (excluding compensations or swaps from source date)
+                                    shifts_to_add_list = []
                                     for _, row_to_copy in prev_shifts.iterrows():
                                         clasif_orig = str(row_to_copy.get('Classification', 'Secuencia Normal'))
                                         if "Compensación" in clasif_orig or "Cambio" in clasif_orig:
                                             continue  # Skip source compensations or swaps
-                                            
-                                        dp.add_shift_to_date(
-                                            excel_path=st.session_state.excel_path,
-                                            sheet_name=target_sheet,
-                                            target_date=sat_date,
-                                            supernumerary_name=row_to_copy['Supernumerary'],
-                                            observation=row_to_copy.get('Observation', ''),
-                                            clasificacion=row_to_copy.get('Classification', 'Secuencia Normal')
-                                        )
+                                        shifts_to_add_list.append({
+                                            'doctor': row_to_copy['Supernumerary'],
+                                            'observation': row_to_copy.get('Observation', ''),
+                                            'classification': row_to_copy.get('Classification', 'Secuencia Normal')
+                                        })
+                                        
+                                    dp.duplicate_schedule_batch(
+                                        excel_path=st.session_state.excel_path,
+                                        target_sheet=target_sheet,
+                                        target_date=sat_date,
+                                        shifts_to_delete_list=shifts_to_delete_list,
+                                        shifts_to_add_list=shifts_to_add_list
+                                    )
                                     st.success(f"Programación duplicada del {two_weeks_ago.day} de {dp.MONTH_NAMES_SP[two_weeks_ago.month]}")
                                     load_app_data()
                                     st.rerun()
