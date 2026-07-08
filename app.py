@@ -768,9 +768,13 @@ with tab_calendar:
                             with st.spinner("Duplicando..."):
                                 try:
                                     target_sheet = date_shifts_all.iloc[0]['Sheet'] if not date_shifts_all.empty else f"SABADOS {sat_date.year}"
-                                    # Delete current
+                                    # Delete current (preserving compensation and swap shifts)
                                     if not date_shifts_all.empty:
                                         for _, row_to_del in date_shifts_all.iterrows():
+                                            clasif_dest = str(row_to_del.get('Classification', 'Secuencia Normal'))
+                                            if "Compensación" in clasif_dest or "Cambio" in clasif_dest:
+                                                continue  # Keep compensation or swap shifts, do not delete them
+                                            
                                             dp.delete_shift_cell(
                                                 excel_path=st.session_state.excel_path,
                                                 sheet_name=row_to_del['Sheet'],
@@ -780,8 +784,12 @@ with tab_calendar:
                                                 original_name=row_to_del['Supernumerary'],
                                                 clasificacion="Secuencia Normal"
                                             )
-                                    # Copy previous
+                                    # Copy previous shifts (excluding compensations or swaps from source date)
                                     for _, row_to_copy in prev_shifts.iterrows():
+                                        clasif_orig = str(row_to_copy.get('Classification', 'Secuencia Normal'))
+                                        if "Compensación" in clasif_orig or "Cambio" in clasif_orig:
+                                            continue  # Skip source compensations or swaps
+                                            
                                         dp.add_shift_to_date(
                                             excel_path=st.session_state.excel_path,
                                             sheet_name=target_sheet,
