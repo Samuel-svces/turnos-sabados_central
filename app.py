@@ -221,9 +221,20 @@ with tab_calendar:
         if st.button("↩️ Deshacer Último Movimiento", type="secondary", use_container_width=False):
             la = st.session_state.last_action
             try:
-                if la['action'] == 'ELIMINAR':
+                if la['action'] in ['ELIMINAR', 'ELIMINAR_SIMPLE']:
                     dp.add_shift_to_date(la['excel_path'], la['sheet'], la['date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
                     st.success("Acción revertida: Médico re-agregado.")
+                elif la['action'] == 'ELIMINAR_LOTE':
+                    for item in la.get('deleted_items', []):
+                        dp.add_shift_to_date(
+                            la['excel_path'],
+                            item['sheet'],
+                            item['date'],
+                            item['doc'],
+                            item['obs'],
+                            item['clasificacion']
+                        )
+                    st.success(f"Acción revertida: {len(la.get('deleted_items', []))} asignaciones de turnos restauradas.")
                 elif la['action'] == 'AGREGAR':
                     # Need to delete it. We know date and doc.
                     dp.delete_shift_cell(la['excel_path'], la['sheet'], 0, 0, la['date'], "", la['doc'], la.get('clasificacion', 'Secuencia Normal'))
