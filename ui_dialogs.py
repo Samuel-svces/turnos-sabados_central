@@ -22,14 +22,23 @@ def get_allowed_doctors():
         allowed = sorted(list(set(docs_with_shifts + added_docs)))
     return allowed
 
-def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, new_name, observation, classification, current_clasif, swap_target, current_doc):
+def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, new_name, observation, classification, current_clasif, swap_target, current_doc, load_app_data_func):
     try:
+        # Asegurarnos de que date_val sea datetime.date
+        date_check = date_val
+        if isinstance(date_check, datetime.datetime):
+            date_check = date_check.date()
+        elif isinstance(date_check, str):
+            date_check = pd.to_datetime(date_check).date()
+
         # 1. Limpiar contraparte anterior si esta asignación ya tenía un cambio registrado
         if "Cambio de turno con" in current_clasif:
             old_counterpart = current_clasif.replace("Cambio de turno con ", "").strip()
             df_s = st.session_state.shifts_df
+            df_s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
             match_counterpart = df_s[(df_s['Supernumerary'] == old_counterpart) & 
-                                     (df_s['Classification'].str.contains(current_doc, na=False))]
+                                     (df_s['Classification'].str.contains(current_doc, na=False)) &
+                                     (df_s_dates == date_check)]
             for _, r_match in match_counterpart.iterrows():
                 dp.update_shift_cell(
                     excel_path=excel_path,
@@ -85,35 +94,53 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
             
         st.session_state.show_delete_options = False
         st.session_state.should_rerun_main = True
+        load_app_data_func()
+        st.rerun()
     except Exception as e:
         st.session_state.last_error = f"Error al guardar cambios: {e}"
+        st.rerun()
 
-def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, current_clasif):
+def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, current_clasif, load_app_data_func):
     try:
         df_s = st.session_state.shifts_df
         del_scope = st.session_state.get("del_scope_radio_flat", "Eliminar solo de esta secuencia")
         
+        # Asegurarnos de que date_val sea datetime.date
+        date_check = date_val
+        if isinstance(date_check, datetime.datetime):
+            date_check = date_check.date()
+        elif isinstance(date_check, str):
+            date_check = pd.to_datetime(date_check).date()
+
+        # Convertir a datetime.date para comparación segura
+        df_s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
+
         if del_scope == "Eliminar de todas las secuencias (las futuras)":
             shifts_to_delete = df_s[
                 (df_s['Supernumerary'] == current_doc) & 
-                (df_s['Date'] >= date_val)
+                (df_s_dates >= date_check)
             ]
         else:
-            shifts_to_delete = df_s[
-                (df_s['Sheet'] == sheet) &
-                (df_s['Excel_Row'] == row) &
-                (df_s['Excel_Col'] == col) &
-                (df_s['Date'] == date_val)
-            ]
+            if row > 0 and col > 0:
+                shifts_to_delete = df_s[
+                    (df_s['Sheet'] == sheet) &
+                    (df_s['Excel_Row'] == row) &
+                    (df_s['Excel_Col'] == col) &
+                    (df_s_dates == date_check)
+                ]
+            else:
+                shifts_to_delete = pd.DataFrame()
+
             if shifts_to_delete.empty:
                 shifts_to_delete = df_s[
                     (df_s['Sheet'] == sheet) &
-                    (df_s['Date'] == date_val) &
+                    (df_s_dates == date_check) &
                     (df_s['Supernumerary'] == current_doc)
                 ]
         
         if shifts_to_delete.empty:
             st.session_state.last_error = "No se encontraron asignaciones coincidentes para eliminar."
+            st.rerun()
         else:
             deleted_count = 0
             deleted_items_log = []
@@ -124,9 +151,16 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                 # Limpiar contraparte si era un cambio de turno
                 if "Cambio de turno con" in row_clasif:
                     old_counterpart = row_clasif.replace("Cambio de turno con ", "").strip()
+                    r_del_date = r_del['Date']
+                    if isinstance(r_del_date, datetime.datetime):
+                        r_del_date = r_del_date.date()
+                    elif isinstance(r_del_date, str):
+                        r_del_date = pd.to_datetime(r_del_date).date()
+
                     match_counterpart = df_s[
                         (df_s['Supernumerary'] == old_counterpart) & 
-                        (df_s['Classification'].str.contains(r_del['Supernumerary'], na=False))
+                        (df_s['Classification'].str.contains(r_del['Supernumerary'], na=False)) &
+                        (df_s_dates == r_del_date)
                     ]
                     for _, cp_row in match_counterpart.iterrows():
                         dp.update_shift_cell(
@@ -175,14 +209,28 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             
             st.session_state.show_delete_options = False
             st.session_state.should_rerun_main = True
+            load_app_data_func()
+            st.rerun()
     except Exception as e:
         st.session_state.last_error = f"Error al eliminar: {e}"
+        st.rerun()
+
+def show_delete_options_callback():
+    st.session_state.show_delete_options = True
+
+def cancel_delete_options_callback():
+    st.session_state.show_delete_options = False
+    st.session_state.last_error = None
 
 @st.dialog("Gestión de Turno")
 def show_selection_dialog(action_details, load_app_data_func):
     if not st.session_state.is_admin:
         st.error("Acceso denegado: Se requieren permisos de administrador.")
         st.stop()
+
+    if st.session_state.get("last_error"):
+        st.error(st.session_state.last_error)
+
     st.markdown(f"### ✏️ Editar Turno")
     st.write(f"**Fecha:** {action_details['date'].strftime('%d/%m/%Y')}")
     st.markdown("---")
@@ -271,6 +319,7 @@ def show_selection_dialog(action_details, load_app_data_func):
     current_target = f"{action_details['date']}_{action_details['doctor']}"
     if st.session_state.get('prev_delete_target') != current_target:
         st.session_state.show_delete_options = False
+        st.session_state.last_error = None
         st.session_state.prev_delete_target = current_target
 
     if st.session_state.get("show_delete_options", False):
@@ -299,12 +348,17 @@ def show_selection_dialog(action_details, load_app_data_func):
                     action_details['col'],
                     action_details['date'],
                     current_doc,
-                    current_clasif
+                    current_clasif,
+                    load_app_data_func
                 )
             )
         with col_cancel:
-            if st.button("↩️ Cancelar", use_container_width=True, key="btn_cancel_delete_action"):
-                st.session_state.show_delete_options = False
+            st.button(
+                "↩️ Cancelar", 
+                use_container_width=True, 
+                key="btn_cancel_delete_action",
+                on_click=cancel_delete_options_callback
+            )
     else:
         col_save, col_delete = st.columns(2)
         
@@ -327,13 +381,19 @@ def show_selection_dialog(action_details, load_app_data_func):
                     new_clasif,
                     current_clasif,
                     swap_target,
-                    current_doc
+                    current_doc,
+                    load_app_data_func
                 )
             )
 
         with col_delete:
-            if st.button("❌ Eliminar Asignación", use_container_width=True, type="secondary", key="btn_show_delete_options_action"):
-                st.session_state.show_delete_options = True
+            st.button(
+                "❌ Eliminar Asignación", 
+                use_container_width=True, 
+                type="secondary", 
+                key="btn_show_delete_options_action",
+                on_click=show_delete_options_callback
+            )
 
 @st.dialog("Agregar Médico Adicional")
 def show_add_dialog(sat_date, sheet, load_app_data_func):
