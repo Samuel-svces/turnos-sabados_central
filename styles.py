@@ -760,11 +760,11 @@ def apply_styles():
     /* 6. Botón de Filtro Normal (Verde) */
     button.custom-btn-filter-normal {
         background-color: #ffffff !important;
-        border: 1.5px solid #198754 !important;
+        border: 1.5px solid #dc3545 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
     button.custom-btn-filter-normal p {
-        color: #198754 !important;
+        color: #dc3545 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
@@ -794,7 +794,7 @@ def apply_styles():
         border-color: #f59e0b !important;
     }
     button.custom-btn-filter-comp:hover p, button.custom-btn-filter-comp:active p, button.custom-btn-filter-comp:focus p, button.custom-btn-filter-comp.active p {
-        color: #1a1a1a !important;
+        color: #ffffff !important;
     }
 
     /* 4. Botón de Iniciar Sesión (Azul con texto) */

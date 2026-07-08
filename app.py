@@ -445,9 +445,9 @@ with tab_calendar:
                 } else {
                     btn.classList.remove('active');
                     btn.style.setProperty('background-color', '#ffffff', 'important');
-                    btn.style.setProperty('border-color', '#198754', 'important');
+                    btn.style.setProperty('border-color', '#dc3545', 'important');
                     const pNorm = btn.querySelector('p');
-                    if (pNorm) pNorm.style.setProperty('color', '#198754', 'important');
+                    if (pNorm) pNorm.style.setProperty('color', '#dc3545', 'important');
                 }
                 btn.style.setProperty('border-style', 'solid', 'important');
                 btn.style.setProperty('border-width', '1.5px', 'important');
@@ -459,7 +459,7 @@ with tab_calendar:
                     btn.style.setProperty('background-color', '#f59e0b', 'important');
                     btn.style.setProperty('border-color', '#f59e0b', 'important');
                     const pComp = btn.querySelector('p');
-                    if (pComp) pComp.style.setProperty('color', '#1a1a1a', 'important');
+                    if (pComp) pComp.style.setProperty('color', '#ffffff', 'important');
                 } else {
                     btn.classList.remove('active');
                     btn.style.setProperty('background-color', '#ffffff', 'important');
