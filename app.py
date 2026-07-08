@@ -225,15 +225,16 @@ with tab_calendar:
                     dp.add_shift_to_date(la['excel_path'], la['sheet'], la['date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
                     st.success("Acción revertida: Médico re-agregado.")
                 elif la['action'] == 'ELIMINAR_LOTE':
+                    shifts_to_restore = []
                     for item in la.get('deleted_items', []):
-                        dp.add_shift_to_date(
-                            la['excel_path'],
-                            item['sheet'],
-                            item['date'],
-                            item['doc'],
-                            item['obs'],
-                            item['clasificacion']
-                        )
+                        shifts_to_restore.append({
+                            'sheet': item['sheet'],
+                            'date': item['date'],
+                            'doc': item['doc'],
+                            'obs': item['obs'],
+                            'clasificacion': item['clasificacion']
+                        })
+                    dp.add_shifts_batch(la['excel_path'], shifts_to_restore)
                     st.success(f"Acción revertida: {len(la.get('deleted_items', []))} asignaciones de turnos restauradas.")
                 elif la['action'] == 'AGREGAR':
                     # Need to delete it. We know date and doc.

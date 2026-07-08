@@ -31,6 +31,8 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
         elif isinstance(date_check, str):
             date_check = pd.to_datetime(date_check).date()
 
+        mods_list = []
+
         # 1. Limpiar contraparte anterior si esta asignación ya tenía un cambio registrado
         if "Cambio de turno con" in current_clasif:
             old_counterpart = current_clasif.replace("Cambio de turno con ", "").strip()
@@ -40,57 +42,60 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
                                      (df_s['Classification'].str.contains(current_doc, na=False)) &
                                      (df_s_dates == date_check)]
             for _, r_match in match_counterpart.iterrows():
-                dp.update_shift_cell(
-                    excel_path=excel_path,
-                    sheet_name=r_match['Sheet'],
-                    row_idx=int(r_match['Excel_Row']),
-                    col_idx=int(r_match['Excel_Col']),
-                    new_name=r_match['Supernumerary'],
-                    date_val=r_match['Date'],
-                    observation=r_match.get('Observation', ''),
-                    original_name=r_match['Supernumerary'],
-                    clasificacion="Secuencia Normal"
-                )
+                mods_list.append({
+                    'sheet': r_match['Sheet'],
+                    'date': r_match['Date'],
+                    'original_name': r_match['Supernumerary'],
+                    'new_name': r_match['Supernumerary'],
+                    'row': int(r_match['Excel_Row']),
+                    'col': int(r_match['Excel_Col']),
+                    'type': 'REEMPLAZAR',
+                    'observaciones': r_match.get('Observation', ''),
+                    'clasificacion': 'Secuencia Normal'
+                })
         
         # 2. Guardar cambios del turno
         if classification == "Cambio de turno" and swap_target:
             # Guardar médico de origen
-            dp.update_shift_cell(
-                excel_path=excel_path,
-                sheet_name=sheet,
-                row_idx=row,
-                col_idx=col,
-                new_name=current_doc,
-                date_val=date_val,
-                observation=observation.strip(),
-                original_name=current_doc,
-                clasificacion=f"Cambio de turno con {swap_target['doctor']}"
-            )
+            mods_list.append({
+                'sheet': sheet,
+                'date': date_val,
+                'original_name': current_doc,
+                'new_name': current_doc,
+                'row': row,
+                'col': col,
+                'type': 'REEMPLAZAR',
+                'observaciones': observation.strip(),
+                'clasificacion': f"Cambio de turno con {swap_target['doctor']}"
+            })
             
             # Guardar médico de destino
-            dp.update_shift_cell(
-                excel_path=excel_path,
-                sheet_name=swap_target['sheet'],
-                row_idx=swap_target['row'],
-                col_idx=swap_target['col'],
-                new_name=swap_target['doctor'],
-                date_val=swap_target['date'],
-                observation=swap_target['observation'],
-                original_name=swap_target['doctor'],
-                clasificacion=f"Cambio de turno con {current_doc}"
-            )
+            mods_list.append({
+                'sheet': swap_target['sheet'],
+                'date': swap_target['date'],
+                'original_name': swap_target['doctor'],
+                'new_name': swap_target['doctor'],
+                'row': swap_target['row'],
+                'col': swap_target['col'],
+                'type': 'REEMPLAZAR',
+                'observaciones': swap_target['observation'],
+                'clasificacion': f"Cambio de turno con {current_doc}"
+            })
         else:
-            dp.update_shift_cell(
-                excel_path=excel_path,
-                sheet_name=sheet,
-                row_idx=row,
-                col_idx=col,
-                new_name=new_name,
-                date_val=date_val,
-                observation=observation.strip(),
-                original_name=original_name,
-                clasificacion=classification
-            )
+            mods_list.append({
+                'sheet': sheet,
+                'date': date_val,
+                'original_name': original_name,
+                'new_name': new_name,
+                'row': row,
+                'col': col,
+                'type': 'ELIMINAR' if not new_name else 'REEMPLAZAR',
+                'observaciones': observation.strip(),
+                'clasificacion': classification
+            })
+            
+        if mods_list:
+            dp.save_modifications_batch(excel_path, mods_list)
             
         st.session_state.show_delete_options = False
         st.session_state.should_rerun_main = True
@@ -144,6 +149,7 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
         else:
             deleted_count = 0
             deleted_items_log = []
+            mods_list = []
             
             for _, r_del in shifts_to_delete.iterrows():
                 row_clasif = r_del.get('Classification', 'Secuencia Normal')
@@ -163,17 +169,17 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                         (df_s_dates == r_del_date)
                     ]
                     for _, cp_row in match_counterpart.iterrows():
-                        dp.update_shift_cell(
-                            excel_path=excel_path,
-                            sheet_name=cp_row['Sheet'],
-                            row_idx=int(cp_row['Excel_Row']),
-                            col_idx=int(cp_row['Excel_Col']),
-                            new_name=cp_row['Supernumerary'],
-                            date_val=cp_row['Date'],
-                            observation=cp_row.get('Observation', ''),
-                            original_name=cp_row['Supernumerary'],
-                            clasificacion="Secuencia Normal"
-                        )
+                        mods_list.append({
+                            'sheet': cp_row['Sheet'],
+                            'date': cp_row['Date'],
+                            'original_name': cp_row['Supernumerary'],
+                            'new_name': cp_row['Supernumerary'],
+                            'row': int(cp_row['Excel_Row']),
+                            'col': int(cp_row['Excel_Col']),
+                            'type': 'REEMPLAZAR',
+                            'observaciones': cp_row.get('Observation', ''),
+                            'clasificacion': 'Secuencia Normal'
+                        })
                 
                 # Guardar log para deshacer
                 deleted_items_log.append({
@@ -182,17 +188,21 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                 })
                 
                 # Eliminar el turno
-                dp.delete_shift_cell(
-                    excel_path=excel_path,
-                    sheet_name=r_del['Sheet'],
-                    row_idx=int(r_del['Excel_Row']),
-                    col_idx=int(r_del['Excel_Col']),
-                    date_val=r_del['Date'],
-                    observation="",
-                    original_name=r_del['Supernumerary'],
-                    clasificacion=row_clasif
-                )
+                mods_list.append({
+                    'sheet': r_del['Sheet'],
+                    'date': r_del['Date'],
+                    'original_name': r_del['Supernumerary'],
+                    'new_name': '',
+                    'row': int(r_del['Excel_Row']),
+                    'col': int(r_del['Excel_Col']),
+                    'type': 'ELIMINAR',
+                    'observaciones': '',
+                    'clasificacion': row_clasif
+                })
                 deleted_count += 1
+            
+            if mods_list:
+                dp.save_modifications_batch(excel_path, mods_list)
             
             # Registrar última acción para deshacer
             st.session_state.last_action = {

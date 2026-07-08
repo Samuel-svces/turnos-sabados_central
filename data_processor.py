@@ -870,6 +870,28 @@ def duplicate_schedule_batch(excel_path, target_sheet, target_date, shifts_to_de
     return True
 
 
+def add_shifts_batch(excel_path, shifts_list):
+    mods_list = []
+    for s in shifts_list:
+        new_name = str(s['doc']).strip().upper()
+        if not new_name:
+            continue
+        mods_list.append({
+            'sheet': s['sheet'],
+            'date': s['date'],
+            'original_name': '',
+            'new_name': new_name,
+            'row': 0,
+            'col': 0,
+            'type': 'AGREGAR',
+            'observaciones': s.get('obs', ''),
+            'clasificacion': s.get('clasificacion', 'Secuencia Normal')
+        })
+    if mods_list:
+        save_modifications_batch(excel_path, mods_list)
+    return True
+
+
 # ---------------------------------------------------------------------------
 # Consolidación — NOTA: en modo SharePoint esta función solo limpia los deltas.
 # El Excel maestro NO se modifica (es de solo lectura en SharePoint).
