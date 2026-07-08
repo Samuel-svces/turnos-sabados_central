@@ -327,6 +327,15 @@ with tab_calendar:
         const buttons = window.parent.document.querySelectorAll('button');
         buttons.forEach(btn => {
             const text = btn.innerText.trim();
+            // Ocultar botones de control interno de eliminación
+            if (text === 'CONFIRM_DELETE_SINGLE' || text === 'CONFIRM_DELETE_BULK') {
+                btn.style.setProperty('display', 'none', 'important');
+                const parentDiv = btn.closest('div[data-testid="element-container"]');
+                if (parentDiv) {
+                    parentDiv.style.setProperty('display', 'none', 'important');
+                }
+                return;
+            }
             // Estilizar el botón del engranaje (Popover de Administración)
             if (text.includes('⚙️')) {
                 // Aplicar estilos del engranaje premium
