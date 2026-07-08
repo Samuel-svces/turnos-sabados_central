@@ -755,7 +755,8 @@ with tab_calendar:
                     two_weeks_ago = sat_date - datetime.timedelta(weeks=2)
                     prev_shifts = df_shifts[df_shifts['Date'] == two_weeks_ago] if not df_shifts.empty else pd.DataFrame()
                     if not prev_shifts.empty:
-                        label_dup = f"📋 Duplicar del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}"
+                        st.markdown("<div class='dup-btn-wrapper'></div>", unsafe_allow_html=True)
+                        label_dup = f"Duplicar del {two_weeks_ago.day} {dp.MONTH_NAMES_SP[two_weeks_ago.month]}"
                         if st.button(label_dup, key=f"dup_btn_col_{sat_date}", use_container_width=True):
                             with st.spinner("Duplicando..."):
                                 try:

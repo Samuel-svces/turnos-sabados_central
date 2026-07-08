@@ -1237,10 +1237,10 @@ def apply_styles():
         vertical-align: middle;
     }
     
-    /* Añadir icono bi-copy al botón Duplicar Programación */
+    /* Añadir icono bi-clipboard-plus al botón Duplicar Programación */
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button p::before,
     div.element-container:has(.dup-btn-wrapper) + div.element-container button p::before {
-        content: "\\f2c2"; /* bi-copy */
+        content: "\\f28e"; /* bi-clipboard-plus */
         font-family: "bootstrap-icons";
         margin-right: 0.4rem;
         font-size: 1.15rem;
