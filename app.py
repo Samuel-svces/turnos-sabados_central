@@ -159,10 +159,8 @@ with col_gear:
                     if 'saturday_offset' in st.session_state:
                         del st.session_state.saturday_offset
                     st.session_state.pwd_error = None
-                elif val:
-                    st.session_state.pwd_error = "Contraseña incorrecta"
                 else:
-                    st.session_state.pwd_error = None
+                    st.session_state.pwd_error = "Contraseña incorrecta"
 
             pwd_input = st.text_input(
                 "Contraseña de Admin:", 
