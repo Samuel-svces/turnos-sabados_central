@@ -469,6 +469,22 @@ with tab_calendar:
             // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
             if (/^\d/.test(text)) {
                 btn.classList.add('custom-header-btn');
+                btn.style.setProperty('background-color', '#005eb8', 'important');
+                btn.style.setProperty('color', 'white', 'important');
+                btn.style.setProperty('border', 'none', 'important');
+                btn.style.setProperty('box-shadow', '0 4px 10px rgba(0,94,184,0.15)', 'important');
+                btn.style.setProperty('font-weight', '700', 'important');
+                btn.style.setProperty('font-size', '0.92rem', 'important');
+                btn.style.setProperty('border-radius', '8px', 'important');
+                btn.style.setProperty('width', '100%', 'important');
+                btn.style.setProperty('display', 'block', 'important');
+                btn.style.setProperty('margin-bottom', '0.75rem', 'important');
+                btn.style.setProperty('padding', '0.55rem 0.6rem', 'important');
+                const pHeader = btn.querySelector('p, span');
+                if (pHeader) {
+                    pHeader.style.setProperty('color', 'white', 'important');
+                    pHeader.style.setProperty('font-weight', '700', 'important');
+                }
                 return;
             }
 
