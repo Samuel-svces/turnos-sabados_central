@@ -161,6 +161,7 @@ with col_gear:
                     st.session_state.pwd_error = None
                 else:
                     st.session_state.pwd_error = "Contraseña incorrecta"
+                    st.session_state.admin_pwd_popover = ""
 
             pwd_input = st.text_input(
                 "Contraseña de Admin:", 
@@ -172,8 +173,7 @@ with col_gear:
             login_clicked = st.button("Iniciar Sesión", use_container_width=True, key="btn_popover_login")
             if login_clicked:
                 on_pwd_enter()
-                if st.session_state.is_admin:
-                    st.rerun()
+                st.rerun()
                     
             if st.session_state.pwd_error:
                 st.error(st.session_state.pwd_error)
