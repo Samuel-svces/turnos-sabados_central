@@ -130,7 +130,7 @@ def show_selection_dialog(action_details, load_app_data_func):
         
         col_confirm, col_cancel = st.columns(2)
         with col_confirm:
-            if st.button("❌ Confirmar", use_container_width=True, type="primary"):
+            if st.button("❌ Confirmar", use_container_width=True, type="primary", key="btn_confirm_delete_action"):
                 try:
                     df_s = st.session_state.shifts_df
                     current_date = action_details['date']
@@ -226,7 +226,7 @@ def show_selection_dialog(action_details, load_app_data_func):
                 except Exception as e:
                     st.error(f"Error al eliminar: {e}")
         with col_cancel:
-            if st.button("↩️ Cancelar", use_container_width=True):
+            if st.button("↩️ Cancelar", use_container_width=True, key="btn_cancel_delete_action"):
                 st.session_state.show_delete_options = False
     else:
         col_save, col_delete = st.columns(2)
