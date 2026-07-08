@@ -415,6 +415,7 @@ with tab_calendar:
                 btn.style.removeProperty('border-color');
                 btn.style.removeProperty('background');
                 btn.style.removeProperty('color');
+                return;
             } else if(text.includes('Todos')) {
                 btn.classList.add('custom-btn-filter-all');
                 const isActiveAll = btn.getAttribute('data-testid') === 'baseButton-primary';
@@ -433,6 +434,7 @@ with tab_calendar:
                 }
                 btn.style.setProperty('border-style', 'solid', 'important');
                 btn.style.setProperty('border-width', '1.5px', 'important');
+                return;
             } else if(text.includes('Normal')) {
                 btn.classList.add('custom-btn-filter-normal');
                 const isActiveNormal = btn.getAttribute('data-testid') === 'baseButton-primary';
@@ -451,6 +453,7 @@ with tab_calendar:
                 }
                 btn.style.setProperty('border-style', 'solid', 'important');
                 btn.style.setProperty('border-width', '1.5px', 'important');
+                return;
             } else if(text.includes('Compensación')) {
                 btn.classList.add('custom-btn-filter-comp');
                 const isActiveComp = btn.getAttribute('data-testid') === 'baseButton-primary';
@@ -469,6 +472,7 @@ with tab_calendar:
                 }
                 btn.style.setProperty('border-style', 'solid', 'important');
                 btn.style.setProperty('border-width', '1.5px', 'important');
+                return;
             }
         });
 
