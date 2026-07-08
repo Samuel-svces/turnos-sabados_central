@@ -22,6 +22,162 @@ def get_allowed_doctors():
         allowed = sorted(list(set(docs_with_shifts + added_docs)))
     return allowed
 
+def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, new_name, observation, classification, current_clasif, swap_target, current_doc):
+    try:
+        # 1. Limpiar contraparte anterior si esta asignación ya tenía un cambio registrado
+        if "Cambio de turno con" in current_clasif:
+            old_counterpart = current_clasif.replace("Cambio de turno con ", "").strip()
+            df_s = st.session_state.shifts_df
+            match_counterpart = df_s[(df_s['Supernumerary'] == old_counterpart) & 
+                                     (df_s['Classification'].str.contains(current_doc, na=False))]
+            for _, r_match in match_counterpart.iterrows():
+                dp.update_shift_cell(
+                    excel_path=excel_path,
+                    sheet_name=r_match['Sheet'],
+                    row_idx=int(r_match['Excel_Row']),
+                    col_idx=int(r_match['Excel_Col']),
+                    new_name=r_match['Supernumerary'],
+                    date_val=r_match['Date'],
+                    observation=r_match.get('Observation', ''),
+                    original_name=r_match['Supernumerary'],
+                    clasificacion="Secuencia Normal"
+                )
+        
+        # 2. Guardar cambios del turno
+        if classification == "Cambio de turno" and swap_target:
+            # Guardar médico de origen
+            dp.update_shift_cell(
+                excel_path=excel_path,
+                sheet_name=sheet,
+                row_idx=row,
+                col_idx=col,
+                new_name=current_doc,
+                date_val=date_val,
+                observation=observation.strip(),
+                original_name=current_doc,
+                clasificacion=f"Cambio de turno con {swap_target['doctor']}"
+            )
+            
+            # Guardar médico de destino
+            dp.update_shift_cell(
+                excel_path=excel_path,
+                sheet_name=swap_target['sheet'],
+                row_idx=swap_target['row'],
+                col_idx=swap_target['col'],
+                new_name=swap_target['doctor'],
+                date_val=swap_target['date'],
+                observation=swap_target['observation'],
+                original_name=swap_target['doctor'],
+                clasificacion=f"Cambio de turno con {current_doc}"
+            )
+        else:
+            dp.update_shift_cell(
+                excel_path=excel_path,
+                sheet_name=sheet,
+                row_idx=row,
+                col_idx=col,
+                new_name=new_name,
+                date_val=date_val,
+                observation=observation.strip(),
+                original_name=original_name,
+                clasificacion=classification
+            )
+            
+        st.session_state.show_delete_options = False
+        st.session_state.should_rerun_main = True
+    except Exception as e:
+        st.session_state.last_error = f"Error al guardar cambios: {e}"
+
+def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, current_clasif):
+    try:
+        df_s = st.session_state.shifts_df
+        del_scope = st.session_state.get("del_scope_radio_flat", "Eliminar solo de esta secuencia")
+        
+        if del_scope == "Eliminar de todas las secuencias (las futuras)":
+            shifts_to_delete = df_s[
+                (df_s['Supernumerary'] == current_doc) & 
+                (df_s['Date'] >= date_val)
+            ]
+        else:
+            shifts_to_delete = df_s[
+                (df_s['Sheet'] == sheet) &
+                (df_s['Excel_Row'] == row) &
+                (df_s['Excel_Col'] == col) &
+                (df_s['Date'] == date_val)
+            ]
+            if shifts_to_delete.empty:
+                shifts_to_delete = df_s[
+                    (df_s['Sheet'] == sheet) &
+                    (df_s['Date'] == date_val) &
+                    (df_s['Supernumerary'] == current_doc)
+                ]
+        
+        if shifts_to_delete.empty:
+            st.session_state.last_error = "No se encontraron asignaciones coincidentes para eliminar."
+        else:
+            deleted_count = 0
+            deleted_items_log = []
+            
+            for _, r_del in shifts_to_delete.iterrows():
+                row_clasif = r_del.get('Classification', 'Secuencia Normal')
+                
+                # Limpiar contraparte si era un cambio de turno
+                if "Cambio de turno con" in row_clasif:
+                    old_counterpart = row_clasif.replace("Cambio de turno con ", "").strip()
+                    match_counterpart = df_s[
+                        (df_s['Supernumerary'] == old_counterpart) & 
+                        (df_s['Classification'].str.contains(r_del['Supernumerary'], na=False))
+                    ]
+                    for _, cp_row in match_counterpart.iterrows():
+                        dp.update_shift_cell(
+                            excel_path=excel_path,
+                            sheet_name=cp_row['Sheet'],
+                            row_idx=int(cp_row['Excel_Row']),
+                            col_idx=int(cp_row['Excel_Col']),
+                            new_name=cp_row['Supernumerary'],
+                            date_val=cp_row['Date'],
+                            observation=cp_row.get('Observation', ''),
+                            original_name=cp_row['Supernumerary'],
+                            clasificacion="Secuencia Normal"
+                        )
+                
+                # Guardar log para deshacer
+                deleted_items_log.append({
+                    'sheet': r_del['Sheet'], 'date': r_del['Date'], 'doc': r_del['Supernumerary'],
+                    'obs': r_del.get('Observation', ''), 'clasificacion': row_clasif
+                })
+                
+                # Eliminar el turno
+                dp.delete_shift_cell(
+                    excel_path=excel_path,
+                    sheet_name=r_del['Sheet'],
+                    row_idx=int(r_del['Excel_Row']),
+                    col_idx=int(r_del['Excel_Col']),
+                    date_val=r_del['Date'],
+                    observation="",
+                    original_name=r_del['Supernumerary'],
+                    clasificacion=row_clasif
+                )
+                deleted_count += 1
+            
+            # Registrar última acción para deshacer
+            st.session_state.last_action = {
+                'action': 'ELIMINAR_LOTE' if del_scope == "Eliminar de todas las secuencias (las futuras)" else 'ELIMINAR_SIMPLE',
+                'excel_path': excel_path,
+                'sheet': sheet,
+                'row': row,
+                'col': col,
+                'date': date_val,
+                'doc': current_doc,
+                'clasificacion': current_clasif,
+                'deleted_items': deleted_items_log
+            }
+            
+            st.session_state.show_delete_options = False
+            st.session_state.should_rerun_main = True
+    except Exception as e:
+        st.session_state.last_error = f"Error al eliminar: {e}"
+
 @st.dialog("Gestión de Turno")
 def show_selection_dialog(action_details, load_app_data_func):
     if not st.session_state.is_admin:
