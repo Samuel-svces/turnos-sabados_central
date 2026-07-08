@@ -228,7 +228,6 @@ def show_selection_dialog(action_details, load_app_data_func):
         with col_cancel:
             if st.button("↩️ Cancelar", use_container_width=True):
                 st.session_state.show_delete_options = False
-                st.rerun()
     else:
         col_save, col_delete = st.columns(2)
         
@@ -305,7 +304,6 @@ def show_selection_dialog(action_details, load_app_data_func):
         with col_delete:
             if st.button("❌ Eliminar Asignación", use_container_width=True, type="secondary"):
                 st.session_state.show_delete_options = True
-                st.rerun()
 
 @st.dialog("Agregar Médico Adicional")
 def show_add_dialog(sat_date, sheet, load_app_data_func):
