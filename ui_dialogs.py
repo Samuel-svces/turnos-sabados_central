@@ -120,7 +120,6 @@ def show_selection_dialog(action_details, load_app_data_func):
         st.markdown("---")
         st.markdown("##### 🗑️ Confirmar Eliminación de Asignación")
         
-        # Opciones de radio planas como solicitó el usuario
         del_scope = st.radio(
             "Seleccione una opción para eliminar:",
             ["Eliminar solo de esta secuencia", "Eliminar de todas las secuencias (las futuras)"],
@@ -130,101 +129,22 @@ def show_selection_dialog(action_details, load_app_data_func):
         
         col_confirm, col_cancel = st.columns(2)
         with col_confirm:
-            if st.button("❌ Confirmar", use_container_width=True, type="primary", key="btn_confirm_delete_action"):
-                try:
-                    df_s = st.session_state.shifts_df
-                    current_date = action_details['date']
-                    
-                    if del_scope == "Eliminar de todas las secuencias (las futuras)":
-                        shifts_to_delete = df_s[
-                            (df_s['Supernumerary'] == current_doc) & 
-                            (df_s['Date'] >= current_date)
-                        ]
-                    else:
-                        shifts_to_delete = df_s[
-                            (df_s['Sheet'] == action_details['sheet']) &
-                            (df_s['Excel_Row'] == action_details['row']) &
-                            (df_s['Excel_Col'] == action_details['col']) &
-                            (df_s['Date'] == current_date)
-                        ]
-                        if shifts_to_delete.empty:
-                            shifts_to_delete = df_s[
-                                (df_s['Sheet'] == action_details['sheet']) &
-                                (df_s['Date'] == current_date) &
-                                (df_s['Supernumerary'] == current_doc)
-                            ]
-                    
-                    if shifts_to_delete.empty:
-                        st.warning("No se encontraron asignaciones coincidentes para eliminar.")
-                    else:
-                        deleted_count = 0
-                        deleted_items_log = []
-                        
-                        for _, row in shifts_to_delete.iterrows():
-                            row_clasif = row.get('Classification', 'Secuencia Normal')
-                            
-                            # Limpiar contraparte si era un cambio de turno
-                            if "Cambio de turno con" in row_clasif:
-                                old_counterpart = row_clasif.replace("Cambio de turno con ", "").strip()
-                                match_counterpart = df_s[
-                                    (df_s['Supernumerary'] == old_counterpart) & 
-                                    (df_s['Classification'].str.contains(row['Supernumerary'], na=False))
-                                ]
-                                for _, cp_row in match_counterpart.iterrows():
-                                    dp.update_shift_cell(
-                                        excel_path=st.session_state.excel_path,
-                                        sheet_name=cp_row['Sheet'],
-                                        row_idx=int(cp_row['Excel_Row']),
-                                        col_idx=int(cp_row['Excel_Col']),
-                                        new_name=cp_row['Supernumerary'],
-                                        date_val=cp_row['Date'],
-                                        observation=cp_row.get('Observation', ''),
-                                        original_name=cp_row['Supernumerary'],
-                                        clasificacion="Secuencia Normal"
-                                    )
-                            
-                            # Guardar log para deshacer
-                            deleted_items_log.append({
-                                'sheet': row['Sheet'], 'date': row['Date'], 'doc': row['Supernumerary'],
-                                'obs': row.get('Observation', ''), 'clasificacion': row_clasif
-                            })
-                            
-                            # Eliminar el turno
-                            dp.delete_shift_cell(
-                                excel_path=st.session_state.excel_path,
-                                sheet_name=row['Sheet'],
-                                row_idx=int(row['Excel_Row']),
-                                col_idx=int(row['Excel_Col']),
-                                date_val=row['Date'],
-                                observation="",
-                                original_name=row['Supernumerary'],
-                                clasificacion=row_clasif
-                            )
-                            deleted_count += 1
-                        
-                        # Registrar última acción para deshacer
-                        st.session_state.last_action = {
-                            'action': 'ELIMINAR_LOTE' if del_scope == "Eliminar de todas las secuencias (las futuras)" else 'ELIMINAR_SIMPLE',
-                            'excel_path': st.session_state.excel_path,
-                            'sheet': action_details['sheet'],
-                            'row': action_details['row'],
-                            'col': action_details['col'],
-                            'date': action_details['date'],
-                            'doc': current_doc,
-                            'clasificacion': current_clasif,
-                            'deleted_items': deleted_items_log
-                        }
-                        
-                        if deleted_count > 1:
-                            st.success(f"Se eliminaron {deleted_count} turnos futuros de {current_doc}.")
-                        else:
-                            st.success(f"Turno de {current_doc} eliminado.")
-                        
-                        st.session_state.show_delete_options = False
-                        load_app_data_func()
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Error al eliminar: {e}")
+            st.button(
+                "❌ Confirmar", 
+                use_container_width=True, 
+                type="primary", 
+                key="btn_confirm_delete_action",
+                on_click=delete_shift_callback,
+                args=(
+                    st.session_state.excel_path,
+                    action_details['sheet'],
+                    action_details['row'],
+                    action_details['col'],
+                    action_details['date'],
+                    current_doc,
+                    current_clasif
+                )
+            )
         with col_cancel:
             if st.button("↩️ Cancelar", use_container_width=True, key="btn_cancel_delete_action"):
                 st.session_state.show_delete_options = False
@@ -232,77 +152,30 @@ def show_selection_dialog(action_details, load_app_data_func):
         col_save, col_delete = st.columns(2)
         
         with col_save:
-            if st.button("💾 Guardar Cambios", use_container_width=True, type="primary"):
-                try:
-                    # 1. Limpiar contraparte anterior si esta asignación ya tenía un cambio registrado
-                    if "Cambio de turno con" in current_clasif:
-                        old_counterpart = current_clasif.replace("Cambio de turno con ", "").strip()
-                        df_s = st.session_state.shifts_df
-                        match_counterpart = df_s[(df_s['Supernumerary'] == old_counterpart) & 
-                                                 (df_s['Classification'].str.contains(current_doc, na=False))]
-                        for _, row in match_counterpart.iterrows():
-                            dp.update_shift_cell(
-                                excel_path=st.session_state.excel_path,
-                                sheet_name=row['Sheet'],
-                                row_idx=int(row['Excel_Row']),
-                                col_idx=int(row['Excel_Col']),
-                                new_name=row['Supernumerary'],
-                                date_val=row['Date'],
-                                observation=row.get('Observation', ''),
-                                original_name=row['Supernumerary'],
-                                clasificacion="Secuencia Normal"
-                            )
-                    
-                    # 2. Guardar cambios del turno
-                    if new_clasif == "Cambio de turno" and swap_target:
-                        # Guardar médico de origen (mantiene su nombre original en secuencia normal)
-                        dp.update_shift_cell(
-                            excel_path=st.session_state.excel_path,
-                            sheet_name=action_details['sheet'],
-                            row_idx=action_details['row'],
-                            col_idx=action_details['col'],
-                            new_name=current_doc,
-                            date_val=action_details['date'],
-                            observation=new_obs.strip(),
-                            original_name=current_doc,
-                            clasificacion=f"Cambio de turno con {swap_target['doctor']}"
-                        )
-                        
-                        # Guardar médico de destino (mantiene su nombre original en secuencia normal)
-                        dp.update_shift_cell(
-                            excel_path=st.session_state.excel_path,
-                            sheet_name=swap_target['sheet'],
-                            row_idx=swap_target['row'],
-                            col_idx=swap_target['col'],
-                            new_name=swap_target['doctor'],
-                            date_val=swap_target['date'],
-                            observation=swap_target['observation'],
-                            original_name=swap_target['doctor'],
-                            clasificacion=f"Cambio de turno con {current_doc}"
-                        )
-                        
-                        st.success(f"Cambio de turno registrado entre {current_doc} y {swap_target['doctor']}.")
-                    else:
-                        dp.update_shift_cell(
-                            excel_path=st.session_state.excel_path,
-                            sheet_name=action_details['sheet'],
-                            row_idx=action_details['row'],
-                            col_idx=action_details['col'],
-                            new_name=new_doc,
-                            date_val=action_details['date'],
-                            observation=new_obs.strip(),
-                            original_name=current_doc,
-                            clasificacion=new_clasif
-                        )
-                        st.success(f"Turno de {current_doc} actualizado.")
-                    
-                    load_app_data_func()
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error al guardar cambios: {e}")
+            st.button(
+                "💾 Guardar Cambios", 
+                use_container_width=True, 
+                type="primary", 
+                key="btn_save_changes_action",
+                on_click=save_changes_callback,
+                args=(
+                    st.session_state.excel_path,
+                    action_details['sheet'],
+                    action_details['row'],
+                    action_details['col'],
+                    action_details['date'],
+                    current_doc,
+                    new_doc,
+                    new_obs,
+                    new_clasif,
+                    current_clasif,
+                    swap_target,
+                    current_doc
+                )
+            )
 
         with col_delete:
-            if st.button("❌ Eliminar Asignación", use_container_width=True, type="secondary"):
+            if st.button("❌ Eliminar Asignación", use_container_width=True, type="secondary", key="btn_show_delete_options_action"):
                 st.session_state.show_delete_options = True
 
 @st.dialog("Agregar Médico Adicional")
