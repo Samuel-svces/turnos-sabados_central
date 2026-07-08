@@ -1246,7 +1246,7 @@ def apply_styles():
         font-size: 1.15rem;
         vertical-align: middle;
         font-weight: 800;
-        color: #1976d2;
+        color: #1e293b;
         display: inline-block;
     }
     
@@ -1257,6 +1257,28 @@ def apply_styles():
         height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
+    }
+
+    /* Estilo premium para botones primarios (Lighter Red) */
+    button[data-testid="baseButton-primary"] {
+        background-color: #ef5350 !important; /* Lighter/soft red */
+        border-color: #ef5350 !important;
+        color: #ffffff !important;
+        transition: all 0.2s ease !important;
+    }
+    button[data-testid="baseButton-primary"]:hover,
+    button[data-testid="baseButton-primary"]:active,
+    button[data-testid="baseButton-primary"]:focus {
+        background-color: #e53935 !important; /* Slightly darker on hover */
+        border-color: #e53935 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(239, 83, 80, 0.3) !important;
+    }
+    button[data-testid="baseButton-primary"] p,
+    button[data-testid="baseButton-primary"] span,
+    button[data-testid="baseButton-primary"] svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
     </style>
     """)

@@ -346,11 +346,12 @@ def show_selection_dialog(action_details, load_app_data_func):
         col_confirm, col_cancel = st.columns(2)
         with col_confirm:
             st.button(
-                "❌ Confirmar", 
+                "Confirmar", 
                 use_container_width=True, 
                 type="primary", 
                 key="btn_confirm_delete_action",
                 on_click=delete_shift_callback,
+                icon=":material/check_circle:",
                 args=(
                     st.session_state.excel_path,
                     action_details['sheet'],
@@ -364,21 +365,23 @@ def show_selection_dialog(action_details, load_app_data_func):
             )
         with col_cancel:
             st.button(
-                "↩️ Cancelar", 
+                "Cancelar", 
                 use_container_width=True, 
                 key="btn_cancel_delete_action",
-                on_click=cancel_delete_options_callback
+                on_click=cancel_delete_options_callback,
+                icon=":material/cancel:"
             )
     else:
         col_save, col_delete = st.columns(2)
         
         with col_save:
             st.button(
-                "💾 Guardar Cambios", 
+                "Guardar Cambios", 
                 use_container_width=True, 
                 type="primary", 
                 key="btn_save_changes_action",
                 on_click=save_changes_callback,
+                icon=":material/save:",
                 args=(
                     st.session_state.excel_path,
                     action_details['sheet'],
@@ -398,11 +401,12 @@ def show_selection_dialog(action_details, load_app_data_func):
 
         with col_delete:
             st.button(
-                "❌ Eliminar Asignación", 
+                "Eliminar Asignación", 
                 use_container_width=True, 
                 type="secondary", 
                 key="btn_show_delete_options_action",
-                on_click=show_delete_options_callback
+                on_click=show_delete_options_callback,
+                icon=":material/delete:"
             )
 
 @st.dialog("Agregar Médico Adicional")
@@ -428,7 +432,7 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
     if new_doc and new_doc.upper() in already_assigned:
         st.warning(f"⚠️ **{new_doc}** ya está asignado a este sábado ({sat_date.strftime('%d/%m/%Y')}). No se pueden tener duplicados.")
     
-    if st.button("Agregar Médico", use_container_width=True, type="primary"):
+    if st.button("Agregar Médico", use_container_width=True, type="primary", icon=":material/person_add:"):
         if new_doc and new_doc.upper() in already_assigned:
             st.error(f"No se puede agregar: **{new_doc}** ya está programado para este sábado.")
         else:

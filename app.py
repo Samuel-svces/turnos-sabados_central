@@ -218,7 +218,7 @@ with tab_calendar:
         """, unsafe_allow_html=True)
     
     if st.session_state.is_admin and st.session_state.last_action is not None:
-        if st.button("↩️ Deshacer Último Movimiento", type="secondary", use_container_width=False):
+        if st.button("Deshacer Último Movimiento", type="secondary", use_container_width=False, icon=":material/undo:"):
             la = st.session_state.last_action
             try:
                 if la['action'] in ['ELIMINAR', 'ELIMINAR_SIMPLE']:
@@ -748,7 +748,7 @@ with tab_calendar:
                     
                     # 1. Agregar Médico button
                     sheet_name = date_shifts_all.iloc[0]['Sheet'] if not date_shifts_all.empty else f"SABADOS {sat_date.year}"
-                    if st.button("➕ Agregar Médico", key=f"add_btn_col_{sat_date}", use_container_width=True, type="primary"):
+                    if st.button("Agregar Médico", key=f"add_btn_col_{sat_date}", use_container_width=True, type="primary", icon=":material/person_add:"):
                         ui_dialogs.show_add_dialog(sat_date, sheet_name, load_app_data)
                         
                     # 2. Duplicar button (if prev shifts exist)
