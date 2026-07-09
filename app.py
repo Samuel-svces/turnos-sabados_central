@@ -432,41 +432,31 @@ with tab_calendar:
                 return;
             } else if(text.includes('Normal')) {
                 btn.classList.add('custom-btn-filter-normal');
-                const isActiveNormal = btn.getAttribute('data-testid') === 'baseButton-primary' || btn.getAttribute('data-testid') === 'stBaseButton-primary';
-                if (isActiveNormal) {
-                    btn.classList.add('active');
-                    btn.style.setProperty('background-color', '#198754', 'important');
-                    btn.style.setProperty('border-color', '#198754', 'important');
-                    const pNorm = btn.querySelector('p');
-                    if (pNorm) pNorm.style.setProperty('color', '#ffffff', 'important');
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.setProperty('background-color', '#ffffff', 'important');
-                    btn.style.setProperty('border-color', '#dc3545', 'important');
-                    const pNorm = btn.querySelector('p');
-                    if (pNorm) pNorm.style.setProperty('color', '#dc3545', 'important');
+                // Remove inline style properties so stylesheet can take over!
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('border-style');
+                btn.style.removeProperty('border-width');
+                btn.style.removeProperty('background');
+                btn.style.removeProperty('color');
+                const pNorm = btn.querySelector('p');
+                if (pNorm) {
+                    pNorm.style.removeProperty('color');
                 }
-                btn.style.setProperty('border-style', 'solid', 'important');
-                btn.style.setProperty('border-width', '1.5px', 'important');
                 return;
             } else if(text.includes('Compensación')) {
                 btn.classList.add('custom-btn-filter-comp');
-                const isActiveComp = btn.getAttribute('data-testid') === 'baseButton-primary' || btn.getAttribute('data-testid') === 'stBaseButton-primary';
-                if (isActiveComp) {
-                    btn.classList.add('active');
-                    btn.style.setProperty('background-color', '#f59e0b', 'important');
-                    btn.style.setProperty('border-color', '#f59e0b', 'important');
-                    const pComp = btn.querySelector('p');
-                    if (pComp) pComp.style.setProperty('color', '#ffffff', 'important');
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.setProperty('background-color', '#ffffff', 'important');
-                    btn.style.setProperty('border-color', '#d97706', 'important');
-                    const pComp = btn.querySelector('p');
-                    if (pComp) pComp.style.setProperty('color', '#d97706', 'important');
+                // Remove inline style properties so stylesheet can take over!
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('border-style');
+                btn.style.removeProperty('border-width');
+                btn.style.removeProperty('background');
+                btn.style.removeProperty('color');
+                const pComp = btn.querySelector('p');
+                if (pComp) {
+                    pComp.style.removeProperty('color');
                 }
-                btn.style.setProperty('border-style', 'solid', 'important');
-                btn.style.setProperty('border-width', '1.5px', 'important');
                 return;
             }
         });

@@ -801,42 +801,128 @@ def apply_styles():
     }
 
     /* 6. Botón de Filtro Normal (Verde) */
-    button.custom-btn-filter-normal {
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"],
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
-        border: 1.5px solid #dc3545 !important;
+        border: 1.5px solid #198754 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-normal p {
-        color: #dc3545 !important;
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"] p,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"] p {
+        color: #198754 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-normal:hover, button.custom-btn-filter-normal:active, button.custom-btn-filter-normal:focus, button.custom-btn-filter-normal.active {
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:hover,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:active,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:focus,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:hover,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:active,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:focus {
         background-color: #198754 !important;
         border-color: #198754 !important;
     }
-    button.custom-btn-filter-normal:hover p, button.custom-btn-filter-normal:active p, button.custom-btn-filter-normal:focus p, button.custom-btn-filter-normal.active p {
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:hover p,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:active p,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:focus p,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:hover p,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:active p,
+    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:focus p {
+        color: #ffffff !important;
+    }
+
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"],
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"] {
+        background-color: #198754 !important;
+        border: 1.5px solid #198754 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"] p,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"] p {
+        color: #ffffff !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:hover,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:active,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:focus,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:hover,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:active,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:focus {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+    }
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:hover p,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:active p,
+    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:focus p,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:hover p,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:active p,
+    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:focus p {
         color: #ffffff !important;
     }
 
     /* 7. Botón de Filtro Compensación (Amarillo) */
-    button.custom-btn-filter-comp {
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"],
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         border: 1.5px solid #d97706 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-comp p {
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"] p,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"] p {
         color: #d97706 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-comp:hover, button.custom-btn-filter-comp:active, button.custom-btn-filter-comp:focus, button.custom-btn-filter-comp.active {
-        background-color: #f59e0b !important;
-        border-color: #f59e0b !important;
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:hover,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:active,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:focus,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:hover,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:active,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:focus {
+        background-color: #d97706 !important;
+        border-color: #d97706 !important;
     }
-    button.custom-btn-filter-comp:hover p, button.custom-btn-filter-comp:active p, button.custom-btn-filter-comp:focus p, button.custom-btn-filter-comp.active p {
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:hover p,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:active p,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:focus p,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:hover p,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:active p,
+    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:focus p {
+        color: #ffffff !important;
+    }
+
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"],
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"] {
+        background-color: #d97706 !important;
+        border: 1.5px solid #d97706 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"] p,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"] p {
+        color: #ffffff !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:hover,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:active,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:focus,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:hover,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:active,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:focus {
+        background-color: #d97706 !important;
+        border-color: #d97706 !important;
+    }
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:hover p,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:active p,
+    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:focus p,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:hover p,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:active p,
+    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:focus p {
         color: #ffffff !important;
     }
 
