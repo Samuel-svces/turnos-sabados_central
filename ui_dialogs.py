@@ -219,6 +219,8 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             
             st.session_state.show_delete_options = False
             st.session_state.should_rerun_main = True
+            st.session_state["show_delete_success_alert"] = True
+            st.session_state["deleted_doc_name"] = current_doc
             load_app_data_func()
             st.rerun()
     except Exception as e:

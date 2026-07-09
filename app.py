@@ -451,6 +451,41 @@ with tab_calendar:
         """, height=0)
         st.session_state["show_error_alert"] = False
 
+    # Renderizar alerta de éxito al eliminar un médico
+    if st.session_state.get("show_delete_success_alert", False):
+        deleted_doc = st.session_state.get("deleted_doc_name", "Médico")
+        alert_id = datetime.datetime.now().timestamp()
+        st.components.v1.html(f"""
+        <script>
+            // Alert ID: {alert_id}
+            try {{
+                const runAlert = () => {{
+                    window.parent.Swal.fire({{
+                        title: "Usuario Eliminado",
+                        text: "{deleted_doc} ha sido eliminado correctamente.",
+                        icon: "success",
+                        draggable: true,
+                        confirmButtonColor: '#1a73e8',
+                        timer: 3500,
+                        timerProgressBar: true
+                    }});
+                }};
+
+                if (!window.parent.Swal) {{
+                    const script = window.parent.document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                    script.onload = runAlert;
+                    window.parent.document.head.appendChild(script);
+                }} else {{
+                    runAlert();
+                }}
+            }} catch (e) {{
+                console.error("SweetAlert2 parent injection failed:", e);
+            }}
+        </script>
+        """, height=0)
+        st.session_state["show_delete_success_alert"] = False
+
     if search_query:
         found = False
         if not df_shifts.empty and df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():
