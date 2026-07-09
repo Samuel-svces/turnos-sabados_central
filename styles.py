@@ -1270,8 +1270,10 @@ def apply_styles():
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        height: 42px !important;
+        width: 42px !important;
         min-height: 42px !important;
-        width: 100% !important;
+        min-width: 42px !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
         background-color: #1e293b !important;
@@ -1296,6 +1298,7 @@ def apply_styles():
         margin: 0px !important;
         padding: 0px !important;
         height: 100% !important;
+        width: 100% !important;
     }
     
     /* Añadir icono bi-arrow-clockwise al botón Refrescar */
