@@ -1279,6 +1279,8 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
         color: #ffffff !important;
     }
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg {
         display: none !important; /* Oculta la flecha chevron por defecto */
     }
