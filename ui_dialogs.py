@@ -429,6 +429,32 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
     obs = st.text_input("Observaciones (opcional):", placeholder="Ej: Pago de turno...")
     clasif = st.radio("Clasificación del Turno:", ["Secuencia Normal", "Compensación / Pago de turno"], horizontal=True)
     
+    # Calcular sábados futuros del mismo ciclo biemanal (cada 14 días)
+    is_secuencia_normal = (clasif == "Secuencia Normal")
+    future_dates = []
+    if is_secuencia_normal:
+        candidate = sat_date + datetime.timedelta(weeks=2)
+        end_date = sat_date + datetime.timedelta(weeks=52)
+        while candidate <= end_date:
+            future_dates.append(candidate)
+            candidate += datetime.timedelta(weeks=2)
+        
+        # Filtrar sólo los sábados donde el médico AÚN no está asignado
+        already_global = {}
+        if not df_s.empty:
+            for fd in future_dates:
+                docs_on_date = [n.upper() for n in df_s[df_s['Date'] == fd]['Supernumerary'].tolist()]
+                already_global[fd] = docs_on_date
+        
+        future_dates_to_add = [fd for fd in future_dates if new_doc and new_doc.upper() not in already_global.get(fd, [])]
+        
+        if future_dates_to_add:
+            with st.expander(f"📅 Secuencia automática: se replicará en {len(future_dates_to_add)} sábados", expanded=False):
+                st.caption("El médico será agregado también a los siguientes sábados del ciclo:")
+                cols_prev = st.columns(3)
+                for i, fd in enumerate(future_dates_to_add):
+                    cols_prev[i % 3].markdown(f"• **{fd.day} {MESES[fd.month-1]} {fd.year}**")
+    
     if new_doc and new_doc.upper() in already_assigned:
         st.warning(f"⚠️ **{new_doc}** ya está asignado a este sábado ({sat_date.strftime('%d/%m/%Y')}). No se pueden tener duplicados.")
     
@@ -448,6 +474,7 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                     'clasificacion': clasif
                 }
 
+                # Agregar en la fecha seleccionada
                 dp.add_shift_to_date(
                     excel_path=st.session_state.excel_path,
                     sheet_name=sheet,
@@ -456,8 +483,37 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                     observation=obs.strip(),
                     clasificacion=clasif
                 )
-                st.success(f"Médico {new_doc} agregado con éxito.")
+
+                # Si es Secuencia Normal, replicar en el ciclo biemanal hacia adelante
+                if is_secuencia_normal and future_dates_to_add:
+                    # Determinar el sheet de cada fecha futura (por año)
+                    mods_batch = []
+                    for fd in future_dates_to_add:
+                        future_sheet = f"SABADOS {fd.year}"
+                        # Si existe un sheet conocido en df_s para esa fecha, usarlo
+                        if not df_s.empty and 'Date' in df_s.columns and 'Sheet' in df_s.columns:
+                            rows_on_fd = df_s[df_s['Date'] == fd]
+                            if not rows_on_fd.empty:
+                                future_sheet = rows_on_fd.iloc[0]['Sheet']
+                        mods_batch.append({
+                            'sheet': future_sheet,
+                            'date': fd,
+                            'doc': new_doc,
+                            'obs': '',  # sin obs en fechas replicadas
+                            'clasificacion': clasif
+                        })
+                    if mods_batch:
+                        dp.add_shifts_batch(
+                            excel_path=st.session_state.excel_path,
+                            shifts_list=mods_batch
+                        )
+                    total = 1 + len(future_dates_to_add)
+                    st.success(f"✅ {new_doc} agregado con éxito en **{total} sábados** (fecha actual + {len(future_dates_to_add)} del ciclo biemanal).")
+                else:
+                    st.success(f"Médico {new_doc} agregado con éxito.")
+
                 load_app_data_func()
                 st.rerun()
             except Exception as e:
                 st.error(f"Error al agregar médico: {e}")
+
