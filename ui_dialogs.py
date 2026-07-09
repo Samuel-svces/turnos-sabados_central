@@ -307,7 +307,8 @@ def show_selection_dialog(action_details, load_app_data_func):
                         'classification': row.get('Classification', 'Secuencia Normal'),
                         'observation': row.get('Observation', '')
                     }
-            other_docs = sorted(other_docs)
+            # Ordenar cronológicamente por fecha (no alfabéticamente por label)
+            other_docs = sorted(other_docs, key=lambda lbl: other_docs_map[lbl]['date'])
             
             if other_docs:
                 default_other_idx = 0
