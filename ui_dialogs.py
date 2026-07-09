@@ -136,9 +136,17 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             else:
                 shifts_to_delete = pd.DataFrame()
 
+            # Fallback 1: buscar por sheet + fecha + médico
             if shifts_to_delete.empty:
                 shifts_to_delete = df_s[
                     (df_s['Sheet'] == sheet) &
+                    (df_s_dates == date_check) &
+                    (df_s['Supernumerary'] == current_doc)
+                ]
+            
+            # Fallback 2: buscar SOLO por fecha + médico (cualquier sheet)
+            if shifts_to_delete.empty:
+                shifts_to_delete = df_s[
                     (df_s_dates == date_check) &
                     (df_s['Supernumerary'] == current_doc)
                 ]
@@ -268,6 +276,7 @@ def show_selection_dialog(action_details, load_app_data_func):
         </script>
         """, height=0)
         st.session_state["show_delete_success_alert"] = False
+        st.rerun()  # Cierra el diálogo: st.rerun() dentro de un @st.dialog lo cierra
 
     if st.session_state.get("last_error"):
         st.error(st.session_state.last_error)
