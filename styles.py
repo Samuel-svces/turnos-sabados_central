@@ -738,23 +738,39 @@ def apply_styles():
     }
 
     /* 5. Botón de Filtro Todos (Azul) */
-    button.custom-btn-filter-all {
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         border: 1.5px solid #1a73e8 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-all p {
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"] p {
         color: #1a73e8 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-all:hover, button.custom-btn-filter-all:active, button.custom-btn-filter-all:focus, button.custom-btn-filter-all.active {
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:hover,
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:active,
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:focus {
         background-color: #1a73e8 !important;
         border-color: #1a73e8 !important;
     }
-    button.custom-btn-filter-all:hover p, button.custom-btn-filter-all:active p, button.custom-btn-filter-all:focus p, button.custom-btn-filter-all.active p {
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:hover p,
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:active p,
+    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:focus p {
         color: #ffffff !important;
+    }
+
+    button.custom-btn-filter-all[data-testid="baseButton-primary"] {
+        background-color: #1a73e8 !important;
+        border: 1.5px solid #1a73e8 !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+    }
+    button.custom-btn-filter-all[data-testid="baseButton-primary"] p {
+        color: #ffffff !important;
+        transition: color 0.2s ease !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
     }
 
     /* 6. Botón de Filtro Normal (Verde) */

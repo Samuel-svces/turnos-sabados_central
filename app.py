@@ -418,22 +418,17 @@ with tab_calendar:
                 return;
             } else if(text.includes('Todos')) {
                 btn.classList.add('custom-btn-filter-all');
-                const isActiveAll = btn.getAttribute('data-testid') === 'baseButton-primary';
-                if (isActiveAll) {
-                    btn.classList.add('active');
-                    btn.style.setProperty('background-color', '#1a73e8', 'important');
-                    btn.style.setProperty('border-color', '#1a73e8', 'important');
-                    const pAll = btn.querySelector('p');
-                    if (pAll) pAll.style.setProperty('color', '#ffffff', 'important');
-                } else {
-                    btn.classList.remove('active');
-                    btn.style.setProperty('background-color', '#ffffff', 'important');
-                    btn.style.setProperty('border-color', '#1a73e8', 'important');
-                    const pAll = btn.querySelector('p');
-                    if (pAll) pAll.style.setProperty('color', '#1a73e8', 'important');
+                // Remove inline style properties so stylesheet can take over!
+                btn.style.removeProperty('background-color');
+                btn.style.removeProperty('border-color');
+                btn.style.removeProperty('border-style');
+                btn.style.removeProperty('border-width');
+                btn.style.removeProperty('background');
+                btn.style.removeProperty('color');
+                const pAll = btn.querySelector('p');
+                if (pAll) {
+                    pAll.style.removeProperty('color');
                 }
-                btn.style.setProperty('border-style', 'solid', 'important');
-                btn.style.setProperty('border-width', '1.5px', 'important');
                 return;
             } else if(text.includes('Normal')) {
                 btn.classList.add('custom-btn-filter-normal');
@@ -477,7 +472,7 @@ with tab_calendar:
         });
 
         // 2. Estilizar botones de médico y encabezados en modo Administrador/Público (en la grilla de columnas)
-        const colButtons = window.parent.document.querySelectorAll('div[data-testid="stVerticalBlock"]:has(.columns-card-marker) div[data-testid="stColumn"] button');
+        const colButtons = window.parent.document.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
         colButtons.forEach(btn => {
             const text = (btn.innerText || "").trim();
             if (!text) return;
