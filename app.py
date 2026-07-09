@@ -288,10 +288,13 @@ with tab_calendar:
         search_query = st.text_input("Buscador", key="search_input", placeholder="", label_visibility="collapsed").strip().upper()
     
     with col_btn_search:
+        st.markdown("<div class='search-btn-marker'></div>", unsafe_allow_html=True)
         st.button("B", key="btn_search", use_container_width=True)
     with col_btn_clear:
+        st.markdown("<div class='clear-btn-marker'></div>", unsafe_allow_html=True)
         st.button("L", key="btn_clear", use_container_width=True, on_click=clear_search)
     with col_refresh:
+        st.markdown("<div class='refresh-btn-marker'></div>", unsafe_allow_html=True)
         st.button("R", key="btn_refresh", help="Recargar datos", use_container_width=True, on_click=refresh_data)
 
     # Inicializar estado para el filtro de clasificación si no existe
@@ -305,16 +308,19 @@ with tab_calendar:
         with col_lbl_f:
             st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
         with col_btn_f1:
+            st.markdown("<div class='filter-all-marker'></div>", unsafe_allow_html=True)
             f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
             if st.button("🔵 Todos", key="btn_filter_all", use_container_width=True, type=f_style_all):
                 st.session_state["filter_class"] = "Todos"
                 st.rerun()
         with col_btn_f2:
+            st.markdown("<div class='filter-normal-marker'></div>", unsafe_allow_html=True)
             f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
             if st.button("🟢 Normal", key="btn_filter_normal", use_container_width=True, type=f_style_normal):
                 st.session_state["filter_class"] = "Secuencia Normal"
                 st.rerun()
         with col_btn_f3:
+            st.markdown("<div class='filter-comp-marker'></div>", unsafe_allow_html=True)
             f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
             if st.button("🟡 Compensación", key="btn_filter_comp", use_container_width=True, type=f_style_comp):
                 st.session_state["filter_class"] = "Compensación"
@@ -325,95 +331,7 @@ with tab_calendar:
     st.components.v1.html("""
     <script>
     function styleButtons() {
-        // 1. Estilizar botones de la barra de búsqueda
-        const buttons = window.parent.document.querySelectorAll('button');
-        buttons.forEach(btn => {
-            const text = btn.innerText.trim();
-
-
-            if(text === 'B') {
-                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1.2rem" height="1.2rem"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>';
-                btn.classList.add('custom-btn-search');
-                btn.style.color = 'transparent';
-                btn.style.display = 'flex';
-                btn.style.alignItems = 'center';
-                btn.style.justifyContent = 'center';
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
-            } else if(text === 'L') {
-                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1.2rem" height="1.2rem"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>';
-                btn.classList.add('custom-btn-clear');
-                btn.style.color = 'transparent';
-                btn.style.display = 'flex';
-                btn.style.alignItems = 'center';
-                btn.style.justifyContent = 'center';
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
-            } else if(text === 'R') {
-                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1.2rem" height="1.2rem"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>';
-                btn.classList.add('custom-btn-refresh');
-                btn.style.color = 'transparent';
-                btn.style.display = 'flex';
-                btn.style.alignItems = 'center';
-                btn.style.justifyContent = 'center';
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
-            } else if(text === 'Iniciar Sesión') {
-                btn.classList.add('custom-btn-login');
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('background');
-                btn.style.removeProperty('color');
-                return;
-            } else if(text.includes('Todos')) {
-                btn.classList.add('custom-btn-filter-all');
-                // Remove inline style properties so stylesheet can take over!
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('border-style');
-                btn.style.removeProperty('border-width');
-                btn.style.removeProperty('background');
-                btn.style.removeProperty('color');
-                const pAll = btn.querySelector('p');
-                if (pAll) {
-                    pAll.style.removeProperty('color');
-                }
-                return;
-            } else if(text.includes('Normal')) {
-                btn.classList.add('custom-btn-filter-normal');
-                // Remove inline style properties so stylesheet can take over!
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('border-style');
-                btn.style.removeProperty('border-width');
-                btn.style.removeProperty('background');
-                btn.style.removeProperty('color');
-                const pNorm = btn.querySelector('p');
-                if (pNorm) {
-                    pNorm.style.removeProperty('color');
-                }
-                return;
-            } else if(text.includes('Compensación')) {
-                btn.classList.add('custom-btn-filter-comp');
-                // Remove inline style properties so stylesheet can take over!
-                btn.style.removeProperty('background-color');
-                btn.style.removeProperty('border-color');
-                btn.style.removeProperty('border-style');
-                btn.style.removeProperty('border-width');
-                btn.style.removeProperty('background');
-                btn.style.removeProperty('color');
-                const pComp = btn.querySelector('p');
-                if (pComp) {
-                    pComp.style.removeProperty('color');
-                }
-                return;
-            }
-        });
-
-        // 2. Estilizar botones de médico y encabezados en modo Administrador/Público (en la grilla de columnas)
+        // Estilizar botones de médico y encabezados en modo Administrador/Público (en la grilla de columnas)
         const colButtons = window.parent.document.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
         colButtons.forEach(btn => {
             const text = (btn.innerText || "").trim();

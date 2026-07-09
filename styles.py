@@ -662,251 +662,281 @@ def apply_styles():
 
     /* Estilos para los botones con fondo blanco por defecto y color en hover/active/focus */
     
+    /* Ocultar marcadores de botones de búsqueda */
+    div[data-testid="stElementContainer"]:has(.search-btn-marker),
+    div[data-testid="stElementContainer"]:has(.clear-btn-marker),
+    div[data-testid="stElementContainer"]:has(.refresh-btn-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+    }
+
     /* 1. Botón de Buscar (Azul) */
-    button.custom-btn-search {
+    div[data-testid="stColumn"]:has(.search-btn-marker) button {
         background-color: #ffffff !important;
         border: 1.5px solid #1a73e8 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%231a73e8"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: 1.25rem !important;
     }
-    button.custom-btn-search svg {
-        fill: #1a73e8 !important;
-        transition: fill 0.2s ease !important;
+    div[data-testid="stColumn"]:has(.search-btn-marker) button p {
+        font-size: 0 !important; /* Oculta la letra original B */
     }
-    button.custom-btn-search:hover, button.custom-btn-search:active, button.custom-btn-search:focus {
+    div[data-testid="stColumn"]:has(.search-btn-marker) button:hover,
+    div[data-testid="stColumn"]:has(.search-btn-marker) button:active,
+    div[data-testid="stColumn"]:has(.search-btn-marker) button:focus {
         background-color: #1a73e8 !important;
         border-color: #1a73e8 !important;
-    }
-    button.custom-btn-search:hover svg, button.custom-btn-search:active svg, button.custom-btn-search:focus svg {
-        fill: #ffffff !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') !important;
     }
     
     /* 2. Botón de Limpiar (Rojo) */
-    button.custom-btn-clear {
+    div[data-testid="stColumn"]:has(.clear-btn-marker) button {
         background-color: #ffffff !important;
         border: 1.5px solid #dc3545 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23dc3545"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: 1.25rem !important;
     }
-    button.custom-btn-clear svg {
-        fill: #dc3545 !important;
-        transition: fill 0.2s ease !important;
+    div[data-testid="stColumn"]:has(.clear-btn-marker) button p {
+        font-size: 0 !important; /* Oculta la letra original L */
     }
-    button.custom-btn-clear:hover, button.custom-btn-clear:active, button.custom-btn-clear:focus {
+    div[data-testid="stColumn"]:has(.clear-btn-marker) button:hover,
+    div[data-testid="stColumn"]:has(.clear-btn-marker) button:active,
+    div[data-testid="stColumn"]:has(.clear-btn-marker) button:focus {
         background-color: #dc3545 !important;
         border-color: #dc3545 !important;
-    }
-    button.custom-btn-clear:hover svg, button.custom-btn-clear:active svg, button.custom-btn-clear:focus svg {
-        fill: #ffffff !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') !important;
     }
     
     /* 3. Botón de Refrescar (Verde) */
-    button.custom-btn-refresh {
+    div[data-testid="stColumn"]:has(.refresh-btn-marker) button {
         background-color: #ffffff !important;
         border: 1.5px solid #198754 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23198754"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: 1.25rem !important;
     }
-    button.custom-btn-refresh svg {
-        fill: #198754 !important;
-        transition: fill 0.2s ease !important;
+    div[data-testid="stColumn"]:has(.refresh-btn-marker) button p {
+        font-size: 0 !important; /* Oculta la letra original R */
     }
-    button.custom-btn-refresh:hover, button.custom-btn-refresh:active, button.custom-btn-refresh:focus {
+    div[data-testid="stColumn"]:has(.refresh-btn-marker) button:hover,
+    div[data-testid="stColumn"]:has(.refresh-btn-marker) button:active,
+    div[data-testid="stColumn"]:has(.refresh-btn-marker) button:focus {
         background-color: #198754 !important;
         border-color: #198754 !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') !important;
     }
-    button.custom-btn-refresh:hover svg, button.custom-btn-refresh:active svg, button.custom-btn-refresh:focus svg {
-        fill: #ffffff !important;
+
+    /* Ocultar marcadores de botones de filtro */
+    div[data-testid="stElementContainer"]:has(.filter-all-marker),
+    div[data-testid="stElementContainer"]:has(.filter-normal-marker),
+    div[data-testid="stElementContainer"]:has(.filter-comp-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
     }
 
     /* 5. Botón de Filtro Todos (Azul) */
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"],
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"] {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"],
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         border: 1.5px solid #1a73e8 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"] p,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"] p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"] p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"] p {
         color: #1a73e8 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:hover,
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:active,
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:focus,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:hover,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:active,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:focus {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:active,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:focus,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:active,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:focus {
         background-color: #1a73e8 !important;
         border-color: #1a73e8 !important;
     }
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:hover p,
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:active p,
-    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:focus p,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:hover p,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:active p,
-    button.custom-btn-filter-all[data-testid="baseButton-secondary"]:focus p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:focus p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:focus p {
         color: #ffffff !important;
     }
 
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"],
-    button.custom-btn-filter-all[data-testid="baseButton-primary"] {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"],
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"] {
         background-color: #1a73e8 !important;
         border: 1.5px solid #1a73e8 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"] p,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"] p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"] p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"] p {
         color: #ffffff !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:hover,
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:active,
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:focus,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"]:hover,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"]:active,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"]:focus {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:active,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:focus,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:active,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:focus {
         background-color: #1a73e8 !important;
         border-color: #1a73e8 !important;
     }
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:hover p,
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:active p,
-    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:focus p,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"]:hover p,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"]:active p,
-    button.custom-btn-filter-all[data-testid="baseButton-primary"]:focus p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:focus p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:focus p {
         color: #ffffff !important;
     }
 
     /* 6. Botón de Filtro Normal (Verde) */
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"],
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"] {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"],
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         border: 1.5px solid #198754 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"] p,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"] p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"] p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"] p {
         color: #198754 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:hover,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:active,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:focus,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:hover,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:active,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:focus {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:active,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:focus,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:active,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:focus {
         background-color: #198754 !important;
         border-color: #198754 !important;
     }
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:hover p,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:active p,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-secondary"]:focus p,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:hover p,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:active p,
-    button.custom-btn-filter-normal[data-testid="baseButton-secondary"]:focus p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:focus p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:focus p {
         color: #ffffff !important;
     }
 
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"],
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"] {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"],
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"] {
         background-color: #198754 !important;
         border: 1.5px solid #198754 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"] p,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"] p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"] p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"] p {
         color: #ffffff !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:hover,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:active,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:focus,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:hover,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:active,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:focus {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:active,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:focus,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:active,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:focus {
         background-color: #198754 !important;
         border-color: #198754 !important;
     }
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:hover p,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:active p,
-    button.custom-btn-filter-normal[data-testid="stBaseButton-primary"]:focus p,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:hover p,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:active p,
-    button.custom-btn-filter-normal[data-testid="baseButton-primary"]:focus p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:focus p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:focus p {
         color: #ffffff !important;
     }
 
     /* 7. Botón de Filtro Compensación (Amarillo) */
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"],
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"] {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"],
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         border: 1.5px solid #d97706 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"] p,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"] p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"] p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"] p {
         color: #d97706 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:hover,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:active,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:focus,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:hover,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:active,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:focus {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:active,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:focus,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:active,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:focus {
         background-color: #d97706 !important;
         border-color: #d97706 !important;
     }
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:hover p,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:active p,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-secondary"]:focus p,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:hover p,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:active p,
-    button.custom-btn-filter-comp[data-testid="baseButton-secondary"]:focus p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:focus p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:focus p {
         color: #ffffff !important;
     }
 
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"],
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"] {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"],
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"] {
         background-color: #d97706 !important;
         border: 1.5px solid #d97706 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"] p,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"] p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"] p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"] p {
         color: #ffffff !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:hover,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:active,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:focus,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:hover,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:active,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:focus {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:active,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:focus,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:hover,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:active,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:focus {
         background-color: #d97706 !important;
         border-color: #d97706 !important;
     }
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:hover p,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:active p,
-    button.custom-btn-filter-comp[data-testid="stBaseButton-primary"]:focus p,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:hover p,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:active p,
-    button.custom-btn-filter-comp[data-testid="baseButton-primary"]:focus p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:focus p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:hover p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:active p,
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:focus p {
         color: #ffffff !important;
     }
 
     /* 4. Botón de Iniciar Sesión (Azul con texto) */
-    button.custom-btn-login {
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"],
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         color: #1a73e8 !important;
         border: 1.5px solid #1a73e8 !important;
@@ -916,18 +946,29 @@ def apply_styles():
         align-items: center !important;
         justify-content: center !important;
     }
-    button.custom-btn-login p {
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"] p,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"] p {
         color: #1a73e8 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
-    button.custom-btn-login:hover, button.custom-btn-login:active, button.custom-btn-login:focus {
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"]:hover,
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"]:active,
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"]:focus,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:focus {
         background-color: #1a73e8 !important;
         border-color: #1a73e8 !important;
         color: #ffffff !important;
     }
-    button.custom-btn-login:hover p, button.custom-btn-login:active p, button.custom-btn-login:focus p {
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"]:hover p,
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"]:active p,
+    div[data-testid="stPopover"] button[data-testid="stBaseButton-secondary"]:focus p,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:hover p,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:active p,
+    div[data-testid="stPopover"] button[data-testid="baseButton-secondary"]:focus p {
         color: #ffffff !important;
     }
     
