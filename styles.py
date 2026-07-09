@@ -1245,9 +1245,11 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
         font-size: 0 !important; /* Oculta el emoji original */
         margin: 0 !important;
-        display: inline-flex !important;
+        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before {
         content: "\\f3e5" !important; /* bi-gear */
@@ -1263,7 +1265,7 @@ def apply_styles():
         border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
         border-radius: 10px !important;
         box-shadow: 0 0 10px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4) !important;
-        padding: 0.35rem 0.65rem !important;
+        padding: 0 !important; /* Quitar padding para centrado perfecto */
         transition: all 0.2s ease !important;
         display: inline-flex !important;
         align-items: center !important;
@@ -1283,6 +1285,17 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg {
         display: none !important; /* Oculta la flecha chevron por defecto */
+    }
+    
+    /* Centrar perfectamente todos los contenedores intermedios del popover de administración */
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        height: 100% !important;
     }
     
     /* Añadir icono bi-arrow-clockwise al botón Refrescar */
