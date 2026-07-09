@@ -136,28 +136,7 @@ def apply_styles():
         padding-left: 10px;
     }
     
-    /* Botón del Engranaje (Popover de Administración) - Diseño Premium Dark */
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button {
-        background-color: #0f172a !important;
-        border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 10px !important;
-        box-shadow: 0 0 10px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4) !important;
-        padding: 0.35rem 0.65rem !important;
-        transition: all 0.2s ease !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button:hover {
-        background-color: #1e293b !important;
-        box-shadow: 0 0 16px rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.5) !important;
-        border-color: rgba(255, 255, 255, 0.4) !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button p {
-        display: none !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button span,
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) div[data-testid="stPopover"] button svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-    }
+
     .premium-banner-icon {
         background-color: rgba(255, 255, 255, 0.15);
         border-radius: 12px;
@@ -1263,28 +1242,45 @@ def apply_styles():
     }
     
     /* Reemplazar emoji de engranaje por icono bi-gear de Bootstrap en el Popover */
-    div[data-testid="stPopover"] button p {
-        font-size: 0; /* Oculta el emoji original */
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
+        font-size: 0 !important; /* Oculta el emoji original */
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-    div[data-testid="stPopover"] button p::before {
-        content: "\\f3e5"; /* bi-gear */
-        font-family: "bootstrap-icons";
-        font-size: 1.4rem;
-        color: #546e7a;
-        visibility: visible;
-        display: inline-block;
-        line-height: 1;
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before {
+        content: "\\f3e5" !important; /* bi-gear */
+        font-family: "bootstrap-icons" !important;
+        font-size: 1.45rem !important;
+        color: #ffffff !important;
+        visibility: visible !important;
+        display: inline-block !important;
+        line-height: 1 !important;
     }
-    div[data-testid="stPopover"] button {
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
+        background-color: #0f172a !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 10px !important;
+        box-shadow: 0 0 10px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4) !important;
+        padding: 0.35rem 0.65rem !important;
+        transition: all 0.2s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 42px !important;
+        width: 100% !important;
     }
-    div[data-testid="stPopover"] button:hover {
-        color: #1976d2 !important;
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
+        background-color: #1e293b !important;
+        box-shadow: 0 0 16px rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.5) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
     }
-    div[data-testid="stPopover"] button:hover p::before {
-        color: #1976d2;
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
+        color: #ffffff !important;
+    }
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg {
+        display: none !important; /* Oculta la flecha chevron por defecto */
     }
     
     /* Añadir icono bi-arrow-clockwise al botón Refrescar */

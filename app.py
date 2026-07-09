@@ -131,6 +131,7 @@ st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
 col_gear, col_spacer, col_empty = st.columns([1, 10, 1])
 with col_gear:
+    st.markdown("<div class='admin-gear-marker'></div>", unsafe_allow_html=True)
     with st.popover("⚙️", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
         
@@ -328,56 +329,7 @@ with tab_calendar:
         const buttons = window.parent.document.querySelectorAll('button');
         buttons.forEach(btn => {
             const text = btn.innerText.trim();
-            // Estilizar el botón del engranaje (Popover de Administración)
-            if (text.includes('⚙️')) {
-                // Aplicar estilos del engranaje premium
-                const applyGearStyle = (b) => {
-                    b.style.setProperty('background-color', '#0f172a', 'important');
-                    b.style.setProperty('border', '1.5px solid rgba(251,146,60,0.45)', 'important');
-                    b.style.setProperty('border-radius', '10px', 'important');
-                    b.style.setProperty('box-shadow', '0 0 14px rgba(251,146,60,0.22), 0 2px 8px rgba(0,0,0,0.4)', 'important');
-                    b.style.setProperty('padding', '0.35rem 0.65rem', 'important');
-                    b.style.setProperty('min-width', '60px', 'important');
-                    b.style.setProperty('display', 'inline-flex', 'important');
-                    b.style.setProperty('align-items', 'center', 'important');
-                    b.style.setProperty('gap', '4px', 'important');
-                };
-                applyGearStyle(btn);
-                // Colorear el engranaje de blanco
-                const pGear = btn.querySelector('p');
-                if (pGear) {
-                    pGear.style.setProperty('display', 'none', 'important');
-                }
-                // Colorear el ícono de Streamlit de blanco
-                const spans = btn.querySelectorAll('span, svg, [data-testid]');
-                spans.forEach(s => {
-                    s.style.setProperty('color', '#ffffff', 'important');
-                    s.style.setProperty('fill', '#ffffff', 'important');
-                });
-                // Observer dedicado para revertir cuando Streamlit reinyecte el estilo inline
-                if (!btn._gearObserver) {
-                    btn._gearObserver = new MutationObserver(() => {
-                        applyGearStyle(btn);
-                        if (pGear) pGear.style.setProperty('display', 'none', 'important');
-                    });
-                    btn._gearObserver.observe(btn, { attributes: true, attributeFilter: ['style'] });
-                }
-                // Hover
-                if (!btn._gearHover) {
-                    btn._gearHover = true;
-                    btn.addEventListener('mouseenter', () => {
-                        btn.style.setProperty('background-color', '#1e293b', 'important');
-                        btn.style.setProperty('box-shadow', '0 0 20px rgba(251,146,60,0.4), 0 4px 12px rgba(0,0,0,0.5)', 'important');
-                        btn.style.setProperty('border-color', 'rgba(251,146,60,0.7)', 'important');
-                    });
-                    btn.addEventListener('mouseleave', () => {
-                        btn.style.setProperty('background-color', '#0f172a', 'important');
-                        btn.style.setProperty('box-shadow', '0 0 14px rgba(251,146,60,0.22), 0 2px 8px rgba(0,0,0,0.4)', 'important');
-                        btn.style.setProperty('border-color', 'rgba(251,146,60,0.45)', 'important');
-                    });
-                }
-                return;
-            }
+
 
             if(text === 'B') {
                 btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1.2rem" height="1.2rem"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/></svg>';
