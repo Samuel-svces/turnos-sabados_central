@@ -432,7 +432,7 @@ with tab_calendar:
                 return;
             } else if(text.includes('Normal')) {
                 btn.classList.add('custom-btn-filter-normal');
-                const isActiveNormal = btn.getAttribute('data-testid') === 'baseButton-primary';
+                const isActiveNormal = btn.getAttribute('data-testid') === 'baseButton-primary' || btn.getAttribute('data-testid') === 'stBaseButton-primary';
                 if (isActiveNormal) {
                     btn.classList.add('active');
                     btn.style.setProperty('background-color', '#198754', 'important');
@@ -451,7 +451,7 @@ with tab_calendar:
                 return;
             } else if(text.includes('Compensación')) {
                 btn.classList.add('custom-btn-filter-comp');
-                const isActiveComp = btn.getAttribute('data-testid') === 'baseButton-primary';
+                const isActiveComp = btn.getAttribute('data-testid') === 'baseButton-primary' || btn.getAttribute('data-testid') === 'stBaseButton-primary';
                 if (isActiveComp) {
                     btn.classList.add('active');
                     btn.style.setProperty('background-color', '#f59e0b', 'important');

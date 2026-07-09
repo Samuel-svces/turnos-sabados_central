@@ -738,39 +738,66 @@ def apply_styles():
     }
 
     /* 5. Botón de Filtro Todos (Azul) */
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"],
     button.custom-btn-filter-all[data-testid="baseButton-secondary"] {
         background-color: #ffffff !important;
         border: 1.5px solid #1a73e8 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"] p,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"] p {
         color: #1a73e8 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
     }
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:hover,
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:active,
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:focus,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"]:hover,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"]:active,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"]:focus {
         background-color: #1a73e8 !important;
         border-color: #1a73e8 !important;
     }
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:hover p,
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:active p,
+    button.custom-btn-filter-all[data-testid="stBaseButton-secondary"]:focus p,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"]:hover p,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"]:active p,
     button.custom-btn-filter-all[data-testid="baseButton-secondary"]:focus p {
         color: #ffffff !important;
     }
 
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"],
     button.custom-btn-filter-all[data-testid="baseButton-primary"] {
         background-color: #1a73e8 !important;
         border: 1.5px solid #1a73e8 !important;
         transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
     }
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"] p,
     button.custom-btn-filter-all[data-testid="baseButton-primary"] p {
         color: #ffffff !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 600 !important;
+    }
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:hover,
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:active,
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:focus,
+    button.custom-btn-filter-all[data-testid="baseButton-primary"]:hover,
+    button.custom-btn-filter-all[data-testid="baseButton-primary"]:active,
+    button.custom-btn-filter-all[data-testid="baseButton-primary"]:focus {
+        background-color: #1a73e8 !important;
+        border-color: #1a73e8 !important;
+    }
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:hover p,
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:active p,
+    button.custom-btn-filter-all[data-testid="stBaseButton-primary"]:focus p,
+    button.custom-btn-filter-all[data-testid="baseButton-primary"]:hover p,
+    button.custom-btn-filter-all[data-testid="baseButton-primary"]:active p,
+    button.custom-btn-filter-all[data-testid="baseButton-primary"]:focus p {
+        color: #ffffff !important;
     }
 
     /* 6. Botón de Filtro Normal (Verde) */
@@ -1276,12 +1303,16 @@ def apply_styles():
     }
 
     /* Estilo premium para botones primarios (Lighter Red) */
+    button[data-testid="stBaseButton-primary"],
     button[data-testid="baseButton-primary"] {
         background-color: #ef5350 !important; /* Lighter/soft red */
         border-color: #ef5350 !important;
         color: #ffffff !important;
         transition: all 0.2s ease !important;
     }
+    button[data-testid="stBaseButton-primary"]:hover,
+    button[data-testid="stBaseButton-primary"]:active,
+    button[data-testid="stBaseButton-primary"]:focus,
     button[data-testid="baseButton-primary"]:hover,
     button[data-testid="baseButton-primary"]:active,
     button[data-testid="baseButton-primary"]:focus {
@@ -1290,6 +1321,9 @@ def apply_styles():
         color: #ffffff !important;
         box-shadow: 0 4px 12px rgba(239, 83, 80, 0.3) !important;
     }
+    button[data-testid="stBaseButton-primary"] p,
+    button[data-testid="stBaseButton-primary"] span,
+    button[data-testid="stBaseButton-primary"] svg,
     button[data-testid="baseButton-primary"] p,
     button[data-testid="baseButton-primary"] span,
     button[data-testid="baseButton-primary"] svg {
