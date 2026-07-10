@@ -486,6 +486,40 @@ with tab_calendar:
         """, height=0)
         st.session_state["show_delete_success_alert"] = False
 
+    # Renderizar alerta de ÉXITO de agregar médico desde el nivel principal
+    if st.session_state.get("show_add_success_alert", False):
+        added_doc = st.session_state.get("added_doc_name", "Médico")
+        add_counter = st.session_state.get("add_alert_counter", 0)
+        st.components.v1.html(f"""
+        <script>
+            // Alerta de éxito agregar #{add_counter} - ID único
+            try {{
+                const runAddSuccessAlert = () => {{
+                    window.parent.Swal.fire({{
+                        title: "✅ Agregado",
+                        text: "{added_doc} fue agregado correctamente.",
+                        icon: "success",
+                        draggable: true,
+                        confirmButtonColor: '#1a73e8',
+                        timer: 3500,
+                        timerProgressBar: true
+                    }});
+                }};
+                if (!window.parent.Swal) {{
+                    const script = window.parent.document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                    script.onload = runAddSuccessAlert;
+                    window.parent.document.head.appendChild(script);
+                }} else {{
+                    runAddSuccessAlert();
+                }}
+            }} catch (e) {{
+                console.error("SweetAlert2 add success injection failed:", e);
+            }}
+        </script>
+        """, height=0)
+        st.session_state["show_add_success_alert"] = False
+
     if search_query:
         found = False
         if not df_shifts.empty and df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():

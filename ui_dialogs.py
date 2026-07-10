@@ -526,10 +526,11 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                             shifts_list=mods_batch
                         )
                     total = 1 + len(future_dates_to_add)
-                    st.success(f"✅ {new_doc} agregado con éxito en **{total} sábados** (fecha actual + {len(future_dates_to_add)} del ciclo biemanal).")
-                else:
-                    st.success(f"Médico {new_doc} agregado con éxito.")
-
+                
+                st.session_state["show_add_success_alert"] = True
+                st.session_state["added_doc_name"] = new_doc
+                st.session_state["add_alert_counter"] = st.session_state.get("add_alert_counter", 0) + 1
+                
                 load_app_data_func()
                 st.rerun()
             except Exception as e:
