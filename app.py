@@ -451,6 +451,41 @@ with tab_calendar:
         """, height=0)
         st.session_state["show_error_alert"] = False
 
+    # Renderizar alerta de ÉXITO de eliminación desde el nivel principal (no dentro del dialog)
+    # Usamos delete_alert_counter como ID único para forzar el re-render en cada eliminación
+    if st.session_state.get("show_delete_success_alert", False):
+        deleted_doc = st.session_state.get("deleted_doc_name", "Médico")
+        alert_counter = st.session_state.get("delete_alert_counter", 0)
+        st.components.v1.html(f"""
+        <script>
+            // Alerta de éxito #{alert_counter} - ID único para forzar re-render
+            try {{
+                const runSuccessAlert = () => {{
+                    window.parent.Swal.fire({{
+                        title: "✅ Eliminado",
+                        text: "{deleted_doc} fue eliminado correctamente.",
+                        icon: "success",
+                        draggable: true,
+                        confirmButtonColor: '#1a73e8',
+                        timer: 3500,
+                        timerProgressBar: true
+                    }});
+                }};
+                if (!window.parent.Swal) {{
+                    const script = window.parent.document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                    script.onload = runSuccessAlert;
+                    window.parent.document.head.appendChild(script);
+                }} else {{
+                    runSuccessAlert();
+                }}
+            }} catch (e) {{
+                console.error("SweetAlert2 success injection failed:", e);
+            }}
+        </script>
+        """, height=0)
+        st.session_state["show_delete_success_alert"] = False
+
     if search_query:
         found = False
         if not df_shifts.empty and df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():

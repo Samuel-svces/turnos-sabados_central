@@ -227,6 +227,8 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             
             st.session_state.show_delete_options = False
             st.session_state.should_rerun_main = True
+            # Incrementar contador para que app.py pueda detectar cada nueva eliminación
+            st.session_state["delete_alert_counter"] = st.session_state.get("delete_alert_counter", 0) + 1
             st.session_state["show_delete_success_alert"] = True
             st.session_state["deleted_doc_name"] = current_doc
             load_app_data_func()
@@ -247,36 +249,10 @@ def show_selection_dialog(action_details, load_app_data_func):
         st.error("Acceso denegado: Se requieren permisos de administrador.")
         st.stop()
 
-    # Inyectar SweetAlert de éxito si viene de una eliminación
-    # Lo hacemos aquí (dentro del dialog) usando window.parent para alcanzar la ventana principal
+    # La alerta de éxito se muestra desde app.py (nivel principal) para que persista
+    # tras el rerun automático que cierra el diálogo. Aquí solo cerramos el diálogo si el flag está activo.
     if st.session_state.get("show_delete_success_alert", False):
-        deleted_doc = st.session_state.get("deleted_doc_name", "Médico")
-        st.components.v1.html(f"""
-        <script>
-            // Disparar SweetAlert luego de que el dialog se cierre
-            const showDeleteAlert = () => {{
-                window.parent.Swal.fire({{
-                    title: "Usuario Eliminado",
-                    text: "{deleted_doc} fue eliminado correctamente.",
-                    icon: "success",
-                    draggable: true,
-                    confirmButtonColor: '#1a73e8',
-                    timer: 3500,
-                    timerProgressBar: true
-                }});
-            }};
-            if (window.parent.Swal) {{
-                setTimeout(showDeleteAlert, 300);
-            }} else {{
-                const s = window.parent.document.createElement('script');
-                s.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-                s.onload = () => setTimeout(showDeleteAlert, 300);
-                window.parent.document.head.appendChild(s);
-            }}
-        </script>
-        """, height=0)
-        st.session_state["show_delete_success_alert"] = False
-        st.rerun()  # Cierra el diálogo: st.rerun() dentro de un @st.dialog lo cierra
+        st.rerun()  # Cierra el diálogo; la alerta la renderiza app.py en el siguiente ciclo
 
     if st.session_state.get("last_error"):
         st.error(st.session_state.last_error)
