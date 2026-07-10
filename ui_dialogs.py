@@ -453,7 +453,8 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
         candidate = sat_date + datetime.timedelta(weeks=2)
         end_date = sat_date + datetime.timedelta(weeks=52)
         while candidate <= end_date:
-            future_dates.append(candidate)
+            if candidate.year == 2026:
+                future_dates.append(candidate)
             candidate += datetime.timedelta(weeks=2)
         
         # Filtrar sólo los sábados donde el médico AÚN no está asignado
