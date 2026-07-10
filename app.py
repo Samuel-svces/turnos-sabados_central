@@ -7,8 +7,6 @@ import os
 import re
 import data_processor as dp
 import styles
-import importlib
-importlib.reload(styles)
 import ui_dialogs
 
 # Set page config for Streamlit
@@ -815,7 +813,7 @@ if st.session_state.is_admin:
         st.markdown("### <i class='bi bi-sliders2'></i> Directorio de Personal y Sincronización", unsafe_allow_html=True)
         st.markdown("Gestión de altas, bajas y modificaciones en el directorio de médicos supernumerarios, y sincronización con el repositorio Excel.")
         
-        col_dir, col_sync = st.columns([1.2, 1])
+        col_dir, col_hist = st.columns([1.1, 0.9])
         
         with col_dir:
             st.markdown("#### <i class='bi bi-person-gear'></i> Gestión del Directorio de Médicos", unsafe_allow_html=True)
@@ -953,33 +951,7 @@ if st.session_state.is_admin:
                         load_app_data()
                         st.rerun()
                         
-        with col_sync:
-            st.markdown("#### <i class='bi bi-cloud-upload'></i> Guardado y Consolidación", unsafe_allow_html=True)
-            st.markdown("Las modificaciones de turnos y personal realizadas se registran al instante en la aplicación en archivos delta temporales.")
-            st.markdown("Para guardar de forma física y permanente en el archivo de Excel master y consolidar los cambios, haz clic en el botón de abajo.")
-            
-            df_m_del = dp.load_modifications(st.session_state.excel_path)
-            df_p_del = dp.load_personal_modifications(st.session_state.excel_path)
-            pending_count = len(df_m_del) + len(df_p_del)
-            
-            if pending_count > 0:
-                st.warning(f"Tienes **{pending_count}** cambios pendientes por consolidar en el Excel principal.")
-            else:
-                st.info("Todos los cambios están consolidados. El repositorio Excel está al día.")
-                
-            if st.button("Consolidar cambios en Excel Principal", use_container_width=True, disabled=pending_count==0, key="btn_consolidate_tab"):
-                with st.spinner("Guardando y consolidando cambios en el archivo master..."):
-                    try:
-                        dp.consolidate_changes_to_excel(st.session_state.excel_path)
-                        st.success("¡Todos los cambios han sido consolidados y escritos con éxito en el archivo máster 'TURNOS SABADOS.xlsx'!")
-                        load_app_data()
-                        st.rerun()
-                    except PermissionError:
-                        st.error("Error de Permisos: El archivo de Excel master ('TURNOS SABADOS.xlsx') está abierto o bloqueado por otra aplicación. Por favor, ciérralo y vuelve a intentarlo.")
-                    except Exception as e:
-                        st.error(f"Error al consolidar: {e}")
-                        
-            st.markdown("---")
+        with col_hist:
             st.markdown("#### 📜 Historial de Actividad (Últimos Movimientos)")
             try:
                 df_hist = dp.load_modifications(st.session_state.excel_path)
