@@ -492,23 +492,22 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                     'clasificacion': clasif
                 }
 
-                # Agregar en la fecha seleccionada
-                dp.add_shift_to_date(
-                    excel_path=st.session_state.excel_path,
-                    sheet_name=sheet,
-                    target_date=sat_date,
-                    supernumerary_name=new_doc,
-                    observation=obs.strip(),
-                    clasificacion=clasif
-                )
+                # Agrupar todas las inserciones (la actual y las replicadas) en un solo lote
+                mods_batch = []
+                
+                # 1. Turno de la fecha actual seleccionada
+                mods_batch.append({
+                    'sheet': sheet,
+                    'date': sat_date,
+                    'doc': new_doc,
+                    'obs': obs.strip(),
+                    'clasificacion': clasif
+                })
 
-                # Si es Secuencia Normal, replicar en el ciclo biemanal hacia adelante
+                # 2. Réplicas futuras de la secuencia
                 if is_secuencia_normal and future_dates_to_add:
-                    # Determinar el sheet de cada fecha futura (por año)
-                    mods_batch = []
                     for fd in future_dates_to_add:
                         future_sheet = f"SABADOS {fd.year}"
-                        # Si existe un sheet conocido en df_s para esa fecha, usarlo
                         if not df_s.empty and 'Date' in df_s.columns and 'Sheet' in df_s.columns:
                             rows_on_fd = df_s[df_s['Date'] == fd]
                             if not rows_on_fd.empty:
@@ -520,12 +519,13 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                             'obs': '',  # sin obs en fechas replicadas
                             'clasificacion': clasif
                         })
-                    if mods_batch:
-                        dp.add_shifts_batch(
-                            excel_path=st.session_state.excel_path,
-                            shifts_list=mods_batch
-                        )
-                    total = 1 + len(future_dates_to_add)
+                
+                # Guardar todo el lote en una sola operación
+                if mods_batch:
+                    dp.add_shifts_batch(
+                        excel_path=st.session_state.excel_path,
+                        shifts_list=mods_batch
+                    )
                 
                 st.session_state["show_add_success_alert"] = True
                 st.session_state["added_doc_name"] = new_doc
