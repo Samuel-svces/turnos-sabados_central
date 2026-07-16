@@ -56,12 +56,12 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
         
         # 2. Guardar cambios del turno
         if classification == "Cambio de turno" and swap_target:
-            # Guardar médico de origen
+            # Guardar médico de origen (toma el nombre del destino)
             mods_list.append({
                 'sheet': sheet,
                 'date': date_val,
                 'original_name': current_doc,
-                'new_name': current_doc,
+                'new_name': swap_target['doctor'],
                 'row': row,
                 'col': col,
                 'type': 'REEMPLAZAR',
@@ -69,18 +69,22 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
                 'clasificacion': f"Cambio de turno con {swap_target['doctor']}"
             })
             
-            # Guardar médico de destino
+            # Guardar médico de destino (toma el nombre del origen)
             mods_list.append({
                 'sheet': swap_target['sheet'],
                 'date': swap_target['date'],
                 'original_name': swap_target['doctor'],
-                'new_name': swap_target['doctor'],
+                'new_name': current_doc,
                 'row': swap_target['row'],
                 'col': swap_target['col'],
                 'type': 'REEMPLAZAR',
-                'observaciones': swap_target['observation'],
+                'observaciones': observation.strip(),
                 'clasificacion': f"Cambio de turno con {current_doc}"
             })
+            st.session_state["show_swap_success_alert"] = True
+            st.session_state["swap_doc_1"] = current_doc
+            st.session_state["swap_doc_2"] = swap_target['doctor']
+            st.session_state["swap_alert_counter"] = st.session_state.get("swap_alert_counter", 0) + 1
         else:
             mods_list.append({
                 'sheet': sheet,
@@ -93,6 +97,9 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
                 'observaciones': observation.strip(),
                 'clasificacion': classification
             })
+            st.session_state["show_edit_success_alert"] = True
+            st.session_state["edited_doc_name"] = new_name
+            st.session_state["edit_alert_counter"] = st.session_state.get("edit_alert_counter", 0) + 1
             
         if mods_list:
             dp.save_modifications_batch(excel_path, mods_list)
