@@ -450,22 +450,71 @@ def save_modifications_batch(excel_path, mods_list):
 # Carga del Excel maestro (solo lectura — igual que el despliegue anterior)
 # ---------------------------------------------------------------------------
 
+@st.cache_resource(ttl=600, show_spinner=False)
 def _open_master_excel(excel_path):
     """
     Devuelve un pd.ExcelFile del Excel maestro (TURNOS SABADOS.xlsx).
-    En SharePoint: descarga con el drive/file ID del maestro.
+    En SharePoint: usa una caché en disco local (TURNOS_SABADOS_cached.xlsx).
+      1. Obtiene la metadata (lastModifiedDateTime y size) del archivo remoto.
+      2. Compara con la metadata local guardada en TURNOS_SABADOS_cached_meta.txt.
+      3. Si coincide y el archivo local existe, lee el archivo local directamente (ahorra descargar 4.4MB).
+      4. Si no coincide, descarga el archivo de SharePoint, actualiza la caché local y lo lee.
     En local: abre desde la ruta directamente.
     """
     if _USE_SHAREPOINT:
+        cache_file = "TURNOS_SABADOS_cached.xlsx"
+        meta_file = "TURNOS_SABADOS_cached_meta.txt"
+        
         try:
+            # 1. Obtener metadatos remotos de forma rápida
+            remote_meta = gc.get_file_metadata("turnos_sabados")
+            remote_last_mod = remote_meta.get("lastModifiedDateTime", "")
+            remote_size = remote_meta.get("size", 0)
+            
+            # 2. Comprobar si tenemos el archivo guardado y coincide
+            use_cached = False
+            if os.path.exists(cache_file) and os.path.exists(meta_file):
+                try:
+                    with open(meta_file, "r", encoding="utf-8") as f:
+                        saved_meta = f.read().strip().split("|")
+                    if len(saved_meta) == 2:
+                        saved_last_mod, saved_size = saved_meta[0], int(saved_meta[1])
+                        if saved_last_mod == remote_last_mod and saved_size == remote_size:
+                            use_cached = True
+                except Exception:
+                    pass
+            
+            # 3. Si coincide, usar el archivo local
+            if use_cached:
+                return pd.ExcelFile(cache_file)
+                
+            # 4. Si no coincide, descargar el archivo completo
             buf = gc.download_excel("turnos_sabados")
+            # Guardar en disco local
+            try:
+                with open(cache_file, "wb") as f:
+                    f.write(buf.getvalue())
+                with open(meta_file, "w", encoding="utf-8") as f:
+                    f.write(f"{remote_last_mod}|{remote_size}")
+            except Exception as cache_err:
+                print(f"Error escribiendo en caché de disco local: {cache_err}")
+                
+            buf.seek(0)
             return pd.ExcelFile(buf)
+            
         except Exception as e:
-            raise FileNotFoundError(f"No se pudo descargar el Excel maestro desde SharePoint: {e}")
+            # Fallback offline si la conexión a SharePoint falla
+            if os.path.exists(cache_file):
+                try:
+                    return pd.ExcelFile(cache_file)
+                except Exception:
+                    pass
+            raise FileNotFoundError(f"No se pudo descargar ni recuperar de la caché local el Excel maestro desde SharePoint: {e}")
     else:
         if not os.path.exists(excel_path):
             raise FileNotFoundError(f"El archivo Excel no existe en: {excel_path}")
         return pd.ExcelFile(excel_path)
+
 
 
 @st.cache_data(ttl=3600, show_spinner=False)

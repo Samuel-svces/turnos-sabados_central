@@ -141,3 +141,18 @@ def is_sharepoint_configured() -> bool:
         return bool(_cfg("tenant_id") and _cfg("client_id") and _cfg("client_secret"))
     except Exception:
         return False
+
+
+def get_file_metadata(file_key: str) -> dict:
+    """Obtiene los metadatos de un archivo en SharePoint/OneDrive."""
+    token = _get_access_token()
+    url = _file_url(file_key, "content")
+    if url.endswith("/content"):
+        url = url[:-8]
+    
+    resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+    if resp.status_code != 200:
+        raise RuntimeError(
+            f"Error al obtener metadatos de '{file_key}': HTTP {resp.status_code} — {resp.text[:300]}"
+        )
+    return resp.json()
