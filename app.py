@@ -518,16 +518,6 @@ with tab_calendar:
         """, height=0)
         st.session_state["show_add_success_alert"] = False
 
-    if search_query:
-        found = False
-        if not df_shifts.empty and df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():
-            found = True
-            
-        if not found:
-            st.session_state["clear_search_flag"] = True
-            st.session_state["show_error_alert"] = True
-            st.rerun()
-
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
     first_sat = today + datetime.timedelta(days=days_to_sat)
@@ -585,6 +575,21 @@ with tab_calendar:
             saturdays = all_visible_saturdays[:4]
             
         month_shifts = df_shifts[df_shifts['Date'].isin(saturdays)] if not df_shifts.empty else pd.DataFrame()
+        
+        if search_query:
+            search_shifts = month_shifts.copy()
+            filter_val = st.session_state.get("filter_class", "Todos")
+            if filter_val != "Todos" and not search_shifts.empty and 'Classification' in search_shifts.columns:
+                search_shifts = search_shifts[search_shifts['Classification'].str.contains(filter_val, na=False, case=False)]
+            
+            found = False
+            if not search_shifts.empty and search_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():
+                found = True
+                
+            if not found:
+                st.session_state["clear_search_flag"] = True
+                st.session_state["show_error_alert"] = True
+                st.rerun()
         
         if st.session_state.is_admin:
             # ADMIN VIEW: Interactive Grid inside container (Click to edit)
