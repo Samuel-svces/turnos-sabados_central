@@ -57,7 +57,8 @@ def _get_access_token() -> str:
 def _file_url(file_key: str, action: str = "content") -> str:
     """
     Construye la URL de Graph API para el archivo indicado.
-    action: "content"  → descarga/sube el binario
+    action: "content" → descarga/sube el binario
+            "item"    → consulta metadatos del item
     """
     key_map = {
         "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
@@ -70,7 +71,10 @@ def _file_url(file_key: str, action: str = "content") -> str:
         drive_id = _cfg(drive_id_key)
         file_id  = _cfg(file_id_key)
         if drive_id and file_id:
-            return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/{action}"
+            if action == "content":
+                return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content"
+            else:
+                return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}"
 
     if file_key in ("consolidado_personal", "bd_personal"):
         site_path = "unionsaludvida.sharepoint.com:/sites/CENTRALDENOVEDADESCONSOLIDADOS"
@@ -155,9 +159,7 @@ def is_sharepoint_configured() -> bool:
 def get_file_metadata(file_key: str) -> dict:
     """Obtiene los metadatos de un archivo en SharePoint/OneDrive."""
     token = _get_access_token()
-    url = _file_url(file_key, "content")
-    if url.endswith("/content"):
-        url = url[:-8]
+    url = _file_url(file_key, "item")
     
     resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
     if resp.status_code != 200:
