@@ -19,6 +19,7 @@ import requests
 import msal
 import streamlit as st
 import time
+import urllib.parse
 
 
 # ---------------------------------------------------------------------------
@@ -77,12 +78,15 @@ def _file_url(file_key: str, action: str = "content") -> str:
                 return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}"
 
     if file_key in ("consolidado_personal", "bd_personal"):
-        site_path = "unionsaludvida.sharepoint.com:/sites/CENTRALDENOVEDADESCONSOLIDADOS"
-        item_path = "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
+        site_domain = "unionsaludvida.sharepoint.com"
+        site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+        item_path = urllib.parse.quote("CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx", safe='/')
+        
+        base_url = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}:/drive/root:/{item_path}"
         if action == "content":
-            return f"https://graph.microsoft.com/v1.0/sites/{site_path}:/drive/root:/{item_path}:/content"
+            return f"{base_url}:/content"
         else:
-            return f"https://graph.microsoft.com/v1.0/sites/{site_path}:/drive/root:/{item_path}"
+            return base_url
 
     raise ValueError(f"file_key inválido: {file_key}")
 
