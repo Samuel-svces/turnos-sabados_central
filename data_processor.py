@@ -797,9 +797,9 @@ def load_supernumeraries(excel_path):
         col_map = {}
         for c in df.columns:
             c_str = str(c).strip().upper()
-            if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID"):
+            if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID", "CÉDULA"):
                 col_map[c] = "CEDULA"
-            elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES"):
+            elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES", "PROFESIONAL"):
                 col_map[c] = "NOMBRES Y APELLIDOS"
             elif c_str in ("CARGO", "CARGO DE TRABAJO"):
                 col_map[c] = "CARGO"
@@ -823,12 +823,12 @@ def load_supernumeraries(excel_path):
         df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip().str.upper()
         df["STATUS"] = df["STATUS"].fillna("ACTIVO").astype(str).str.strip().str.upper()
 
-        # Regla estricta de filtrado para vistas:
-        # Cargo debe contener SUPERNUMERARI (ej: Medico general Supernumerario)
-        # Y Sede debe contener SUPERNUMERARI (ej: Supernumerario / Supernumerarios)
-        is_super_cargo = df["CARGO"].str.contains("SUPERNUMERARI", na=False)
-        is_super_sede = df["SEDE / CECO"].str.contains("SUPERNUMERARI", na=False)
-        is_active_status = ~df["STATUS"].isin(["INACTIVO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
+        # Regla de filtrado para vistas:
+        # Cargo si existe debe ser SUPERNUMERARIO (o vacío en BD PERSONAL)
+        # Sede debe ser SUPERNUMERARIO o INDUCCION
+        is_super_cargo = (df["CARGO"] == "") | df["CARGO"].str.contains("SUPERNUMERARI", na=False)
+        is_super_sede = df["SEDE / CECO"].str.contains("SUPERNUMERARI|INDUCC", na=False)
+        is_active_status = df["STATUS"].isin(["ACTIVO", "SI", "YES", "1", ""]) | ~df["STATUS"].isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
 
         df_super = df[is_super_cargo & is_super_sede & is_active_status].copy()
 
