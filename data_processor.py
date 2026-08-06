@@ -238,23 +238,8 @@ _KEY_PERSONAL   = 'modificaciones_personal'
 
 @st.cache_data(show_spinner=False)
 def load_personal_modifications(excel_path):
-    local_path = _get_personal_modifications_path(excel_path)
-    df = _read_delta_df(_KEY_PERSONAL, local_path, _SHEET_PERSONAL, _COLS_PERSONAL)
-
-    if df.empty:
-        return df
-
-    df['ID'] = pd.to_numeric(df['ID'], errors='coerce').fillna(0).astype(int)
-    df['CEDULA'] = df['CEDULA'].astype(str).str.strip()
-    df['NOMBRES_Y_APELLIDOS'] = df['NOMBRES_Y_APELLIDOS'].fillna('').astype(str).str.strip().str.upper()
-    df['CARGO'] = df['CARGO'].fillna('').astype(str).str.strip().str.upper()
-    df['CELULAR'] = df['CELULAR'].fillna('').astype(str).str.strip()
-    df['SEDE_CECO'] = df['SEDE_CECO'].fillna('').astype(str).str.strip().str.upper()
-    df['STATUS'] = df['STATUS'].fillna('ACTIVO').astype(str).str.strip().str.upper()
-    df['TYPE'] = df['TYPE'].astype(str).str.strip().str.upper()
-    df['FECHA_INICIO'] = pd.to_datetime(df['FECHA_INICIO'], errors='coerce').dt.date
-    df['OBSERVACIONES'] = df['OBSERVACIONES'].fillna('').astype(str).str.strip()
-    return df.sort_values(by='ID')
+    # Descontinuado: El personal se lee directamente desde SharePoint BD PERSONAL (CONSOLIDADO 2026.xlsx)
+    return pd.DataFrame(columns=_COLS_PERSONAL)
 
 
 def save_personal_modification(excel_path, personal_data):
@@ -730,92 +715,148 @@ def load_data(excel_path):
 # Supernumerarios (solo lectura del maestro + delta personal)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Supernumerarios (Lectura desde SharePoint: CONSOLIDADO 2026.xlsx - BD PERSONAL)
+# ---------------------------------------------------------------------------
+
+@st.cache_resource(ttl=600, show_spinner=False)
+def _open_consolidado_personal(excel_path):
+    """
+    Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx desde SharePoint o caché/fallback local.
+    """
+    if _USE_SHAREPOINT:
+        cache_file = "CONSOLIDADO_2026_cached.xlsx"
+        meta_file = "CONSOLIDADO_2026_cached_meta.txt"
+        try:
+            remote_meta = gc.get_file_metadata("consolidado_personal")
+            remote_last_mod = remote_meta.get("lastModifiedDateTime", "")
+            remote_size = remote_meta.get("size", 0)
+            
+            use_cached = False
+            if os.path.exists(cache_file) and os.path.exists(meta_file):
+                try:
+                    with open(meta_file, "r", encoding="utf-8") as f:
+                        saved_meta = f.read().strip().split("|")
+                    if len(saved_meta) == 2:
+                        saved_last_mod, saved_size = saved_meta[0], int(saved_meta[1])
+                        if saved_last_mod == remote_last_mod and saved_size == remote_size:
+                            use_cached = True
+                except Exception:
+                    pass
+            
+            if use_cached:
+                return pd.ExcelFile(cache_file)
+                
+            buf = gc.download_excel("consolidado_personal")
+            try:
+                with open(cache_file, "wb") as f:
+                    f.write(buf.getvalue())
+                with open(meta_file, "w", encoding="utf-8") as f:
+                    f.write(f"{remote_last_mod}|{remote_size}")
+            except Exception as cache_err:
+                print(f"Error escribiendo caché local de personal: {cache_err}")
+                
+            buf.seek(0)
+            return pd.ExcelFile(buf)
+        except Exception as e:
+            if os.path.exists(cache_file):
+                try:
+                    return pd.ExcelFile(cache_file)
+                except Exception:
+                    pass
+            dir_path = os.path.dirname(excel_path)
+            local_consolidado = os.path.join(dir_path, "CONSOLIDADO 2026.xlsx")
+            if os.path.exists(local_consolidado):
+                return pd.ExcelFile(local_consolidado)
+            if os.path.exists("CONSOLIDADO 2026.xlsx"):
+                return pd.ExcelFile("CONSOLIDADO 2026.xlsx")
+            return _open_master_excel(excel_path)
+    else:
+        dir_path = os.path.dirname(excel_path)
+        local_consolidado = os.path.join(dir_path, "CONSOLIDADO 2026.xlsx")
+        if os.path.exists(local_consolidado):
+            return pd.ExcelFile(local_consolidado)
+        if os.path.exists("CONSOLIDADO 2026.xlsx"):
+            return pd.ExcelFile("CONSOLIDADO 2026.xlsx")
+        return _open_master_excel(excel_path)
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
-def _get_base_supernumeraries(excel_path):
-    try:
-        xl = _open_master_excel(excel_path)
-        df = pd.read_excel(xl, sheet_name="PERSONAL")
-        df.columns = [str(c).strip().upper() for c in df.columns]
-
-        is_super_cargo = df['CARGO'].astype(str).str.upper().str.contains(
-            "SUPERNUMERARIO|SUPERNUMERARIA|SUPER", na=False)
-        is_super_sede = df['SEDE / CECO'].astype(str).str.upper().str.contains(
-            "SUPERNUMERARIOS|SUPERNUMERARIO|SUPER", na=False)
-        df_super = df[is_super_cargo | is_super_sede].copy()
-
-        df_super['CEDULA'] = df_super['CEDULA'].apply(
-            lambda x: str(int(x)) if pd.notna(x) and str(x).replace('.0', '').isdigit() else str(x))
-        df_super['NOMBRES Y APELLIDOS'] = (df_super['NOMBRES Y APELLIDOS']
-                                            .astype(str).str.strip().str.upper()
-                                            .apply(lambda x: re.sub(r'\s+', ' ', x)))
-        df_super['CARGO']      = df_super['CARGO'].astype(str).str.strip().str.upper()
-        df_super['SEDE / CECO'] = df_super['SEDE / CECO'].astype(str).str.strip().str.upper()
-        df_super['CELULAR']    = df_super['CELULAR'].apply(
-            lambda x: str(int(x)) if pd.notna(x) and str(x).replace('.0', '').isdigit() else str(x))
-        df_super['CELULAR'] = df_super['CELULAR'].replace('NAN', '')
-        df_super['STATUS']  = 'ACTIVO'
-
-        if 'FECHA_INICIO' not in df_super.columns:
-            df_super['FECHA_INICIO'] = None
-        else:
-            df_super['FECHA_INICIO'] = pd.to_datetime(df_super['FECHA_INICIO'], errors='coerce').dt.date
-        if 'OBSERVACIONES' not in df_super.columns:
-            df_super['OBSERVACIONES'] = ''
-        else:
-            df_super['OBSERVACIONES'] = df_super['OBSERVACIONES'].fillna('').astype(str).str.strip()
-        return df_super
-    except Exception as e:
-        print(f"Error loading base supernumeraries: {e}")
-        return pd.DataFrame(columns=['CEDULA', 'NOMBRES Y APELLIDOS', 'CARGO',
-                                     'CELULAR', 'SEDE / CECO', 'FECHA_INICIO', 'OBSERVACIONES', 'STATUS'])
-
 def load_supernumeraries(excel_path):
-    df_super = _get_base_supernumeraries(excel_path).copy()
+    """
+    Carga el personal directamente de la hoja 'BD PERSONAL' de CONSOLIDADO 2026.xlsx.
+    Filtra únicamente los médicos con Cargo que contenga 'SUPERNUMERARIO' y Sede 'SUPERNUMERARIO'.
+    Si el cargo cambia a 'Medico General' o la sede ya no es 'Supernumerario', la persona se excluye.
+    """
     try:
+        xl = _open_consolidado_personal(excel_path)
+        sheet_target = "BD PERSONAL" if "BD PERSONAL" in xl.sheet_names else ("PERSONAL" if "PERSONAL" in xl.sheet_names else xl.sheet_names[0])
+        df = pd.read_excel(xl, sheet_name=sheet_target)
+        
+        # Mapeo y estandarización de columnas
+        col_map = {}
+        for c in df.columns:
+            c_str = str(c).strip().upper()
+            if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID"):
+                col_map[c] = "CEDULA"
+            elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES"):
+                col_map[c] = "NOMBRES Y APELLIDOS"
+            elif c_str in ("CARGO", "CARGO DE TRABAJO"):
+                col_map[c] = "CARGO"
+            elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO"):
+                col_map[c] = "SEDE / CECO"
+            elif c_str in ("CELULAR", "TELEFONO", "MOVIL"):
+                col_map[c] = "CELULAR"
+            elif c_str in ("OBSERVACIONES", "OBSERVACION", "NOTAS"):
+                col_map[c] = "OBSERVACIONES"
+            elif c_str in ("STATUS", "ESTADO", "ESTADO OPERATIVO"):
+                col_map[c] = "STATUS"
 
-        df_pm = load_personal_modifications(excel_path)
-        for _, mod in df_pm.iterrows():
-            m_type   = mod['TYPE']
-            cedula   = str(mod['CEDULA']).strip()
-            name     = str(mod['NOMBRES_Y_APELLIDOS']).strip().upper()
-            cargo    = str(mod['CARGO']).strip().upper()
-            celular  = str(mod['CELULAR']).strip()
-            sede     = str(mod['SEDE_CECO']).strip().upper()
-            status   = str(mod['STATUS']).strip().upper()
-            obs      = str(mod.get('OBSERVACIONES', '')).strip()
-            fecha_ini = mod.get('FECHA_INICIO', None)
+        df = df.rename(columns=col_map)
+        
+        for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "CELULAR", "OBSERVACIONES", "STATUS"]:
+            if req_col not in df.columns:
+                df[req_col] = ""
 
-            if m_type in ('AGREGAR', 'MODIFICAR'):
-                mask = df_super['CEDULA'] == cedula
-                if mask.any():
-                    df_super.loc[mask, 'NOMBRES Y APELLIDOS'] = name
-                    df_super.loc[mask, 'CARGO']       = cargo
-                    df_super.loc[mask, 'CELULAR']     = celular
-                    df_super.loc[mask, 'SEDE / CECO'] = sede
-                    df_super.loc[mask, 'STATUS']      = status
-                    df_super.loc[mask, 'FECHA_INICIO'] = fecha_ini
-                    df_super.loc[mask, 'OBSERVACIONES'] = obs
-                elif m_type == 'AGREGAR':
-                    new_row = pd.DataFrame([{
-                        'CEDULA': cedula, 'NOMBRES Y APELLIDOS': name,
-                        'CARGO': cargo, 'CELULAR': celular,
-                        'SEDE / CECO': sede, 'STATUS': status,
-                        'FECHA_INICIO': fecha_ini, 'OBSERVACIONES': obs
-                    }])
-                    df_super = pd.concat([df_super, new_row], ignore_index=True)
-            elif m_type == 'DESACTIVAR':
-                mask = df_super['CEDULA'] == cedula
-                if mask.any():
-                    df_super.loc[mask, 'STATUS'] = 'INACTIVO'
+        # Limpieza de textos y valores nulos
+        df["CARGO"] = df["CARGO"].fillna("").astype(str).str.strip().str.upper()
+        df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip().str.upper()
+        df["STATUS"] = df["STATUS"].fillna("ACTIVO").astype(str).str.strip().str.upper()
 
-        df_super = df_super[df_super['STATUS'] == 'ACTIVO'].copy()
-        return (df_super[['CEDULA', 'NOMBRES Y APELLIDOS', 'CARGO', 'CELULAR',
-                           'SEDE / CECO', 'FECHA_INICIO', 'OBSERVACIONES']]
-                .sort_values(by='NOMBRES Y APELLIDOS'))
+        # Regla estricta de filtrado para vistas:
+        # Cargo debe contener SUPERNUMERARI (ej: Medico general Supernumerario)
+        # Y Sede debe contener SUPERNUMERARI (ej: Supernumerario / Supernumerarios)
+        is_super_cargo = df["CARGO"].str.contains("SUPERNUMERARI", na=False)
+        is_super_sede = df["SEDE / CECO"].str.contains("SUPERNUMERARI", na=False)
+        is_active_status = ~df["STATUS"].isin(["INACTIVO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
+
+        df_super = df[is_super_cargo & is_super_sede & is_active_status].copy()
+
+        df_super["CEDULA"] = df_super["CEDULA"].apply(
+            lambda x: str(int(x)) if pd.notna(x) and str(x).replace(".0", "").isdigit() else str(x).strip()
+        )
+        df_super["NOMBRES Y APELLIDOS"] = (
+            df_super["NOMBRES Y APELLIDOS"]
+            .fillna("")
+            .astype(str)
+            .str.strip()
+            .str.upper()
+            .apply(lambda x: re.sub(r"\s+", " ", x))
+        )
+        df_super["CELULAR"] = df_super["CELULAR"].apply(
+            lambda x: str(int(x)) if pd.notna(x) and str(x).replace(".0", "").isdigit() else str(x).strip()
+        ).replace("NAN", "")
+
+        df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
+        
+        return (
+            df_super[["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "CELULAR", "SEDE / CECO", "OBSERVACIONES"]]
+            .sort_values(by="NOMBRES Y APELLIDOS")
+            .reset_index(drop=True)
+        )
     except Exception as e:
-        print(f"Error loading supernumeraries: {e}")
-        return pd.DataFrame(columns=['CEDULA', 'NOMBRES Y APELLIDOS', 'CARGO',
-                                     'CELULAR', 'SEDE / CECO', 'FECHA_INICIO', 'OBSERVACIONES'])
+        print(f"Error cargando supernumerarios de BD PERSONAL: {e}")
+        return pd.DataFrame(columns=["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "CELULAR", "SEDE / CECO", "OBSERVACIONES"])
 
 
 # ---------------------------------------------------------------------------

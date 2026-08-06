@@ -63,15 +63,24 @@ def _file_url(file_key: str, action: str = "content") -> str:
         "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
         "modificaciones_sabados": ("drive_id_mod_sab", "file_id_mod_sab"),
         "modificaciones_personal": ("drive_id_mod_per", "file_id_mod_per"),
+        "consolidado_personal":   ("drive_id_consolidado", "file_id_consolidado"),
     }
-    if file_key not in key_map:
-        raise ValueError(f"file_key inválido: {file_key}")
+    if file_key in key_map:
+        drive_id_key, file_id_key = key_map[file_key]
+        drive_id = _cfg(drive_id_key)
+        file_id  = _cfg(file_id_key)
+        if drive_id and file_id:
+            return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/{action}"
 
-    drive_id_key, file_id_key = key_map[file_key]
-    drive_id = _cfg(drive_id_key)
-    file_id  = _cfg(file_id_key)
+    if file_key in ("consolidado_personal", "bd_personal"):
+        site_path = "unionsaludvida.sharepoint.com:/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+        item_path = "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
+        if action == "content":
+            return f"https://graph.microsoft.com/v1.0/sites/{site_path}:/drive/root:/{item_path}:/content"
+        else:
+            return f"https://graph.microsoft.com/v1.0/sites/{site_path}:/drive/root:/{item_path}"
 
-    return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/{action}"
+    raise ValueError(f"file_key inválido: {file_key}")
 
 
 # ---------------------------------------------------------------------------

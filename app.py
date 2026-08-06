@@ -821,140 +821,36 @@ if st.session_state.is_admin:
         col_dir, col_hist = st.columns([1.1, 0.9])
         
         with col_dir:
-            st.markdown("#### <i class='bi bi-person-gear'></i> Gestión del Directorio de Médicos", unsafe_allow_html=True)
-            admin_doc_action = st.selectbox("Seleccione Acción de Personal:", ["Registrar Nuevo Médico", "Modificar Médico Existente", "Desactivar Médico"])
+            st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal en SharePoint", unsafe_allow_html=True)
+            st.info("El directorio se sincroniza automáticamente desde el archivo de SharePoint **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL**). Se muestran únicamente los médicos con Cargo y Sede **Supernumerario**.")
             
-            if admin_doc_action == "Registrar Nuevo Médico":
-                with st.form("admin_add_doc_form", clear_on_submit=True):
-                    new_cedula = st.text_input("Cédula / Identificación:")
-                    new_name = st.text_input("Nombre Completo (APELLIDOS NOMBRES):")
-                    
-                    _today = datetime.date.today()
-                    _next_sat = _today + datetime.timedelta(days=(5 - _today.weekday()) % 7 or 7)
-                    new_fecha_inicio = st.date_input(
-                        "Fecha de inicio en la secuencia:",
-                        value=_next_sat,
-                        help="Sábado a partir del cual este médico empieza a aparecer en la rotación de turnos."
-                    )
-                    new_obs = st.text_area(
-                        "Observaciones (opcional):",
-                        placeholder="Ej: Médico nuevo desde julio 2026, referido por Dr. García...",
-                        height=80
-                    )
-                    
-                    submit_add_doc = st.form_submit_button("Agregar Médico al Directorio", use_container_width=True)
-                    if submit_add_doc:
-                        if not new_cedula.strip() or not new_name.strip():
-                            st.error("Cédula y Nombre Completo son obligatorios.")
-                        else:
-                            p_data = {
-                                'cedula': new_cedula.strip(),
-                                'nombres_y_apellidos': new_name.strip().upper(),
-                                'cargo': "MEDICO SUPERNUMERARIO",
-                                'celular': "",
-                                'sede_ceco': "SUPERNUMERARIOS",
-                                'status': 'ACTIVO',
-                                'type': 'AGREGAR',
-                                'fecha_inicio': new_fecha_inicio,
-                                'observaciones': new_obs.strip()
-                            }
-                            try:
-                                dp.save_personal_modification(st.session_state.excel_path, p_data)
-                            except PermissionError:
-                                st.error("⚠️ Error de Permisos: El archivo de Excel está abierto en otra aplicación. Por favor, ciérralo y vuelve a intentarlo.")
-                                st.stop()
-                            msg = f"Médico {new_name.upper()} agregado con éxito. Inicio de secuencia: {new_fecha_inicio.strftime('%d/%m/%Y')}."
-                            if new_obs.strip():
-                                msg += f" | Obs: {new_obs.strip()}"
-                            st.success(msg)
-                            load_app_data()
-                            st.rerun()
-                            
-            elif admin_doc_action == "Modificar Médico Existente":
-                known_docs_mod = df_super['NOMBRES Y APELLIDOS'].tolist()
-                selected_doc_mod = st.selectbox("Seleccione Médico a Modificar:", known_docs_mod)
-                doc_row = df_super[df_super['NOMBRES Y APELLIDOS'] == selected_doc_mod].iloc[0]
+            num_super = len(df_super) if not df_super.empty else 0
+            col_m1, col_m2 = st.columns([1, 1])
+            with col_m1:
+                st.metric("Médicos Supernumerarios Activos", f"{num_super} Médicos")
+            with col_m2:
+                if st.button("🔄 Sincronizar desde SharePoint", use_container_width=True):
+                    dp.load_supernumeraries.clear()
+                    load_app_data()
+                    st.success("Directorio de personal resincronizado con éxito.")
+                    st.rerun()
+            
+            st.markdown("##### 📋 Listado Activo de Supernumerarios")
+            if not df_super.empty:
+                search_super = st.text_input("🔍 Buscar médico por nombre o cédula:", placeholder="Escriba un nombre o cédula...").strip().upper()
+                df_show = df_super.copy()
+                if search_super:
+                    mask_name = df_show['NOMBRES Y APELLIDOS'].str.contains(search_super, na=False)
+                    mask_ced  = df_show['CEDULA'].astype(str).str.contains(search_super, na=False)
+                    df_show = df_show[mask_name | mask_ced]
                 
-                df_pm_check = dp.load_personal_modifications(st.session_state.excel_path)
-                pm_match = df_pm_check[df_pm_check['CEDULA'] == str(doc_row['CEDULA'])]
-                existing_fecha = None
-                if not pm_match.empty and pm_match.iloc[-1]['FECHA_INICIO'] is not None:
-                    try:
-                        existing_fecha = pm_match.iloc[-1]['FECHA_INICIO']
-                    except Exception:
-                        existing_fecha = None
-                
-                _today2 = datetime.date.today()
-                _default_fecha = existing_fecha if existing_fecha else _today2
-                
-                with st.form("admin_edit_doc_form", clear_on_submit=True):
-                    edit_cedula = st.text_input("Cédula (No editable):", value=str(doc_row['CEDULA']), disabled=True)
-                    edit_name = st.text_input("Nombre Completo:", value=str(doc_row['NOMBRES Y APELLIDOS']))
-                    edit_fecha_inicio = st.date_input(
-                        "Fecha de inicio en la secuencia:",
-                        value=_default_fecha,
-                        help="Sábado a partir del cual este médico aparece en la rotación."
-                    )
-                    edit_obs = st.text_area(
-                        "Observaciones (opcional):",
-                        placeholder="Ej: Actualización de nombre por cambio de documento...",
-                        height=80
-                    )
-                    
-                    submit_edit_doc = st.form_submit_button("Guardar Cambios en Delta", use_container_width=True)
-                    if submit_edit_doc:
-                        if not edit_name.strip():
-                            st.error("El nombre completo no puede estar vacío.")
-                        else:
-                            p_data = {
-                                'cedula': edit_cedula.strip(),
-                                'nombres_y_apellidos': edit_name.strip().upper(),
-                                'cargo': str(doc_row['CARGO']).strip().upper(),
-                                'celular': str(doc_row['CELULAR']).strip(),
-                                'sede_ceco': str(doc_row['SEDE / CECO']).strip().upper(),
-                                'status': 'ACTIVO',
-                                'type': 'MODIFICAR',
-                                'fecha_inicio': edit_fecha_inicio,
-                                'observaciones': edit_obs.strip()
-                            }
-                            try:
-                                dp.save_personal_modification(st.session_state.excel_path, p_data)
-                            except PermissionError:
-                                st.error("⚠️ Error de Permisos: El archivo de Excel está abierto en otra aplicación. Por favor, ciérralo y vuelve a intentarlo.")
-                                st.stop()
-                            msg = f"Cambios para {edit_name.upper()} registrados. Inicio de secuencia: {edit_fecha_inicio.strftime('%d/%m/%Y')}."
-                            if edit_obs.strip():
-                                msg += f" | Obs: {edit_obs.strip()}"
-                            st.success(msg)
-                            load_app_data()
-                            st.rerun()
-                            
-            elif admin_doc_action == "Desactivar Médico":
-                known_docs_del = df_super['NOMBRES Y APELLIDOS'].tolist()
-                selected_doc_del = st.selectbox("Seleccione Médico a Desactivar:", ["-- Seleccionar Médico --"] + known_docs_del)
-                
-                if selected_doc_del != "-- Seleccionar Médico --":
-                    doc_row = df_super[df_super['NOMBRES Y APELLIDOS'] == selected_doc_del].iloc[0]
-                    st.warning(f"¿Está seguro que desea desactivar a **{selected_doc_del}** (Cédula: {doc_row['CEDULA']})? Ya no aparecerá en el directorio activo ni para nuevas asignaciones, pero se mantendrá su historial.")
-                    
-                    if st.button("Confirmar Desactivación", use_container_width=True):
-                        p_data = {
-                            'cedula': str(doc_row['CEDULA']).strip(),
-                            'nombres_y_apellidos': str(doc_row['NOMBRES Y APELLIDOS']).strip().upper(),
-                            'cargo': str(doc_row['CARGO']).strip().upper(),
-                            'celular': str(doc_row['CELULAR']).strip(),
-                            'sede_ceco': str(doc_row['SEDE / CECO']).strip().upper(),
-                            'status': 'INACTIVO',
-                            'type': 'DESACTIVAR'
-                        }
-                        try:
-                            dp.save_personal_modification(st.session_state.excel_path, p_data)
-                        except PermissionError:
-                            st.error("⚠️ Error de Permisos: El archivo de Excel está abierto en otra aplicación. Por favor, ciérralo y vuelve a intentarlo.")
-                            st.stop()
-                        st.success(f"Médico {selected_doc_del} marcado como INACTIVO.")
-                        load_app_data()
-                        st.rerun()
+                st.dataframe(
+                    df_show[['CEDULA', 'NOMBRES Y APELLIDOS', 'CARGO', 'SEDE / CECO', 'CELULAR', 'OBSERVACIONES']],
+                    use_container_width=True,
+                    hide_index=True
+                )
+            else:
+                st.warning("No se encontraron médicos supernumerarios activos con Cargo y Sede 'Supernumerario' en la hoja BD PERSONAL de SharePoint.")
                         
         with col_hist:
             st.markdown("#### 📜 Historial de Actividad (Últimos Movimientos)")

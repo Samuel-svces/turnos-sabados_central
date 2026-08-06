@@ -4,22 +4,19 @@ import data_processor as dp
 import pandas as pd
 
 def get_allowed_doctors():
-    df_s = st.session_state.shifts_df
-    df_sup = st.session_state.super_df
+    df_s = st.session_state.get('shifts_df', pd.DataFrame())
+    df_sup = st.session_state.get('super_df', pd.DataFrame())
     june_date = datetime.date(2026, 6, 1)
-    docs_with_shifts = df_s[df_s['Date'] >= june_date]['Supernumerary'].unique().tolist()
     
-    try:
-        df_pm = dp.load_personal_modifications(st.session_state.excel_path)
-        added_docs = df_pm[df_pm['TYPE'] == 'AGREGAR']['NOMBRES_Y_APELLIDOS'].unique().tolist()
-    except Exception:
-        added_docs = []
-        
-    if not df_sup.empty:
-        allowed = df_sup[df_sup['NOMBRES Y APELLIDOS'].isin(docs_with_shifts + added_docs)]['NOMBRES Y APELLIDOS'].tolist()
-        allowed = sorted(list(set(allowed + docs_with_shifts + added_docs)))
+    docs_with_shifts = []
+    if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
+        docs_with_shifts = df_s[df_s['Date'] >= june_date]['Supernumerary'].dropna().unique().tolist()
+
+    if not df_sup.empty and 'NOMBRES Y APELLIDOS' in df_sup.columns:
+        sup_docs = df_sup['NOMBRES Y APELLIDOS'].dropna().tolist()
+        allowed = sorted(list(set(sup_docs + docs_with_shifts)))
     else:
-        allowed = sorted(list(set(docs_with_shifts + added_docs)))
+        allowed = sorted(list(set(docs_with_shifts)))
     return allowed
 
 def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, new_name, observation, classification, current_clasif, swap_target, current_doc, load_app_data_func):
