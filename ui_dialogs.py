@@ -110,9 +110,10 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
         st.rerun()
 
 def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, current_clasif, load_app_data_func):
+    st.session_state["is_deleting_processing"] = True
     try:
         df_s = st.session_state.shifts_df
-        del_scope = st.session_state.get("del_scope_radio_flat", "Eliminar solo de esta secuencia")
+        del_scope = st.session_state.get("del_scope_radio_flat", "Eliminar de todas las secuencias (las futuras)")
         
         # Asegurarnos de que date_val sea datetime.date
         date_check = date_val
@@ -157,6 +158,7 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
         
         if shifts_to_delete.empty:
             st.session_state.last_error = "No se encontraron asignaciones coincidentes para eliminar."
+            st.session_state["is_deleting_processing"] = False
             st.rerun()
         else:
             deleted_count = 0
@@ -231,14 +233,14 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             
             st.session_state.show_delete_options = False
             st.session_state.should_rerun_main = True
-            # Incrementar contador para que app.py pueda detectar cada nueva eliminación
             st.session_state["delete_alert_counter"] = st.session_state.get("delete_alert_counter", 0) + 1
             st.session_state["show_delete_success_alert"] = True
             st.session_state["deleted_doc_name"] = current_doc
             load_app_data_func()
-            # No llamamos st.rerun() aquí: on_click ya dispara el rerun automáticamente
     except Exception as e:
         st.session_state.last_error = f"Error al eliminar: {e}"
+    finally:
+        st.session_state["is_deleting_processing"] = False
 
 def show_delete_options_callback():
     st.session_state.show_delete_options = True
@@ -357,11 +359,25 @@ def show_selection_dialog(action_details, load_app_data_func):
         st.markdown("---")
         st.markdown("##### 🗑️ Confirmar Eliminación de Asignación")
         
+        is_processing = st.session_state.get("is_deleting_processing", False)
+        
+        if is_processing:
+            st.markdown(
+                """
+                <div style="background-color: #fee2e2; border: 2px solid #ef4444; border-radius: 10px; padding: 15px; text-align: center; margin: 10px 0 15px 0;">
+                    <h4 style="color: #991b1b; margin: 0 0 5px 0;">⏳ Sincronizando eliminación con SharePoint...</h4>
+                    <p style="color: #7f1d1d; margin: 0; font-size: 13px;">Por favor espere. <b>No cierre esta ventana ni haga clic afuera</b> mientras se procesa la eliminación en las secuencias.</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+        
         del_scope = st.radio(
             "Seleccione una opción para eliminar:",
             ["Eliminar solo de esta secuencia", "Eliminar de todas las secuencias (las futuras)"],
-            index=0,
-            key="del_scope_radio_flat"
+            index=1,
+            key="del_scope_radio_flat",
+            disabled=is_processing
         )
         
         col_confirm, col_cancel = st.columns(2)
@@ -373,6 +389,7 @@ def show_selection_dialog(action_details, load_app_data_func):
                 key="btn_confirm_delete_action",
                 on_click=delete_shift_callback,
                 icon=":material/check_circle:",
+                disabled=is_processing,
                 args=(
                     st.session_state.excel_path,
                     action_details['sheet'],
@@ -390,6 +407,7 @@ def show_selection_dialog(action_details, load_app_data_func):
                 use_container_width=True, 
                 key="btn_cancel_delete_action",
                 on_click=cancel_delete_options_callback,
+                disabled=is_processing,
                 icon=":material/cancel:"
             )
     else:
