@@ -80,18 +80,41 @@ def _file_urls(file_key: str, action: str = "content") -> list:
         pass
 
     if file_key in ("consolidado_personal", "bd_personal"):
-        # Usar el drive_id de SharePoint configurado en secrets (drive_id_consolidado, drive_id_turnos o drive_id_mod_sab)
         drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos") or _cfg("drive_id_mod_sab")
         file_id = _cfg("file_id_consolidado")
 
-        # 1. Si existe file_id_consolidado explícito
+        # 1. Si existe file_id_consolidado explícito en Secrets
         if drive_id and file_id:
             if action == "content":
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
 
-        # 2. Usar el drive_id de la biblioteca de SharePoint + la ruta del archivo dentro del drive
+        # 2. Búsqueda automática en Graph API por nombre 'CONSOLIDADO 2026' dentro del drive de SharePoint
+        if token and drive_id:
+            try:
+                search_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root/search(q='CONSOLIDADO 2026')"
+                resp_s = requests.get(search_url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+                if resp_s.status_code == 200:
+                    items = resp_s.json().get("value", [])
+                    for item in items:
+                        name = item.get("name", "")
+                        if "consolidado 2026.xlsx" in name.lower() or name.lower() == "consolidado 2026.xlsx":
+                            if action == "content":
+                                dl_url = item.get("@microsoft.graph.downloadUrl")
+                                if dl_url:
+                                    urls.append(dl_url)
+                                item_id = item.get("id")
+                                if item_id:
+                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}/content")
+                            else:
+                                item_id = item.get("id")
+                                if item_id:
+                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}")
+            except Exception as ex_search:
+                print(f"Error en búsqueda Graph API: {ex_search}")
+
+        # 3. Fallback por rutas relativas conocidas dentro del drive
         if drive_id:
             candidate_rel_paths = [
                 "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
@@ -107,59 +130,18 @@ def _file_urls(file_key: str, action: str = "content") -> list:
                 else:
                     urls.append(base_url)
 
-        # 3. Share token del enlace de SharePoint
+        # 4. Fallback por Share token del enlace compartido
         sp_folder_url = "https://unionsaludvida.sharepoint.com/:f:/s/CENTRALDENOVEDADESCONSOLIDADOS/IgB9jl8aCkmfQrFlv9SnUs_dAcrdu9u-mfFThhD2OoYNFAk"
         share_token = "u!" + base64.b64encode(sp_folder_url.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
-
-        if token:
-            try:
-                children_url = f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/children"
-                resp_child = requests.get(children_url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
-                if resp_child.status_code == 200:
-                    children = resp_child.json().get("value", [])
-                    for child in children:
-                        c_name = child.get("name", "")
-                        if "consolidado 2026" in c_name.lower() or "consolidado" in c_name.lower():
-                            if action == "content":
-                                dl_url = child.get("@microsoft.graph.downloadUrl")
-                                if dl_url:
-                                    urls.append(dl_url)
-                                item_id = child.get("id")
-                                c_drive_id = child.get("parentReference", {}).get("driveId")
-                                if c_drive_id and item_id:
-                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{c_drive_id}/items/{item_id}/content")
-                            else:
-                                item_id = child.get("id")
-                                c_drive_id = child.get("parentReference", {}).get("driveId")
-                                if c_drive_id and item_id:
-                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{c_drive_id}/items/{item_id}")
-            except Exception:
-                pass
-
         if action == "content":
             urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/content")
         else:
             urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem")
 
-        site_domain = "unionsaludvida.sharepoint.com"
-        site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
-        candidate_paths = [
-            "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
-        ]
-        for cpath in candidate_paths:
-            item_path = urllib.parse.quote(cpath, safe='/')
-            base_url = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}:/drive/root:/{item_path}"
-            if action == "content":
-                urls.append(f"{base_url}:/content")
-            else:
-                urls.append(base_url)
-
     key_map = {
         "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
         "modificaciones_sabados": ("drive_id_mod_sab", "file_id_mod_sab"),
         "modificaciones_personal": ("drive_id_mod_per", "file_id_mod_per"),
-        "consolidado_personal":   ("drive_id_consolidado", "file_id_consolidado"),
     }
     if file_key in key_map:
         drive_id_key, file_id_key = key_map[file_key]
