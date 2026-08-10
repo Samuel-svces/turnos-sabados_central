@@ -75,6 +75,14 @@ def _file_urls(file_key: str, action: str = "content") -> list:
     urls = []
 
     if file_key in ("consolidado_personal", "bd_personal"):
+        # 1. Share token oficial de Microsoft Graph API a partir del enlace de SharePoint
+        sp_url = "https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
+        share_token = "u!" + base64.b64encode(sp_url.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
+        if action == "content":
+            urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/content")
+        else:
+            urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem")
+
         site_domain = "unionsaludvida.sharepoint.com"
         site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
         candidate_paths = [
