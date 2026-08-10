@@ -764,20 +764,26 @@ def _open_consolidado_personal(excel_path):
                     return pd.ExcelFile(cache_file)
                 except Exception:
                     pass
-            dir_path = os.path.dirname(excel_path)
-            local_consolidado = os.path.join(dir_path, "CONSOLIDADO 2026.xlsx")
-            if os.path.exists(local_consolidado):
-                return pd.ExcelFile(local_consolidado)
-            if os.path.exists("CONSOLIDADO 2026.xlsx"):
-                return pd.ExcelFile("CONSOLIDADO 2026.xlsx")
+            candidate_paths = [
+                os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx"),
+                "CONSOLIDADO 2026.xlsx",
+                r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
+                r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
+            ]
+            for p in candidate_paths:
+                if os.path.exists(p):
+                    return pd.ExcelFile(p)
             return _open_master_excel(excel_path)
     else:
-        dir_path = os.path.dirname(excel_path)
-        local_consolidado = os.path.join(dir_path, "CONSOLIDADO 2026.xlsx")
-        if os.path.exists(local_consolidado):
-            return pd.ExcelFile(local_consolidado)
-        if os.path.exists("CONSOLIDADO 2026.xlsx"):
-            return pd.ExcelFile("CONSOLIDADO 2026.xlsx")
+        candidate_paths = [
+            os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx"),
+            "CONSOLIDADO 2026.xlsx",
+            r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
+            r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
+        ]
+        for p in candidate_paths:
+            if os.path.exists(p):
+                return pd.ExcelFile(p)
         return _open_master_excel(excel_path)
 
 

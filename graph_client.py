@@ -55,12 +55,13 @@ def _get_access_token() -> str:
     return result["access_token"]
 
 
-def _file_url(file_key: str, action: str = "content") -> str:
+def _file_urls(file_key: str, action: str = "content") -> list:
     """
-    Construye la URL de Graph API para el archivo indicado.
+    Construye las posibles URLs de Graph API para el archivo indicado.
     action: "content" → descarga/sube el binario
             "item"    → consulta metadatos del item
     """
+    urls = []
     key_map = {
         "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
         "modificaciones_sabados": ("drive_id_mod_sab", "file_id_mod_sab"),
@@ -73,22 +74,32 @@ def _file_url(file_key: str, action: str = "content") -> str:
         file_id  = _cfg(file_id_key)
         if drive_id and file_id:
             if action == "content":
-                return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content"
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
             else:
-                return f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}"
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
 
     if file_key in ("consolidado_personal", "bd_personal"):
         site_domain = "unionsaludvida.sharepoint.com"
         site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
-        item_path = urllib.parse.quote("CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx", safe='/')
-        
-        base_url = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}:/drive/root:/{item_path}"
-        if action == "content":
-            return f"{base_url}:/content"
-        else:
-            return base_url
+        candidate_paths = [
+            "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
+        ]
+        for cpath in candidate_paths:
+            item_path = urllib.parse.quote(cpath, safe='/')
+            base_url = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}:/drive/root:/{item_path}"
+            if action == "content":
+                urls.append(f"{base_url}:/content")
+            else:
+                urls.append(base_url)
 
-    raise ValueError(f"file_key inválido: {file_key}")
+    if not urls:
+        raise ValueError(f"file_key inválido: {file_key}")
+    return urls
+
+
+def _file_url(file_key: str, action: str = "content") -> str:
+    return _file_urls(file_key, action)[0]
 
 
 # ---------------------------------------------------------------------------
@@ -101,14 +112,21 @@ def download_excel(file_key: str) -> io.BytesIO:
     Devuelve un BytesIO listo para pasar a pd.read_excel() o openpyxl.load_workbook().
     """
     token = _get_access_token()
-    url   = _file_url(file_key, "content")
+    urls = _file_urls(file_key, "content")
+    last_err = None
 
-    resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
-    if resp.status_code != 200:
-        raise RuntimeError(
-            f"Error al descargar '{file_key}': HTTP {resp.status_code} — {resp.text[:300]}"
-        )
-    return io.BytesIO(resp.content)
+    for url in urls:
+        try:
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
+            if resp.status_code == 200:
+                return io.BytesIO(resp.content)
+            last_err = f"HTTP {resp.status_code} — {resp.text[:300]}"
+        except Exception as e:
+            last_err = str(e)
+
+    raise RuntimeError(
+        f"Error al descargar '{file_key}': {last_err}"
+    )
 
 
 def upload_excel(file_key: str, buffer: io.BytesIO, max_retries: int = 3) -> None:
@@ -163,11 +181,18 @@ def is_sharepoint_configured() -> bool:
 def get_file_metadata(file_key: str) -> dict:
     """Obtiene los metadatos de un archivo en SharePoint/OneDrive."""
     token = _get_access_token()
-    url = _file_url(file_key, "item")
-    
-    resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
-    if resp.status_code != 200:
-        raise RuntimeError(
-            f"Error al obtener metadatos de '{file_key}': HTTP {resp.status_code} — {resp.text[:300]}"
-        )
-    return resp.json()
+    urls = _file_urls(file_key, "item")
+    last_err = None
+
+    for url in urls:
+        try:
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+            if resp.status_code == 200:
+                return resp.json()
+            last_err = f"HTTP {resp.status_code} — {resp.text[:300]}"
+        except Exception as e:
+            last_err = str(e)
+
+    raise RuntimeError(
+        f"Error al obtener metadatos de '{file_key}': {last_err}"
+    )

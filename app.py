@@ -99,8 +99,13 @@ def load_app_data():
         st.session_state.errors = errors
         
         # Load Supernumeraries directory
-        df_super = dp.load_supernumeraries(st.session_state.excel_path)
-        st.session_state.super_df = df_super
+        try:
+            df_super = dp.load_supernumeraries(st.session_state.excel_path)
+            st.session_state.super_df = df_super
+            st.session_state.super_load_error = None
+        except Exception as e_sup:
+            st.session_state.super_df = pd.DataFrame()
+            st.session_state.super_load_error = str(e_sup)
         
         st.session_state.data_loaded = True
         st.session_state.load_error = None
@@ -852,6 +857,8 @@ if st.session_state.is_admin:
                 )
             else:
                 st.warning("No se encontraron médicos activos con Sede 'Supernumerario' o 'Induccion' en la hoja BD PERSONAL de SharePoint.")
+                if st.session_state.get('super_load_error'):
+                    st.error(f"Detalle del error de conexión: {st.session_state.super_load_error}")
                         
         with col_hist:
             st.markdown("#### 📜 Historial de Actividad (Últimos Movimientos)")
