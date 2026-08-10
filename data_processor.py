@@ -24,9 +24,16 @@ import io
 # ---------------------------------------------------------------------------
 try:
     import graph_client as gc
-    _USE_SHAREPOINT = gc.is_sharepoint_configured()
 except Exception:
-    _USE_SHAREPOINT = False
+    gc = None
+
+def _use_sharepoint() -> bool:
+    try:
+        if gc is not None:
+            return gc.is_sharepoint_configured()
+    except Exception:
+        pass
+    return False
 
 MONTH_MAP = {
     'enero': 1, 'febrero': 2, 'marzo': 3, 'mrazo': 3,
@@ -59,7 +66,7 @@ def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list)
     - En local: abre desde disco; si no existe, lo crea.
     Devuelve (wb, ws).
     """
-    if _USE_SHAREPOINT:
+    if _use_sharepoint():
         try:
             buf = gc.download_excel(file_key)
             wb = openpyxl.load_workbook(buf)
@@ -91,7 +98,7 @@ def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
     - En SharePoint: serializa a BytesIO y sube.
     - En local: guarda en disco.
     """
-    if _USE_SHAREPOINT:
+    if _use_sharepoint():
         buf = io.BytesIO()
         wb.save(buf)
         buf.seek(0)
@@ -107,7 +114,7 @@ def _read_delta_df(file_key: str, local_path: str, sheet_title: str, cols: list)
     Lee el DataFrame del archivo delta (SharePoint o local).
     Si no existe devuelve DataFrame vacío con las columnas esperadas.
     """
-    if _USE_SHAREPOINT:
+    if _use_sharepoint():
         try:
             buf = gc.download_excel(file_key)
             df = pd.read_excel(buf, sheet_name=sheet_title)
@@ -446,7 +453,7 @@ def _open_master_excel(excel_path):
       4. Si no coincide, descarga el archivo de SharePoint, actualiza la caché local y lo lee.
     En local: abre desde la ruta directamente.
     """
-    if _USE_SHAREPOINT:
+    if _use_sharepoint():
         cache_file = "TURNOS_SABADOS_cached.xlsx"
         meta_file = "TURNOS_SABADOS_cached_meta.txt"
         
@@ -724,7 +731,7 @@ def _open_consolidado_personal(excel_path):
     """
     Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx desde SharePoint o caché/fallback local.
     """
-    if _USE_SHAREPOINT:
+    if _use_sharepoint():
         cache_file = "CONSOLIDADO_2026_cached.xlsx"
         meta_file = "CONSOLIDADO_2026_cached_meta.txt"
         try:
