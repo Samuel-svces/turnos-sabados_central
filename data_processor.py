@@ -748,17 +748,22 @@ def _open_consolidado_personal(excel_path):
                 return pd.ExcelFile(cache_file)
                 
             buf = gc.download_excel("consolidado_personal")
-            try:
-                with open(cache_file, "wb") as f:
-                    f.write(buf.getvalue())
-                with open(meta_file, "w", encoding="utf-8") as f:
-                    f.write(f"{remote_last_mod}|{remote_size}")
-            except Exception as cache_err:
-                print(f"Error escribiendo caché local de personal: {cache_err}")
-                
-            buf.seek(0)
-            return pd.ExcelFile(buf)
+            xl_cloud = pd.ExcelFile(buf)
+            if "BD PERSONAL" in xl_cloud.sheet_names or "PERSONAL" in xl_cloud.sheet_names:
+                try:
+                    buf.seek(0)
+                    with open(cache_file, "wb") as f:
+                        f.write(buf.getvalue())
+                    with open(meta_file, "w", encoding="utf-8") as f:
+                        f.write(f"{remote_last_mod}|{remote_size}")
+                except Exception as cache_err:
+                    print(f"Error escribiendo caché local de personal: {cache_err}")
+                buf.seek(0)
+                return pd.ExcelFile(buf)
+            else:
+                st.session_state["super_load_error"] = f"El archivo cargado desde SharePoint no contiene la hoja 'BD PERSONAL'. Hojas encontradas: {xl_cloud.sheet_names}"
         except Exception as e:
+            st.session_state["super_load_error"] = str(e)
             if os.path.exists(cache_file):
                 try:
                     return pd.ExcelFile(cache_file)

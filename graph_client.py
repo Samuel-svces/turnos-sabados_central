@@ -28,9 +28,17 @@ import urllib.parse
 
 def _cfg(key: str) -> str:
     try:
-        return st.secrets["azure"][key]
+        if "azure" in st.secrets and key in st.secrets["azure"]:
+            val = st.secrets["azure"][key]
+            if val:
+                return str(val).strip()
+        if key in st.secrets:
+            val = st.secrets[key]
+            if val:
+                return str(val).strip()
     except Exception:
-        return os.environ.get(key, "")
+        pass
+    return os.environ.get(key, "").strip()
 
 
 def _get_access_token() -> str:
@@ -38,6 +46,9 @@ def _get_access_token() -> str:
     tenant_id   = _cfg("tenant_id")
     client_id   = _cfg("client_id")
     client_secret = _cfg("client_secret")
+
+    if not tenant_id or not client_id or not client_secret:
+        raise RuntimeError("Credenciales de Azure AD (tenant_id, client_id, client_secret) no configuradas en st.secrets.")
 
     authority = f"https://login.microsoftonline.com/{tenant_id}"
     app = msal.ConfidentialClientApplication(
@@ -62,6 +73,23 @@ def _file_urls(file_key: str, action: str = "content") -> list:
             "item"    → consulta metadatos del item
     """
     urls = []
+
+    if file_key in ("consolidado_personal", "bd_personal"):
+        site_domain = "unionsaludvida.sharepoint.com"
+        site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+        candidate_paths = [
+            "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+            "Shared Documents/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
+        ]
+        for cpath in candidate_paths:
+            item_path = urllib.parse.quote(cpath, safe='/')
+            base_url = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}:/drive/root:/{item_path}"
+            if action == "content":
+                urls.append(f"{base_url}:/content")
+            else:
+                urls.append(base_url)
+
     key_map = {
         "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
         "modificaciones_sabados": ("drive_id_mod_sab", "file_id_mod_sab"),
@@ -77,21 +105,6 @@ def _file_urls(file_key: str, action: str = "content") -> list:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
-
-    if file_key in ("consolidado_personal", "bd_personal"):
-        site_domain = "unionsaludvida.sharepoint.com"
-        site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
-        candidate_paths = [
-            "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
-        ]
-        for cpath in candidate_paths:
-            item_path = urllib.parse.quote(cpath, safe='/')
-            base_url = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}:/drive/root:/{item_path}"
-            if action == "content":
-                urls.append(f"{base_url}:/content")
-            else:
-                urls.append(base_url)
 
     if not urls:
         raise ValueError(f"file_key inválido: {file_key}")
