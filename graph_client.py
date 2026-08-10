@@ -80,63 +80,49 @@ def _file_urls(file_key: str, action: str = "content") -> list:
         pass
 
     if file_key in ("consolidado_personal", "bd_personal"):
-        drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos") or _cfg("drive_id_mod_sab")
-        file_id = _cfg("file_id_consolidado") or "0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95"
+        site_domain = "unionsaludvida.sharepoint.com"
+        site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+        guid = "0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95"
+        
+        # 1. URL directa por GUID de SharePoint site drive items (sourcedoc = 0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95)
+        site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
+        if action == "content":
+            urls.append(f"{site_base}:/drive/items/{guid}/content")
+            urls.append(f"{site_base}:/drive/items/%7B{guid}%7D/content")
+        else:
+            urls.append(f"{site_base}:/drive/items/{guid}")
+            urls.append(f"{site_base}:/drive/items/%7B{guid}%7D")
 
-        # 1. GUID / Item ID exacto obtenido del SharePoint del usuario (0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95)
+        # 2. Share token del enlace exacto de SharePoint provisto por el usuario
+        doc_url = f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D"
+        share_token = "u!" + base64.b64encode(doc_url.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
+        if action == "content":
+            urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/content")
+        else:
+            urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem")
+
+        # 3. Si el usuario definió drive_id_consolidado y file_id_consolidado en secrets
+        drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos") or _cfg("drive_id_mod_sab")
+        file_id = _cfg("file_id_consolidado")
         if drive_id and file_id:
             if action == "content":
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
 
-        # 2. Búsqueda automática en Graph API por nombre 'CONSOLIDADO 2026' dentro del drive de SharePoint
-        if token and drive_id:
-            try:
-                search_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root/search(q='CONSOLIDADO 2026')"
-                resp_s = requests.get(search_url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
-                if resp_s.status_code == 200:
-                    items = resp_s.json().get("value", [])
-                    for item in items:
-                        name = item.get("name", "")
-                        if "consolidado 2026.xlsx" in name.lower() or name.lower() == "consolidado 2026.xlsx":
-                            if action == "content":
-                                dl_url = item.get("@microsoft.graph.downloadUrl")
-                                if dl_url:
-                                    urls.append(dl_url)
-                                item_id = item.get("id")
-                                if item_id:
-                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}/content")
-                            else:
-                                item_id = item.get("id")
-                                if item_id:
-                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}")
-            except Exception as ex_search:
-                print(f"Error en búsqueda Graph API: {ex_search}")
-
-        # 3. Fallback por rutas relativas conocidas dentro del drive
-        if drive_id:
-            candidate_rel_paths = [
-                "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-                "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-                "CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-                "CONSOLIDADO 2026.xlsx"
-            ]
-            for cpath in candidate_rel_paths:
-                item_path = urllib.parse.quote(cpath, safe='/')
-                base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{item_path}"
-                if action == "content":
-                    urls.append(f"{base_url}:/content")
-                else:
-                    urls.append(base_url)
-
-        # 4. Fallback por Share token del enlace compartido
-        sp_folder_url = "https://unionsaludvida.sharepoint.com/:f:/s/CENTRALDENOVEDADESCONSOLIDADOS/IgB9jl8aCkmfQrFlv9SnUs_dAcrdu9u-mfFThhD2OoYNFAk"
-        share_token = "u!" + base64.b64encode(sp_folder_url.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
-        if action == "content":
-            urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/content")
-        else:
-            urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem")
+        # 4. Fallback por rutas relativas dentro del sitio de SharePoint
+        candidate_rel_paths = [
+            "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+            "CONSOLIDADO 2026.xlsx"
+        ]
+        for cpath in candidate_rel_paths:
+            item_path = urllib.parse.quote(cpath, safe='/')
+            base_url = f"{site_base}:/drive/root:/{item_path}"
+            if action == "content":
+                urls.append(f"{base_url}:/content")
+            else:
+                urls.append(base_url)
 
     key_map = {
         "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),

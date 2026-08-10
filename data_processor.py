@@ -835,13 +835,13 @@ def load_supernumeraries(excel_path):
         df["STATUS"] = df["STATUS"].fillna("ACTIVO").astype(str).str.strip().str.upper()
 
         # Regla de filtrado para vistas:
-        # Cargo si existe debe ser SUPERNUMERARIO (o vacío en BD PERSONAL)
-        # Sede debe ser SUPERNUMERARIO o INDUCCION
-        is_super_cargo = (df["CARGO"] == "") | df["CARGO"].str.contains("SUPERNUMERARI", na=False)
+        # Incluye cualquier registro donde Cargo contenga SUPERNUMERARI o Sede contenga SUPERNUMERARI / INDUCCION
+        is_super_cargo = df["CARGO"].str.contains("SUPERNUMERARI", na=False)
         is_super_sede = df["SEDE / CECO"].str.contains("SUPERNUMERARI|INDUCC", na=False)
+        is_super_doc = is_super_cargo | is_super_sede
         is_active_status = df["STATUS"].isin(["ACTIVO", "SI", "YES", "1", ""]) | ~df["STATUS"].isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
 
-        df_super = df[is_super_cargo & is_super_sede & is_active_status].copy()
+        df_super = df[is_super_doc & is_active_status].copy()
 
         df_super["CEDULA"] = df_super["CEDULA"].apply(
             lambda x: str(int(x)) if pd.notna(x) and str(x).replace(".0", "").isdigit() else str(x).strip()
