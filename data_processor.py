@@ -55,9 +55,6 @@ MONTH_NAMES_SP = {
 def _get_modifications_path(main_excel_path):
     return os.path.join(os.path.dirname(main_excel_path), "MODIFICACIONES_SABADOS.xlsx")
 
-def _get_personal_modifications_path(main_excel_path):
-    return os.path.join(os.path.dirname(main_excel_path), "MODIFICACIONES_PERSONAL.xlsx")
-
 
 def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list):
     """
@@ -237,68 +234,10 @@ def parse_flat_date(cell):
 # MODIFICACIONES_PERSONAL
 # ---------------------------------------------------------------------------
 
-_COLS_PERSONAL = ['ID', 'CEDULA', 'NOMBRES_Y_APELLIDOS', 'CARGO', 'CELULAR',
-                  'SEDE_CECO', 'STATUS', 'TYPE', 'FECHA_INICIO', 'OBSERVACIONES', 'TIMESTAMP']
-_SHEET_PERSONAL = 'MODIFICACIONES_PERSONAL'
-_KEY_PERSONAL   = 'modificaciones_personal'
-
-
 @st.cache_data(show_spinner=False)
 def load_personal_modifications(excel_path):
     # Descontinuado: El personal se lee directamente desde SharePoint BD PERSONAL (CONSOLIDADO 2026.xlsx)
-    return pd.DataFrame(columns=_COLS_PERSONAL)
-
-
-def save_personal_modification(excel_path, personal_data):
-    local_path = _get_personal_modifications_path(excel_path)
-    wb, ws = _load_wb_delta(_KEY_PERSONAL, local_path, _SHEET_PERSONAL, _COLS_PERSONAL)
-
-    # Asegurar columnas nuevas en el encabezado
-    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-    if 'FECHA_INICIO' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'FECHA_INICIO'
-    if 'OBSERVACIONES' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'OBSERVACIONES'
-
-    max_id = 0
-    for r in range(2, ws.max_row + 1):
-        val = ws.cell(row=r, column=1).value
-        if val is not None:
-            try:
-                max_id = max(max_id, int(val))
-            except ValueError:
-                pass
-    next_id = max_id + 1
-
-    fecha_inicio = personal_data.get('fecha_inicio', None)
-    if isinstance(fecha_inicio, (datetime.date, datetime.datetime)):
-        fecha_inicio = fecha_inicio.strftime('%Y-%m-%d')
-    elif fecha_inicio:
-        fecha_inicio = str(fecha_inicio)
-    else:
-        fecha_inicio = ''
-        
-    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-    if 'TIMESTAMP' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
-
-    ws.append([
-        next_id,
-        str(personal_data.get('cedula', '')).strip(),
-        str(personal_data.get('nombres_y_apellidos', '')).strip().upper(),
-        str(personal_data.get('cargo', '')).strip().upper(),
-        str(personal_data.get('celular', '')).strip(),
-        str(personal_data.get('sede_ceco', '')).strip().upper(),
-        str(personal_data.get('status', 'ACTIVO')).strip().upper(),
-        str(personal_data.get('type', 'AGREGAR')).strip().upper(),
-        fecha_inicio,
-        str(personal_data.get('observaciones', '')).strip(),
-        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ])
-
-    _save_wb_delta(wb, _KEY_PERSONAL, local_path)
-    load_personal_modifications.clear()
-    return next_id
+    return pd.DataFrame()
 
 
 # ---------------------------------------------------------------------------
