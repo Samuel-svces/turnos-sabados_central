@@ -241,6 +241,109 @@ def load_personal_modifications(excel_path):
 
 
 # ---------------------------------------------------------------------------
+# PLAN DE CONTINGENCIA: Personal Manual (Guardado en MODIFICACIONES_SABADOS.xlsx)
+# ---------------------------------------------------------------------------
+
+_COLS_MANUAL_PERSONAL = ['ID', 'CEDULA', 'NOMBRES_Y_APELLIDOS', 'CARGO', 'CELULAR', 'SEDE_CECO', 'STATUS', 'OBSERVACIONES', 'TIMESTAMP']
+_SHEET_MANUAL_PERSONAL = 'PERSONAL_MANUAL'
+
+
+@st.cache_data(show_spinner=False)
+def load_manual_supernumeraries(excel_path):
+    """
+    Carga los médicos registrados manualmente por contingencia desde la pestaña 'PERSONAL_MANUAL'
+    del archivo delta MODIFICACIONES_SABADOS.xlsx.
+    """
+    local_path = _get_modifications_path(excel_path)
+    df = _read_delta_df(_KEY_SABADOS, local_path, _SHEET_MANUAL_PERSONAL, _COLS_MANUAL_PERSONAL)
+
+    if df.empty:
+        return df
+
+    df['ID'] = pd.to_numeric(df['ID'], errors='coerce').fillna(0).astype(int)
+    df['CEDULA'] = df['CEDULA'].astype(str).str.strip().apply(
+        lambda x: str(int(float(x))) if str(x).replace('.0', '').isdigit() else str(x)
+    )
+    df['NOMBRES Y APELLIDOS'] = df['NOMBRES_Y_APELLIDOS'].fillna('').astype(str).str.strip().str.upper()
+    df['CARGO'] = df['CARGO'].fillna('MEDICO GENERAL SUPERNUMERARIO').astype(str).str.strip().str.upper()
+    df['CELULAR'] = df['CELULAR'].fillna('').astype(str).str.strip()
+    df['SEDE / CECO'] = df['SEDE_CECO'].fillna('SUPERNUMERARIOS').astype(str).str.strip().str.upper()
+    df['STATUS'] = df['STATUS'].fillna('ACTIVO').astype(str).str.strip().str.upper()
+    df['OBSERVACIONES'] = df['OBSERVACIONES'].fillna('').astype(str).str.strip()
+    
+    return df[df['STATUS'] == 'ACTIVO'].sort_values(by='ID')
+
+
+def save_manual_supernumerary(excel_path, doc_data):
+    """
+    Guarda un médico registrado manualmente por contingencia en la pestaña 'PERSONAL_MANUAL'
+    de MODIFICACIONES_SABADOS.xlsx (sincronizado con SharePoint).
+    """
+    local_path = _get_modifications_path(excel_path)
+    wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_MANUAL_PERSONAL, _COLS_MANUAL_PERSONAL)
+
+    # Verificar encabezados
+    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
+    if 'OBSERVACIONES' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'OBSERVACIONES'
+    if 'TIMESTAMP' not in header:
+        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
+
+    max_id = 0
+    for r in range(2, ws.max_row + 1):
+        val = ws.cell(row=r, column=1).value
+        if val is not None:
+            try:
+                max_id = max(max_id, int(val))
+            except ValueError:
+                pass
+    next_id = max_id + 1
+
+    ws.append([
+        next_id,
+        str(doc_data.get('cedula', '')).strip(),
+        str(doc_data.get('nombres_y_apellidos', '')).strip().upper(),
+        str(doc_data.get('cargo', 'MEDICO GENERAL SUPERNUMERARIO')).strip().upper(),
+        str(doc_data.get('celular', '')).strip(),
+        str(doc_data.get('sede_ceco', 'SUPERNUMERARIOS')).strip().upper(),
+        'ACTIVO',
+        str(doc_data.get('observaciones', 'Registro manual contingencia')).strip(),
+        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ])
+
+    _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    load_manual_supernumeraries.clear()
+    load_supernumeraries.clear()
+    return next_id
+
+
+def deactivate_manual_supernumerary(excel_path, cedula):
+    """
+    Marca un médico registrado manualmente como INACTIVO en la pestaña 'PERSONAL_MANUAL'.
+    """
+    local_path = _get_modifications_path(excel_path)
+    wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_MANUAL_PERSONAL, _COLS_MANUAL_PERSONAL)
+    
+    cedula_str = str(cedula).strip()
+    header = [str(ws.cell(row=1, column=c).value).upper() for c in range(1, ws.max_column + 1)]
+    ced_idx = header.index('CEDULA') + 1 if 'CEDULA' in header else 2
+    status_idx = header.index('STATUS') + 1 if 'STATUS' in header else 7
+    
+    modified = False
+    for r in range(2, ws.max_row + 1):
+        cell_val = str(ws.cell(row=r, column=ced_idx).value).strip()
+        if cell_val.replace('.0', '') == cedula_str.replace('.0', ''):
+            ws.cell(row=r, column=status_idx).value = 'INACTIVO'
+            modified = True
+            
+    if modified:
+        _save_wb_delta(wb, _KEY_SABADOS, local_path)
+        load_manual_supernumeraries.clear()
+        load_supernumeraries.clear()
+    return modified
+
+
+# ---------------------------------------------------------------------------
 # MODIFICACIONES_SABADOS
 # ---------------------------------------------------------------------------
 
@@ -805,6 +908,30 @@ def load_supernumeraries(excel_path):
         ).replace("NAN", "")
 
         df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
+
+        # Combinar médicos agregados manualmente por contingencia desde PERSONAL_MANUAL
+        try:
+            df_manual = load_manual_supernumeraries(excel_path)
+            if not df_manual.empty:
+                existing_cedulas = set(df_super["CEDULA"].astype(str).tolist())
+                existing_names = set(df_super["NOMBRES Y APELLIDOS"].astype(str).tolist())
+                manual_rows = []
+                for _, m_row in df_manual.iterrows():
+                    m_ced = str(m_row["CEDULA"]).strip()
+                    m_name = str(m_row["NOMBRES Y APELLIDOS"]).strip().upper()
+                    if m_ced not in existing_cedulas and m_name not in existing_names:
+                        manual_rows.append({
+                            "CEDULA": m_ced,
+                            "NOMBRES Y APELLIDOS": m_name,
+                            "CARGO": str(m_row.get("CARGO", "MEDICO GENERAL SUPERNUMERARIO")).strip().upper(),
+                            "CELULAR": str(m_row.get("CELULAR", "")).strip(),
+                            "SEDE / CECO": str(m_row.get("SEDE / CECO", "SUPERNUMERARIOS")).strip().upper(),
+                            "OBSERVACIONES": str(m_row.get("OBSERVACIONES", "Registro manual contingencia")).strip()
+                        })
+                if manual_rows:
+                    df_super = pd.concat([df_super, pd.DataFrame(manual_rows)], ignore_index=True)
+        except Exception as manual_err:
+            print(f"Error combinando médicos manuales de contingencia: {manual_err}")
         
         return (
             df_super[["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "CELULAR", "SEDE / CECO", "OBSERVACIONES"]]

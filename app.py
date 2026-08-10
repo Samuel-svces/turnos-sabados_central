@@ -859,6 +859,57 @@ if st.session_state.is_admin:
                 st.warning("No se encontraron médicos activos con Sede 'Supernumerario' o 'Induccion' en la hoja BD PERSONAL de SharePoint.")
                 if st.session_state.get('super_load_error'):
                     st.error(f"Detalle del error de conexión: {st.session_state.super_load_error}")
+            
+            st.markdown("---")
+            st.markdown("#### ⚠️ Plan de Contingencia: Registro Manual de Médicos", unsafe_allow_html=True)
+            st.caption("Si un médico no ha sido ingresado a tiempo en la BD PERSONAL de SharePoint, puedes registrarlo temporalmente aquí para que aparezca en el sistema.")
+            
+            with st.expander("➕ Registrar Médico Manualmente (Contingencia)", expanded=False):
+                with st.form("admin_manual_doc_form", clear_on_submit=True):
+                    m_cedula = st.text_input("Cédula / Identificación:").strip()
+                    m_nombre = st.text_input("Nombre Completo (APELLIDOS NOMBRES):").strip().upper()
+                    m_sede = st.selectbox("Sede / CECO:", ["SUPERNUMERARIOS", "INDUCCION"])
+                    m_celular = st.text_input("Celular (opcional):").strip()
+                    m_obs = st.text_area("Observaciones de Contingencia:", placeholder="Ej: Registro urgente por turno sábado...", height=70).strip()
+                    
+                    sub_manual = st.form_submit_button("Registrar Médico en Contingencia", use_container_width=True)
+                    if sub_manual:
+                        if not m_cedula or not m_nombre:
+                            st.error("Cédula y Nombre Completo son obligatorios.")
+                        else:
+                            doc_data = {
+                                'cedula': m_cedula,
+                                'nombres_y_apellidos': m_nombre,
+                                'cargo': 'MEDICO GENERAL SUPERNUMERARIO',
+                                'celular': m_celular,
+                                'sede_ceco': m_sede,
+                                'observaciones': m_obs if m_obs else 'Registro manual por contingencia'
+                            }
+                            try:
+                                dp.save_manual_supernumerary(st.session_state.excel_path, doc_data)
+                                st.success(f"Médico {m_nombre} registrado correctamente por contingencia. Sincronizado en SharePoint.")
+                                load_app_data()
+                                st.rerun()
+                            except Exception as ex_m:
+                                st.error(f"Error al guardar registro manual: {ex_m}")
+
+            # Mostrar registros manuales activos para poder retirarlos si ya están en SharePoint
+            try:
+                df_man = dp.load_manual_supernumeraries(st.session_state.excel_path)
+                if not df_man.empty:
+                    st.markdown("##### 📝 Médicos Registrados Manualmente por Contingencia")
+                    for _, r_man in df_man.iterrows():
+                        col_m_info, col_m_btn = st.columns([3, 1])
+                        with col_m_info:
+                            st.markdown(f"• **{r_man['NOMBRES Y APELLIDOS']}** (CC: {r_man['CEDULA']}) | Sede: {r_man['SEDE / CECO']}")
+                        with col_m_btn:
+                            if st.button("Desactivar", key=f"deact_{r_man['CEDULA']}", use_container_width=True):
+                                dp.deactivate_manual_supernumerary(st.session_state.excel_path, r_man['CEDULA'])
+                                st.success(f"Médico {r_man['NOMBRES Y APELLIDOS']} desactivado del registro manual.")
+                                load_app_data()
+                                st.rerun()
+            except Exception:
+                pass
                         
         with col_hist:
             st.markdown("#### 📜 Historial de Actividad (Últimos Movimientos)")
