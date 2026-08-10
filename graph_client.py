@@ -73,11 +73,69 @@ def _file_urls(file_key: str, action: str = "content") -> list:
             "item"    → consulta metadatos del item
     """
     urls = []
+    token = None
+    try:
+        token = _get_access_token()
+    except Exception:
+        pass
 
     if file_key in ("consolidado_personal", "bd_personal"):
-        # 1. Share token oficial de Microsoft Graph API a partir del enlace de SharePoint
-        sp_url = "https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
-        share_token = "u!" + base64.b64encode(sp_url.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
+        # Usar el drive_id de SharePoint configurado en secrets (drive_id_consolidado, drive_id_turnos o drive_id_mod_sab)
+        drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos") or _cfg("drive_id_mod_sab")
+        file_id = _cfg("file_id_consolidado")
+
+        # 1. Si existe file_id_consolidado explícito
+        if drive_id and file_id:
+            if action == "content":
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
+            else:
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
+
+        # 2. Usar el drive_id de la biblioteca de SharePoint + la ruta del archivo dentro del drive
+        if drive_id:
+            candidate_rel_paths = [
+                "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+                "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+                "CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
+                "CONSOLIDADO 2026.xlsx"
+            ]
+            for cpath in candidate_rel_paths:
+                item_path = urllib.parse.quote(cpath, safe='/')
+                base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/root:/{item_path}"
+                if action == "content":
+                    urls.append(f"{base_url}:/content")
+                else:
+                    urls.append(base_url)
+
+        # 3. Share token del enlace de SharePoint
+        sp_folder_url = "https://unionsaludvida.sharepoint.com/:f:/s/CENTRALDENOVEDADESCONSOLIDADOS/IgB9jl8aCkmfQrFlv9SnUs_dAcrdu9u-mfFThhD2OoYNFAk"
+        share_token = "u!" + base64.b64encode(sp_folder_url.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
+
+        if token:
+            try:
+                children_url = f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/children"
+                resp_child = requests.get(children_url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+                if resp_child.status_code == 200:
+                    children = resp_child.json().get("value", [])
+                    for child in children:
+                        c_name = child.get("name", "")
+                        if "consolidado 2026" in c_name.lower() or "consolidado" in c_name.lower():
+                            if action == "content":
+                                dl_url = child.get("@microsoft.graph.downloadUrl")
+                                if dl_url:
+                                    urls.append(dl_url)
+                                item_id = child.get("id")
+                                c_drive_id = child.get("parentReference", {}).get("driveId")
+                                if c_drive_id and item_id:
+                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{c_drive_id}/items/{item_id}/content")
+                            else:
+                                item_id = child.get("id")
+                                c_drive_id = child.get("parentReference", {}).get("driveId")
+                                if c_drive_id and item_id:
+                                    urls.append(f"https://graph.microsoft.com/v1.0/drives/{c_drive_id}/items/{item_id}")
+            except Exception:
+                pass
+
         if action == "content":
             urls.append(f"https://graph.microsoft.com/v1.0/shares/{share_token}/driveItem/content")
         else:
@@ -87,8 +145,7 @@ def _file_urls(file_key: str, action: str = "content") -> list:
         site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
         candidate_paths = [
             "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "Shared Documents/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
+            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx"
         ]
         for cpath in candidate_paths:
             item_path = urllib.parse.quote(cpath, safe='/')
