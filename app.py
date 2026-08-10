@@ -835,8 +835,8 @@ if st.session_state.is_admin:
                 st.metric("Médicos Supernumerarios Activos", f"{num_super} Médicos")
             with col_m2:
                 if st.button("🔄 Sincronizar desde SharePoint", use_container_width=True):
-                    dp._open_consolidado_personal.clear()
-                    dp.load_supernumeraries.clear()
+                    st.cache_data.clear()
+                    st.cache_resource.clear()
                     load_app_data()
                     st.success("Directorio de personal resincronizado con éxito.")
                     st.rerun()

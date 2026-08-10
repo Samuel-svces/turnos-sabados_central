@@ -81,9 +81,9 @@ def _file_urls(file_key: str, action: str = "content") -> list:
 
     if file_key in ("consolidado_personal", "bd_personal"):
         drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos") or _cfg("drive_id_mod_sab")
-        file_id = _cfg("file_id_consolidado")
+        file_id = _cfg("file_id_consolidado") or "0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95"
 
-        # 1. Si existe file_id_consolidado explícito en Secrets
+        # 1. GUID / Item ID exacto obtenido del SharePoint del usuario (0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95)
         if drive_id and file_id:
             if action == "content":
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
