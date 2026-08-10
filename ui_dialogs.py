@@ -109,11 +109,11 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
         st.session_state.last_error = f"Error al guardar cambios: {e}"
         st.rerun()
 
-def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, current_clasif, load_app_data_func):
+def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, current_clasif, load_app_data_func, scope="Eliminar de todas las secuencias (las futuras)"):
     st.session_state["is_deleting_processing"] = True
     try:
         df_s = st.session_state.shifts_df
-        del_scope = st.session_state.get("del_scope_radio_flat", "Eliminar de todas las secuencias (las futuras)")
+        del_scope = scope
         
         # Asegurarnos de que date_val sea datetime.date
         date_check = date_val
@@ -247,16 +247,30 @@ def show_delete_options_callback():
 
 def cancel_delete_options_callback():
     st.session_state.show_delete_options = False
-    st.session_state.last_error = None
 
 @st.dialog("Gestión de Turno")
-def show_selection_dialog(action_details, load_app_data_func):
+def show_shift_dialog(action_details, load_app_data_func):
     if not st.session_state.is_admin:
         st.error("Acceso denegado: Se requieren permisos de administrador.")
         st.stop()
 
-    # La alerta de éxito se muestra desde app.py (nivel principal) para que persista
-    # tras el rerun automático que cierra el diálogo. Aquí solo cerramos el diálogo si el flag está activo.
+    current_doc = action_details['doctor']
+
+    # Mostrar cuadro de bloqueo total mientras se procesa la eliminación
+    if st.session_state.get("is_deleting_processing", False):
+        st.markdown(
+            f"""
+            <div style="background: linear-gradient(135deg, #fee2e2 0%, #fff1f2 100%); border: 3px solid #ef4444; border-radius: 16px; padding: 25px 18px; text-align: center; margin: 15px 0;">
+                <div style="font-size: 42px; margin-bottom: 8px;">⏳</div>
+                <h3 style="color: #991b1b; margin: 0 0 8px 0; font-weight: 800; font-size: 20px;">Sincronizando con SharePoint...</h3>
+                <p style="color: #7f1d1d; margin: 0; font-size: 15px; font-weight: 600;">Eliminando a <b>{current_doc}</b> de todas las secuencias futuras.</p>
+                <p style="color: #b91c1c; margin-top: 12px; font-size: 13px; font-weight: 700; background-color: #fca5a5; padding: 6px 14px; border-radius: 20px; display: inline-block;">🔒 La ventana está bloqueada hasta completar la actualización.</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+        return
+
     if st.session_state.get("show_delete_success_alert", False):
         st.rerun()  # Cierra el diálogo; la alerta la renderiza app.py en el siguiente ciclo
 
