@@ -773,22 +773,36 @@ def _open_consolidado_personal(excel_path):
     """
     Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx desde SharePoint o caché/fallback local.
     """
+    cache_file = "CONSOLIDADO_2026_cached.xlsx"
+    meta_file = "CONSOLIDADO_2026_cached_meta.txt"
+    force_refresh = st.session_state.pop("force_refresh_personal", False)
+
+    if force_refresh:
+        if os.path.exists(cache_file):
+            try:
+                os.remove(cache_file)
+            except Exception:
+                pass
+        if os.path.exists(meta_file):
+            try:
+                os.remove(meta_file)
+            except Exception:
+                pass
+
     if _use_sharepoint():
-        cache_file = "CONSOLIDADO_2026_cached.xlsx"
-        meta_file = "CONSOLIDADO_2026_cached_meta.txt"
         try:
             remote_meta = gc.get_file_metadata("consolidado_personal")
             remote_last_mod = remote_meta.get("lastModifiedDateTime", "")
             remote_size = remote_meta.get("size", 0)
             
             use_cached = False
-            if os.path.exists(cache_file) and os.path.exists(meta_file):
+            if not force_refresh and os.path.exists(cache_file) and os.path.exists(meta_file):
                 try:
                     with open(meta_file, "r", encoding="utf-8") as f:
                         saved_meta = f.read().strip().split("|")
                     if len(saved_meta) == 2:
-                        saved_last_mod, saved_size = saved_meta[0], int(saved_meta[1])
-                        if saved_last_mod == remote_last_mod and saved_size == remote_size:
+                        saved_last_mod, saved_size_str = saved_meta[0], saved_meta[1]
+                        if saved_last_mod == remote_last_mod and int(saved_size_str) == remote_size:
                             use_cached = True
                 except Exception:
                     pass
@@ -808,12 +822,13 @@ def _open_consolidado_personal(excel_path):
                 except Exception as cache_err:
                     print(f"Error escribiendo caché local de personal: {cache_err}")
                 buf.seek(0)
+                st.session_state.pop("super_load_error", None)
                 return pd.ExcelFile(buf)
             else:
                 st.session_state["super_load_error"] = f"El archivo cargado desde SharePoint no contiene la hoja 'BD PERSONAL'. Hojas encontradas: {xl_cloud.sheet_names}"
         except Exception as e:
-            st.session_state["super_load_error"] = str(e)
-            if os.path.exists(cache_file):
+            st.session_state["super_load_error"] = f"Error al conectar con SharePoint: {e}"
+            if not force_refresh and os.path.exists(cache_file):
                 try:
                     return pd.ExcelFile(cache_file)
                 except Exception:
