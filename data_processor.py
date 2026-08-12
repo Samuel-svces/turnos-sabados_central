@@ -67,15 +67,19 @@ def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list)
         try:
             buf = gc.download_excel(file_key)
             wb = openpyxl.load_workbook(buf)
-            ws = wb[sheet_title]
-            return wb, ws
         except Exception:
-            # Archivo aún no existe en SharePoint → crear uno vacío en memoria
             wb = openpyxl.Workbook()
             ws = wb.active
             ws.title = sheet_title
             ws.append(cols)
             return wb, ws
+            
+        if sheet_title in wb.sheetnames:
+            ws = wb[sheet_title]
+        else:
+            ws = wb.create_sheet(title=sheet_title)
+            ws.append(cols)
+        return wb, ws
     else:
         if not os.path.exists(local_path):
             wb = openpyxl.Workbook()
@@ -85,7 +89,11 @@ def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list)
             wb.save(local_path)
             wb.close()
         wb = openpyxl.load_workbook(local_path)
-        ws = wb[sheet_title]
+        if sheet_title in wb.sheetnames:
+            ws = wb[sheet_title]
+        else:
+            ws = wb.create_sheet(title=sheet_title)
+            ws.append(cols)
         return wb, ws
 
 

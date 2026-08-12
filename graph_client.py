@@ -239,4 +239,4 @@ def get_file_metadata(file_key: str) -> dict:
 
     raise RuntimeError(
         f"Error al obtener metadatos de '{file_key}': {last_err}"
-    )
+    )
