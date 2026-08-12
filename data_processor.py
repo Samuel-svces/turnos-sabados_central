@@ -117,18 +117,39 @@ def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
 def _read_delta_df(file_key: str, local_path: str, sheet_title: str, cols: list) -> pd.DataFrame:
     """
     Lee el DataFrame del archivo delta (SharePoint o local).
-    Si no existe devuelve DataFrame vacío con las columnas esperadas.
+    Si el remoto en SharePoint está vacío pero el archivo local del repositorio tiene registros,
+    utiliza el local y lo autorrestaura automáticamente en SharePoint.
     """
     if _use_sharepoint():
+        df_remote = pd.DataFrame(columns=cols)
         try:
             buf = gc.download_excel(file_key)
-            df = pd.read_excel(buf, sheet_name=sheet_title)
+            df_temp = pd.read_excel(buf, sheet_name=sheet_title)
             for c in cols:
-                if c not in df.columns:
-                    df[c] = None
-            return df[cols].copy()
+                if c not in df_temp.columns:
+                    df_temp[c] = None
+            df_remote = df_temp[cols].copy()
         except Exception:
-            return pd.DataFrame(columns=cols)
+            pass
+
+        if df_remote.empty and os.path.exists(local_path):
+            try:
+                df_local = pd.read_excel(local_path, sheet_name=sheet_title)
+                for c in cols:
+                    if c not in df_local.columns:
+                        df_local[c] = None
+                df_local_clean = df_local[cols].copy()
+                if not df_local_clean.empty:
+                    try:
+                        wb_local = openpyxl.load_workbook(local_path)
+                        _save_wb_delta(wb_local, file_key, local_path)
+                    except Exception as up_err:
+                        print(f"Error auto-restaurando delta en SharePoint: {up_err}")
+                    return df_local_clean
+            except Exception:
+                pass
+
+        return df_remote
     else:
         if not os.path.exists(local_path):
             return pd.DataFrame(columns=cols)
