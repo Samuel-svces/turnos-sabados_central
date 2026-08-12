@@ -859,8 +859,11 @@ if st.session_state.is_admin:
                     mask_ced  = df_show['CEDULA'].astype(str).str.contains(search_super, na=False)
                     df_show = df_show[mask_name | mask_ced]
                 
+                display_cols = [c for c in ['Cédula', 'Sede', 'Cargo', 'Profesional', 'Estado', 'Correo'] if c in df_show.columns]
+                if not display_cols:
+                    display_cols = df_show.columns.tolist()
                 st.dataframe(
-                    df_show[['CEDULA', 'NOMBRES Y APELLIDOS', 'CARGO', 'SEDE / CECO', 'CELULAR', 'OBSERVACIONES']],
+                    df_show[display_cols],
                     use_container_width=True,
                     hide_index=True
                 )

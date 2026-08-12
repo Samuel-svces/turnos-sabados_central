@@ -909,30 +909,35 @@ def load_supernumeraries(excel_path):
                 col_map[c] = "CARGO"
             elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO"):
                 col_map[c] = "SEDE / CECO"
+            elif c_str in ("CORREO", "EMAIL", "CORREO ELECTRONICO", "CORREO ELECTRÓNICO"):
+                col_map[c] = "CORREO"
             elif c_str in ("CELULAR", "TELEFONO", "MOVIL"):
                 col_map[c] = "CELULAR"
-            elif c_str in ("OBSERVACIONES", "OBSERVACION", "NOTAS"):
-                col_map[c] = "OBSERVACIONES"
             elif c_str in ("STATUS", "ESTADO", "ESTADO OPERATIVO"):
                 col_map[c] = "STATUS"
+            elif c_str in ("OBSERVACIONES", "OBSERVACION", "NOTAS"):
+                col_map[c] = "OBSERVACIONES"
 
         df = df.rename(columns=col_map)
         
-        for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "CELULAR", "OBSERVACIONES", "STATUS"]:
+        for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "CORREO", "STATUS", "CELULAR", "OBSERVACIONES"]:
             if req_col not in df.columns:
                 df[req_col] = ""
 
         # Limpieza de textos y valores nulos
-        df["CARGO"] = df["CARGO"].fillna("").astype(str).str.strip().str.upper()
-        df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip().str.upper()
-        df["STATUS"] = df["STATUS"].fillna("ACTIVO").astype(str).str.strip().str.upper()
+        df["CARGO"] = df["CARGO"].fillna("").astype(str).str.strip()
+        df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip()
+        df["STATUS"] = df["STATUS"].fillna("SI").astype(str).str.strip()
+        df["CORREO"] = df["CORREO"].fillna("").astype(str).str.strip()
 
         # Regla de filtrado para vistas:
         # Incluye cualquier registro donde Cargo contenga SUPERNUMERARI o Sede contenga SUPERNUMERARI / INDUCCION
-        is_super_cargo = df["CARGO"].str.contains("SUPERNUMERARI", na=False)
-        is_super_sede = df["SEDE / CECO"].str.contains("SUPERNUMERARI|INDUCC", na=False)
+        is_super_cargo = df["CARGO"].str.upper().str.contains("SUPERNUMERARI", na=False)
+        is_super_sede = df["SEDE / CECO"].str.upper().str.contains("SUPERNUMERARI|INDUCC", na=False)
         is_super_doc = is_super_cargo | is_super_sede
-        is_active_status = df["STATUS"].isin(["ACTIVO", "SI", "YES", "1", ""]) | ~df["STATUS"].isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
+        
+        status_upper = df["STATUS"].str.upper()
+        is_active_status = status_upper.isin(["ACTIVO", "SI", "YES", "1", ""]) | ~status_upper.isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
 
         df_super = df[is_super_doc & is_active_status].copy()
 
@@ -947,11 +952,16 @@ def load_supernumeraries(excel_path):
             .str.upper()
             .apply(lambda x: re.sub(r"\s+", " ", x))
         )
-        df_super["CELULAR"] = df_super["CELULAR"].apply(
-            lambda x: str(int(x)) if pd.notna(x) and str(x).replace(".0", "").isdigit() else str(x).strip()
-        ).replace("NAN", "")
-
+        df_super["CORREO"] = df_super["CORREO"].fillna("").astype(str).str.strip()
         df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
+
+        # Crear nombres de columna amigables coincidentes con el Excel original
+        df_super["Cédula"] = df_super["CEDULA"]
+        df_super["Sede"] = df_super["SEDE / CECO"]
+        df_super["Cargo"] = df_super["CARGO"]
+        df_super["Profesional"] = df_super["NOMBRES Y APELLIDOS"]
+        df_super["Estado"] = df_super["STATUS"]
+        df_super["Correo"] = df_super["CORREO"]
 
         # Combinar médicos agregados manualmente por contingencia desde PERSONAL_MANUAL
         try:
@@ -967,10 +977,18 @@ def load_supernumeraries(excel_path):
                         manual_rows.append({
                             "CEDULA": m_ced,
                             "NOMBRES Y APELLIDOS": m_name,
-                            "CARGO": str(m_row.get("CARGO", "MEDICO GENERAL SUPERNUMERARIO")).strip().upper(),
+                            "CARGO": str(m_row.get("CARGO", "MEDICO GENERAL SUPERNUMERARIO")).strip(),
+                            "SEDE / CECO": str(m_row.get("SEDE / CECO", "SUPERNUMERARIOS")).strip(),
+                            "CORREO": "",
+                            "STATUS": "SI",
                             "CELULAR": str(m_row.get("CELULAR", "")).strip(),
-                            "SEDE / CECO": str(m_row.get("SEDE / CECO", "SUPERNUMERARIOS")).strip().upper(),
-                            "OBSERVACIONES": str(m_row.get("OBSERVACIONES", "Registro manual contingencia")).strip()
+                            "OBSERVACIONES": str(m_row.get("OBSERVACIONES", "Registro manual contingencia")).strip(),
+                            "Cédula": m_ced,
+                            "Sede": str(m_row.get("SEDE / CECO", "SUPERNUMERARIOS")).strip(),
+                            "Cargo": str(m_row.get("CARGO", "MEDICO GENERAL SUPERNUMERARIO")).strip(),
+                            "Profesional": m_name,
+                            "Estado": "SI",
+                            "Correo": ""
                         })
                 if manual_rows:
                     df_super = pd.concat([df_super, pd.DataFrame(manual_rows)], ignore_index=True)
