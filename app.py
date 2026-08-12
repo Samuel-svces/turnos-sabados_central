@@ -678,7 +678,7 @@ with tab_calendar:
                                 'observation': shift_obs,
                                 'classification': clasif
                             }
-                            ui_dialogs.show_selection_dialog(action_details, load_app_data)
+                            ui_dialogs.show_shift_dialog(action_details, load_app_data)
                         
                     st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
                     

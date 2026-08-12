@@ -572,3 +572,5 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
             except Exception as e:
                 st.error(f"Error al agregar médico: {e}")
 
+show_selection_dialog = show_shift_dialog
+
