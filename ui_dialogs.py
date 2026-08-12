@@ -267,6 +267,24 @@ def show_shift_dialog(action_details, load_app_data_func):
     if st.session_state.get("is_deleting_processing", False):
         st.markdown(
             f"""
+            <style>
+            button[aria-label="Close"], button[aria-label="Cerrar"], button[title="Close"], button[title="Cerrar"],
+            div[data-testid="stDialog"] button[aria-label="Close"], div[data-testid="stDialog"] header + button,
+            div[role="dialog"] button[aria-label="Close"], button[kind="header-close"],
+            div[data-testid="stModal"] button[aria-label="Close"], button[aria-label="close"] {{
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                width: 0px !important;
+                height: 0px !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }}
+            div[data-testid="stModalBackdrop"], div[data-baseweb="modal-backdrop"] {{
+                pointer-events: none !important;
+            }}
+            </style>
             <div style="background: linear-gradient(135deg, #fee2e2 0%, #fff1f2 100%); border: 3px solid #ef4444; border-radius: 16px; padding: 25px 18px; text-align: center; margin: 15px 0;">
                 <div style="font-size: 42px; margin-bottom: 8px;">⏳</div>
                 <h3 style="color: #991b1b; margin: 0 0 8px 0; font-weight: 800; font-size: 20px;">Sincronizando con SharePoint...</h3>

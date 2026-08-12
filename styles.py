@@ -1468,23 +1468,44 @@ def apply_styles():
     button[data-testid="baseButton-primary"] p,
     button[data-testid="baseButton-primary"] span,
     button[data-testid="baseButton-primary"] svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
     /* Bloqueo y eliminación del botón X de los diálogos para impedir cierres */
     button[aria-label="Close"],
+    button[aria-label="Cerrar"],
+    button[title="Close"],
+    button[title="Cerrar"],
     div[data-testid="stDialog"] button[aria-label="Close"],
+    div[data-testid="stDialog"] button[aria-label="Cerrar"],
+    div[data-testid="stDialog"] button,
     div[role="dialog"] button[aria-label="Close"],
+    div[role="dialog"] header + button,
     button[kind="header-close"] {
         display: none !important;
         visibility: hidden !important;
-        pointer-events: none !important;
-        width: 0px !important;
-        height: 0px !important;
-    }
-    
-    div[data-testid="stModalBackdrop"] {
+        opacity: 0 !important;
         pointer-events: none !important;
     }
+
+    /* Regla especifica para mantener visibles solo los botones del formulario interno */
+    div[data-testid="stDialog"] div[data-testid="stButton"] button,
+    div[role="dialog"] div[data-testid="stButton"] button {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
     
-    div[data-testid="stDialog"] {
+    div[data-testid="stModalBackdrop"],
+    div[data-baseweb="modal-backdrop"] {
+        pointer-events: none !important;
+    }
+    
+    div[data-testid="stDialog"],
+    div[role="dialog"],
+    div[data-baseweb="modal"] {
         pointer-events: auto !important;
     }
     </style>
