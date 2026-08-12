@@ -99,16 +99,7 @@ def _file_urls(file_key: str, action: str = "content") -> list:
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem")
 
-        # 2. Si el usuario definió drive_id_consolidado y file_id_consolidado en secrets
-        drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos") or _cfg("drive_id_mod_sab")
-        file_id = _cfg("file_id_consolidado")
-        if drive_id and file_id:
-            if action == "content":
-                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
-            else:
-                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
-
-        # 3. Fallback por rutas relativas dentro del sitio de SharePoint
+        # 2. Fallback por rutas relativas dentro del sitio de SharePoint
         candidate_rel_paths = [
             "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
             "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
