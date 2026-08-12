@@ -217,6 +217,13 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             
             if mods_list:
                 dp.save_modifications_batch(excel_path, mods_list)
+                # Actualización en memoria ultrarrápida para que la UI responda de inmediato
+                try:
+                    to_del_indices = set(shifts_to_delete.index)
+                    st.session_state.shifts_df = st.session_state.shifts_df.drop(index=list(to_del_indices)).reset_index(drop=True)
+                    dp.load_data.clear()
+                except Exception:
+                    pass
             
             # Registrar última acción para deshacer
             st.session_state.last_action = {

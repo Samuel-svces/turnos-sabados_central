@@ -470,7 +470,7 @@ with tab_calendar:
                         icon: "success",
                         draggable: true,
                         confirmButtonColor: '#1a73e8',
-                        timer: 3500,
+                        timer: 1500,
                         timerProgressBar: true
                     }});
                 }};
