@@ -38,7 +38,9 @@ def _cfg(key: str) -> str:
                 return str(val).strip()
     except Exception:
         pass
-    return os.environ.get(key, "").strip()
+def is_sharepoint_configured() -> bool:
+    """Retorna True si las credenciales de Azure AD (tenant_id, client_id, client_secret) están configuradas."""
+    return bool(_cfg("tenant_id") and _cfg("client_id") and _cfg("client_secret"))
 
 
 def _get_access_token() -> str:
