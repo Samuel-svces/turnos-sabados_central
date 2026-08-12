@@ -1108,4 +1108,4 @@ def add_shifts_batch(excel_path, shifts_list):
     if mods_list:
         save_modifications_batch(excel_path, mods_list)
     return True
-
+

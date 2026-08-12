@@ -122,13 +122,41 @@ def _file_urls(file_key: str, action: str = "content") -> list:
             else:
                 urls.append(base_url)
 
+    site_domain = "unionsaludvida.sharepoint.com"
+    site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+    site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
+
     key_map = {
-        "turnos_sabados":         ("drive_id_turnos",  "file_id_turnos"),
-        "modificaciones_sabados": ("drive_id_mod_sab", "file_id_mod_sab"),
-        "modificaciones_personal": ("drive_id_mod_per", "file_id_mod_per"),
+        "turnos_sabados":         (
+            "drive_id_turnos",  
+            "file_id_turnos", 
+            [
+                "TURNOS SABADOS.xlsx",
+                "CONSOLIDADOS/CONSOLIDADO 2026/TURNOS SABADOS.xlsx",
+                "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/TURNOS SABADOS.xlsx"
+            ]
+        ),
+        "modificaciones_sabados": (
+            "drive_id_mod_sab", 
+            "file_id_mod_sab", 
+            [
+                "MODIFICACIONES_SABADOS.xlsx",
+                "CONSOLIDADOS/CONSOLIDADO 2026/MODIFICACIONES_SABADOS.xlsx",
+                "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/MODIFICACIONES_SABADOS.xlsx"
+            ]
+        ),
+        "modificaciones_personal": (
+            "drive_id_mod_per", 
+            "file_id_mod_per", 
+            [
+                "MODIFICACIONES_PERSONAL.xlsx",
+                "CONSOLIDADOS/CONSOLIDADO 2026/MODIFICACIONES_PERSONAL.xlsx"
+            ]
+        ),
     }
+
     if file_key in key_map:
-        drive_id_key, file_id_key = key_map[file_key]
+        drive_id_key, file_id_key, rel_paths = key_map[file_key]
         drive_id = _cfg(drive_id_key)
         file_id  = _cfg(file_id_key)
         if drive_id and file_id:
@@ -136,6 +164,14 @@ def _file_urls(file_key: str, action: str = "content") -> list:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
+        
+        for cpath in rel_paths:
+            item_path = urllib.parse.quote(cpath, safe='/')
+            b_url = f"{site_base}:/drive/root:/{item_path}"
+            if action == "content":
+                urls.append(f"{b_url}:/content")
+            else:
+                urls.append(b_url)
 
     if not urls:
         raise ValueError(f"file_key inválido: {file_key}")
