@@ -855,8 +855,10 @@ if st.session_state.is_admin:
                 search_super = st.text_input("🔍 Buscar médico por nombre o cédula:", placeholder="Escriba un nombre o cédula...").strip().upper()
                 df_show = df_super.copy()
                 if search_super:
-                    mask_name = df_show['NOMBRES Y APELLIDOS'].str.contains(search_super, na=False)
-                    mask_ced  = df_show['CEDULA'].astype(str).str.contains(search_super, na=False)
+                    col_name = 'Profesional' if 'Profesional' in df_show.columns else 'NOMBRES Y APELLIDOS'
+                    col_ced  = 'Cédula' if 'Cédula' in df_show.columns else 'CEDULA'
+                    mask_name = df_show[col_name].astype(str).str.upper().str.contains(search_super, na=False)
+                    mask_ced  = df_show[col_ced].astype(str).str.upper().str.contains(search_super, na=False)
                     df_show = df_show[mask_name | mask_ced]
                 
                 display_cols = [c for c in ['Cédula', 'Sede', 'Cargo', 'Profesional', 'Estado', 'Correo'] if c in df_show.columns]

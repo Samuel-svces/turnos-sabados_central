@@ -997,13 +997,13 @@ def load_supernumeraries(excel_path):
             print(f"Error combinando médicos manuales de contingencia: {manual_err}")
         
         return (
-            df_super[["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "CELULAR", "SEDE / CECO", "OBSERVACIONES"]]
-            .sort_values(by="NOMBRES Y APELLIDOS")
+            df_super[["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"]]
+            .sort_values(by="Profesional")
             .reset_index(drop=True)
         )
     except Exception as e:
         print(f"Error cargando supernumerarios de BD PERSONAL: {e}")
-        return pd.DataFrame(columns=["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "CELULAR", "SEDE / CECO", "OBSERVACIONES"])
+        return pd.DataFrame(columns=["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"])
 
 
 # ---------------------------------------------------------------------------
