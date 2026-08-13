@@ -188,7 +188,7 @@ with col_spacer:
     st.markdown("""
         <div class="premium-banner-transparent">
             <div class="premium-banner-text">
-                <h1>Turnos Sabados</h1>
+                <h1>Turnos Sabadossss</h1>
             </div>
         </div>
     """, unsafe_allow_html=True)
