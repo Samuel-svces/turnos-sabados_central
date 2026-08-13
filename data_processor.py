@@ -797,10 +797,11 @@ def load_data(excel_path):
 # Supernumerarios (Lectura desde SharePoint: CONSOLIDADO 2026.xlsx - BD PERSONAL)
 # ---------------------------------------------------------------------------
 
-@st.cache_resource(ttl=600, show_spinner=False)
+@st.cache_resource(ttl=15, show_spinner=False)
 def _open_consolidado_personal(excel_path):
     """
     Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx desde SharePoint o caché/fallback local.
+    Sincronizado en tiempo real (TTL=15s).
     """
     cache_file = "CONSOLIDADO_2026_cached.xlsx"
     meta_file = "CONSOLIDADO_2026_cached_meta.txt"
@@ -885,7 +886,7 @@ def _open_consolidado_personal(excel_path):
         return _open_master_excel(excel_path)
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=15, show_spinner=False)
 def load_supernumeraries(excel_path):
     """
     Carga el personal directamente de la hoja 'BD PERSONAL' de CONSOLIDADO 2026.xlsx.
