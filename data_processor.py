@@ -931,11 +931,15 @@ def load_supernumeraries(excel_path):
         df["STATUS"] = df["STATUS"].fillna("SI").astype(str).str.strip()
         df["CORREO"] = df["CORREO"].fillna("").astype(str).str.strip()
 
-        # Regla de filtrado para vistas:
-        # Incluye cualquier registro donde Cargo contenga SUPERNUMERARI o Sede contenga SUPERNUMERARI / INDUCCION
+        # Regla de filtrado estricta:
+        # Traer únicamente médicos cuyo Cargo contenga 'SUPERNUMERARIO' (ej: Medico General Supernumerario), ignorando el filtro por Sede.
         is_super_cargo = df["CARGO"].str.upper().str.contains("SUPERNUMERARI", na=False)
-        is_super_sede = df["SEDE / CECO"].str.upper().str.contains("SUPERNUMERARI|INDUCC", na=False)
-        is_super_doc = is_super_cargo | is_super_sede
+        
+        # Fallback solo si la columna CARGO estaba totalmente vacía (ej. archivos locales antiguos)
+        if not is_super_cargo.any():
+            is_super_doc = df["SEDE / CECO"].str.upper().str.contains("SUPERNUMERARI", na=False)
+        else:
+            is_super_doc = is_super_cargo
         
         status_upper = df["STATUS"].str.upper()
         is_active_status = status_upper.isin(["ACTIVO", "SI", "YES", "1", ""]) | ~status_upper.isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])

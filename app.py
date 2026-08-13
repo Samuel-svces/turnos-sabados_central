@@ -827,7 +827,7 @@ if st.session_state.is_admin:
         
         with col_dir:
             st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal en SharePoint", unsafe_allow_html=True)
-            st.info("El directorio se sincroniza automáticamente desde el archivo de SharePoint **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL**). Se muestran los médicos con Sede **Supernumerario** o **Induccion**.")
+            st.info("El directorio se sincroniza automáticamente desde el archivo de SharePoint **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL**). Se muestran los médicos cuyo Cargo es **Medico General Supernumerario**.")
             
             num_super = len(df_super) if not df_super.empty else 0
             col_m1, col_m2 = st.columns([1, 1])
@@ -870,7 +870,7 @@ if st.session_state.is_admin:
                     hide_index=True
                 )
             else:
-                st.warning("No se encontraron médicos activos con Sede 'Supernumerario' o 'Induccion' en la hoja BD PERSONAL de SharePoint.")
+                st.warning("No se encontraron médicos activos con Cargo 'Medico General Supernumerario' en la hoja BD PERSONAL de SharePoint.")
                 if st.session_state.get('super_load_error'):
                     st.error(f"Detalle del error de conexión: {st.session_state.super_load_error}")
             
