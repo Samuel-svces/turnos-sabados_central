@@ -864,6 +864,7 @@ def _open_consolidado_personal(excel_path):
                 except Exception:
                     pass
             candidate_paths = [
+                r"C:\Users\JuanJoseOsorioMolina\U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
                 os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx"),
                 "CONSOLIDADO 2026.xlsx",
                 r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
@@ -871,10 +872,20 @@ def _open_consolidado_personal(excel_path):
             ]
             for p in candidate_paths:
                 if os.path.exists(p):
-                    return pd.ExcelFile(p)
+                    try:
+                        return pd.ExcelFile(p)
+                    except Exception:
+                        try:
+                            tmp_p = f"temp_read_{os.path.basename(p)}"
+                            import shutil
+                            shutil.copy2(p, tmp_p)
+                            return pd.ExcelFile(tmp_p)
+                        except Exception:
+                            continue
             return _open_master_excel(excel_path)
     else:
         candidate_paths = [
+            r"C:\Users\JuanJoseOsorioMolina\U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
             os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx"),
             "CONSOLIDADO 2026.xlsx",
             r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
@@ -882,7 +893,16 @@ def _open_consolidado_personal(excel_path):
         ]
         for p in candidate_paths:
             if os.path.exists(p):
-                return pd.ExcelFile(p)
+                try:
+                    return pd.ExcelFile(p)
+                except Exception:
+                    try:
+                        tmp_p = f"temp_read_{os.path.basename(p)}"
+                        import shutil
+                        shutil.copy2(p, tmp_p)
+                        return pd.ExcelFile(tmp_p)
+                    except Exception:
+                        continue
         return _open_master_excel(excel_path)
 
 
