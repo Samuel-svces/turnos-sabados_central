@@ -947,7 +947,7 @@ if st.session_state.is_admin:
 st.markdown(
     """
     <div class='app-footer'>
-        © 2026 - San Vicente CES
+        © 2026 - Unión para la Salud y la Vida
     </div>
     """, 
     unsafe_allow_html=True
