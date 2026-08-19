@@ -216,7 +216,7 @@ with tab_calendar:
         st.markdown("""
         <div style="background-color:#e8f4fd; border-radius:8px; padding:12px; text-align:center;">
             Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a 
-            <a href="mailto:central@sanvicenteces.com"><strong>central@sanvicenteces.com</strong></a>. 
+            <a href="mailto:central@unionsaludvida.com"><strong>central@unionsaludvida.com</strong></a>. 
             Una vez sea aceptado por el correo, se verá reflejado en este cuadro.
         </div>
         """, unsafe_allow_html=True)
