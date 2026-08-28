@@ -817,31 +817,21 @@ def _open_consolidado_personal(excel_path):
                 except Exception:
                     pass
 
-    # 1. Prioridad: Archivo local sincronizado en OneDrive
-    candidate_paths = [
-        onedrive_exact_path,
-        os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx") if excel_path else "",
-        "CONSOLIDADO 2026.xlsx",
-        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
-    ]
+    # 1. Prioridad 1: OneDrive local en el equipo del usuario
+    if os.path.exists(onedrive_exact_path):
+        try:
+            # Copia temporal segura por si el archivo está abierto en Microsoft Excel de escritorio
+            tmp_p = f"temp_read_{os.path.basename(onedrive_exact_path)}"
+            import shutil
+            shutil.copy2(onedrive_exact_path, tmp_p)
+            xl_local = pd.ExcelFile(tmp_p)
+            if "BD PERSONAL" in xl_local.sheet_names or "PERSONAL" in xl_local.sheet_names:
+                st.session_state.pop("super_load_error", None)
+                return xl_local
+        except Exception as read_err:
+            print(f"Aviso leyendo OneDrive local: {read_err}")
 
-    for p in candidate_paths:
-        if p and os.path.exists(p):
-            try:
-                # Copia temporal segura por si el archivo está abierto en Microsoft Excel de escritorio
-                tmp_p = f"temp_read_{os.path.basename(p)}"
-                import shutil
-                shutil.copy2(p, tmp_p)
-                xl_local = pd.ExcelFile(tmp_p)
-                if "BD PERSONAL" in xl_local.sheet_names or "PERSONAL" in xl_local.sheet_names:
-                    st.session_state.pop("super_load_error", None)
-                    return xl_local
-            except Exception as read_err:
-                print(f"Aviso leyendo ruta local {p}: {read_err}")
-                continue
-
-    # 2. Fallback: Descarga remota desde SharePoint Graph API
+    # 2. Prioridad 2 (Cloud): Descarga remota desde SharePoint Graph API
     if _use_sharepoint():
         try:
             remote_meta = gc.get_file_metadata("consolidado_personal")
@@ -886,6 +876,26 @@ def _open_consolidado_personal(excel_path):
                     return pd.ExcelFile(cache_file)
                 except Exception:
                     pass
+
+    # 3. Fallback: Rutas relativas o archivo del repositorio
+    fallback_paths = [
+        os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx") if excel_path else "",
+        "CONSOLIDADO 2026.xlsx",
+        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
+        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
+    ]
+    for p in fallback_paths:
+        if p and os.path.exists(p):
+            try:
+                tmp_p = f"temp_read_{os.path.basename(p)}"
+                import shutil
+                shutil.copy2(p, tmp_p)
+                xl_local = pd.ExcelFile(tmp_p)
+                if "BD PERSONAL" in xl_local.sheet_names or "PERSONAL" in xl_local.sheet_names:
+                    st.session_state.pop("super_load_error", None)
+                    return xl_local
+            except Exception:
+                continue
 
     return _open_master_excel(excel_path)
 
