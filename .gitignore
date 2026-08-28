@@ -1,4 +1,8 @@
 __pycache__/
 *.pyc
 ~$*.xlsx
+temp_read_*.xlsx
+*_cached.xlsx
+*_cached_meta.txt
 .streamlit/secrets.toml
+

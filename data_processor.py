@@ -800,25 +800,48 @@ def load_data(excel_path):
 @st.cache_resource(ttl=15, show_spinner=False)
 def _open_consolidado_personal(excel_path):
     """
-    Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx desde SharePoint o caché/fallback local.
+    Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx.
+    Prioriza la ruta directa de OneDrive en el equipo local, con fallback a SharePoint y rutas alternativas.
     Sincronizado en tiempo real (TTL=15s).
     """
+    onedrive_exact_path = r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx"
     cache_file = "CONSOLIDADO_2026_cached.xlsx"
     meta_file = "CONSOLIDADO_2026_cached_meta.txt"
     force_refresh = st.session_state.pop("force_refresh_personal", False)
 
     if force_refresh:
-        if os.path.exists(cache_file):
-            try:
-                os.remove(cache_file)
-            except Exception:
-                pass
-        if os.path.exists(meta_file):
-            try:
-                os.remove(meta_file)
-            except Exception:
-                pass
+        for f_del in [cache_file, meta_file, "temp_read_CONSOLIDADO 2026.xlsx"]:
+            if os.path.exists(f_del):
+                try:
+                    os.remove(f_del)
+                except Exception:
+                    pass
 
+    # 1. Prioridad: Archivo local sincronizado en OneDrive
+    candidate_paths = [
+        onedrive_exact_path,
+        os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx") if excel_path else "",
+        "CONSOLIDADO 2026.xlsx",
+        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
+        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
+    ]
+
+    for p in candidate_paths:
+        if p and os.path.exists(p):
+            try:
+                # Copia temporal segura por si el archivo está abierto en Microsoft Excel de escritorio
+                tmp_p = f"temp_read_{os.path.basename(p)}"
+                import shutil
+                shutil.copy2(p, tmp_p)
+                xl_local = pd.ExcelFile(tmp_p)
+                if "BD PERSONAL" in xl_local.sheet_names or "PERSONAL" in xl_local.sheet_names:
+                    st.session_state.pop("super_load_error", None)
+                    return xl_local
+            except Exception as read_err:
+                print(f"Aviso leyendo ruta local {p}: {read_err}")
+                continue
+
+    # 2. Fallback: Descarga remota desde SharePoint Graph API
     if _use_sharepoint():
         try:
             remote_meta = gc.get_file_metadata("consolidado_personal")
@@ -863,47 +886,8 @@ def _open_consolidado_personal(excel_path):
                     return pd.ExcelFile(cache_file)
                 except Exception:
                     pass
-            candidate_paths = [
-                r"C:\Users\JuanJoseOsorioMolina\U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-                os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx"),
-                "CONSOLIDADO 2026.xlsx",
-                r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-                r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
-            ]
-            for p in candidate_paths:
-                if os.path.exists(p):
-                    try:
-                        return pd.ExcelFile(p)
-                    except Exception:
-                        try:
-                            tmp_p = f"temp_read_{os.path.basename(p)}"
-                            import shutil
-                            shutil.copy2(p, tmp_p)
-                            return pd.ExcelFile(tmp_p)
-                        except Exception:
-                            continue
-            return _open_master_excel(excel_path)
-    else:
-        candidate_paths = [
-            r"C:\Users\JuanJoseOsorioMolina\U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-            os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx"),
-            "CONSOLIDADO 2026.xlsx",
-            r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-            r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
-        ]
-        for p in candidate_paths:
-            if os.path.exists(p):
-                try:
-                    return pd.ExcelFile(p)
-                except Exception:
-                    try:
-                        tmp_p = f"temp_read_{os.path.basename(p)}"
-                        import shutil
-                        shutil.copy2(p, tmp_p)
-                        return pd.ExcelFile(tmp_p)
-                    except Exception:
-                        continue
-        return _open_master_excel(excel_path)
+
+    return _open_master_excel(excel_path)
 
 
 @st.cache_data(ttl=15, show_spinner=False)

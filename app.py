@@ -150,6 +150,8 @@ with col_gear:
             try:
                 if "admin_password" in st.secrets:
                     admin_password = st.secrets["admin_password"]
+                elif "azure" in st.secrets and "admin_password" in st.secrets["azure"]:
+                    admin_password = st.secrets["azure"]["admin_password"]
             except Exception:
                 pass
 
@@ -826,17 +828,17 @@ if st.session_state.is_admin:
         col_dir, col_hist = st.columns([1.1, 0.9])
         
         with col_dir:
-            st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal en SharePoint", unsafe_allow_html=True)
-            st.info("El directorio se sincroniza automáticamente desde el archivo de SharePoint **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL**). Se muestran los médicos cuyo Cargo es **Medico General Supernumerario**.")
+            st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal (OneDrive / SharePoint)", unsafe_allow_html=True)
+            st.info("El directorio se sincroniza directamente desde **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL** en OneDrive / SharePoint). Se muestran los médicos con Cargo **Medico General Supernumerario**.")
             
             num_super = len(df_super) if not df_super.empty else 0
             col_m1, col_m2 = st.columns([1, 1])
             with col_m1:
                 st.metric("Médicos Supernumerarios Activos", f"{num_super} Médicos")
             with col_m2:
-                if st.button("🔄 Sincronizar desde SharePoint", use_container_width=True):
+                if st.button("🔄 Sincronizar Directorio", use_container_width=True):
                     st.session_state["force_refresh_personal"] = True
-                    for c_file in ["CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt"]:
+                    for c_file in ["CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx"]:
                         if os.path.exists(c_file):
                             try:
                                 os.remove(c_file)
@@ -847,7 +849,7 @@ if st.session_state.is_admin:
                     st.cache_data.clear()
                     st.cache_resource.clear()
                     load_app_data()
-                    st.success("Directorio de personal resincronizado con éxito desde SharePoint.")
+                    st.success("Directorio de personal resincronizado con éxito.")
                     st.rerun()
             
             st.markdown("##### 📋 Listado Activo de Supernumerarios")
