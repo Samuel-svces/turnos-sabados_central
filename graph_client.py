@@ -20,6 +20,7 @@ import msal
 import streamlit as st
 import time
 import urllib.parse
+import base64
 
 
 # ---------------------------------------------------------------------------
