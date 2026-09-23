@@ -83,13 +83,23 @@ def _file_urls(file_key: str, action: str = "content") -> list:
         pass
 
     if file_key in ("consolidado_personal", "bd_personal"):
+        # 1. Prioridad Máxima: Acceso directo por Drive ID y File ID de SharePoint
+        drive_id = _cfg("drive_id_consolidado") or "b!5aDgOlRIA0mAy69UmmI48UmAwvsWLE1DpVGB05uwZEGrXHTv5jvcQrNGanYZcfd7"
+        file_id  = _cfg("file_id_consolidado") or "01FCYVDYL6NI7AZQWDWNB22BOOVLEXUPEV"
+        if drive_id and file_id:
+            if action == "content":
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
+            else:
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
+
         site_domain = "unionsaludvida.sharepoint.com"
         site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
         guid = "0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95"
         site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
         
-        # 1. Share tokens para los enlaces exactos de SharePoint provistos por el usuario
+        # 2. Share tokens para enlaces de SharePoint (fallback secundario)
         share_urls = [
+            "https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B0C3E6A7E-C3C2-43B3-AD05-CEAAC97A3C95%7D&file=CONSOLIDADO%202026.xlsx&action=default&mobileredirect=true",
             "https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
             "https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/Documentos%20compartidos/CONSOLIDADOS/CONSOLIDADO%202026/CONSOLIDADO%202026.xlsx",
             f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D"
@@ -102,7 +112,7 @@ def _file_urls(file_key: str, action: str = "content") -> list:
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem")
 
-        # 2. Fallback por rutas relativas dentro del sitio de SharePoint
+        # 3. Fallback por rutas relativas dentro del sitio de SharePoint
         candidate_rel_paths = [
             "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
             "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",

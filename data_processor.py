@@ -100,18 +100,22 @@ def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list)
 def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
     """
     Guarda el workbook del archivo delta.
-    - En SharePoint: serializa a BytesIO y sube.
-    - En local: guarda en disco.
+    - Guarda en disco local si local_path existe para actualización y coherencia inmediata.
+    - En SharePoint: serializa a BytesIO y sube para persistencia global en la nube.
     """
+    if local_path:
+        try:
+            wb.save(local_path)
+        except Exception as local_err:
+            print(f"Aviso guardando copia local de delta {file_key}: {local_err}")
+
     if _use_sharepoint():
         buf = io.BytesIO()
         wb.save(buf)
         buf.seek(0)
         gc.upload_excel(file_key, buf)
-        wb.close()
-    else:
-        wb.save(local_path)
-        wb.close()
+    
+    wb.close()
 
 
 def _read_delta_df(file_key: str, local_path: str, sheet_title: str, cols: list) -> pd.DataFrame:
@@ -721,60 +725,75 @@ def load_data(excel_path):
     df_mods = load_modifications(excel_path)
 
     for _, mod in df_mods.iterrows():
-        m_type = mod['TYPE']
-        sheet  = mod['SHEET']
+        m_type = str(mod['TYPE']).strip().upper()
+        sheet  = str(mod['SHEET']).strip()
         m_date = mod['DATE']
-        orig   = mod['ORIGINAL_NAME']
-        new    = mod['NEW_NAME']
-        row    = mod['ROW']
-        col    = mod['COL']
+        orig   = str(mod.get('ORIGINAL_NAME', '')).strip().upper()
+        new    = str(mod.get('NEW_NAME', '')).strip().upper()
+        row    = int(mod.get('ROW', 0))
+        col    = int(mod.get('COL', 0))
+
+        # Normalización robusta de fecha de la modificación
+        m_date_norm = None
+        if pd.notna(m_date):
+            if isinstance(m_date, (datetime.date, datetime.datetime)):
+                m_date_norm = m_date if isinstance(m_date, datetime.date) and not isinstance(m_date, datetime.datetime) else m_date.date()
+            else:
+                try:
+                    m_date_norm = pd.to_datetime(m_date).date()
+                except Exception:
+                    pass
+
+        # Fechas y nombres limpios actuales en df_shifts
+        df_dates = pd.to_datetime(df_shifts['Date'], errors='coerce').dt.date
+        df_supers = df_shifts['Supernumerary'].astype(str).str.strip().str.upper()
 
         if m_type == 'REEMPLAZAR':
-            obs    = mod.get('OBSERVACIONES', '')
-            clasif = mod.get('CLASIFICACION', 'Secuencia Normal')
+            obs    = str(mod.get('OBSERVACIONES', '')).strip()
+            clasif = str(mod.get('CLASIFICACION', 'Secuencia Normal')).strip()
+            mask = None
             if row > 0 and col > 0:
                 mask = ((df_shifts['Sheet'] == sheet) &
                         (df_shifts['Excel_Row'] == row) &
                         (df_shifts['Excel_Col'] == col))
-                if mask.any():
-                    df_shifts.loc[mask, 'Supernumerary'] = new
-                    df_shifts.loc[mask, 'Observation']   = obs
-                    df_shifts.loc[mask, 'Classification'] = clasif
-                else:
-                    mask_fb = ((df_shifts['Sheet'] == sheet) &
-                               (df_shifts['Date'] == m_date) &
-                               (df_shifts['Supernumerary'] == orig))
-                    df_shifts.loc[mask_fb, 'Supernumerary'] = new
-                    df_shifts.loc[mask_fb, 'Observation']   = obs
-                    df_shifts.loc[mask_fb, 'Classification'] = clasif
-            else:
-                mask = ((df_shifts['Sheet'] == sheet) &
-                        (df_shifts['Date'] == m_date) &
-                        (df_shifts['Supernumerary'] == orig))
+            if mask is None or not mask.any():
+                mask = (df_dates == m_date_norm) & (df_supers == orig)
+                if (df_shifts['Sheet'] == sheet).any():
+                    mask_sheet = mask & (df_shifts['Sheet'] == sheet)
+                    if mask_sheet.any():
+                        mask = mask_sheet
+            if mask is not None and mask.any():
                 df_shifts.loc[mask, 'Supernumerary'] = new
                 df_shifts.loc[mask, 'Observation']   = obs
                 df_shifts.loc[mask, 'Classification'] = clasif
 
         elif m_type == 'ELIMINAR':
+            mask = None
             if row > 0 and col > 0:
-                df_shifts = df_shifts[~((df_shifts['Sheet'] == sheet) &
-                                        (df_shifts['Excel_Row'] == row) &
-                                        (df_shifts['Excel_Col'] == col))]
-            else:
-                df_shifts = df_shifts[~((df_shifts['Sheet'] == sheet) &
-                                        (df_shifts['Date'] == m_date) &
-                                        (df_shifts['Supernumerary'] == orig))]
+                mask = ((df_shifts['Sheet'] == sheet) &
+                        (df_shifts['Excel_Row'] == row) &
+                        (df_shifts['Excel_Col'] == col))
+            if mask is None or not mask.any():
+                mask = (df_dates == m_date_norm) & (df_supers == orig)
+                if (df_shifts['Sheet'] == sheet).any():
+                    mask_sheet = mask & (df_shifts['Sheet'] == sheet)
+                    if mask_sheet.any():
+                        mask = mask_sheet
+            if mask is not None and mask.any():
+                df_shifts = df_shifts[~mask].copy()
 
         elif m_type == 'AGREGAR':
-            mask = (df_shifts['Date'] == m_date) & (df_shifts['Supernumerary'] == new)
+            mask = (df_dates == m_date_norm) & (df_supers == new)
             if mask.any():
                 df_shifts.loc[mask, 'Observation'] = mod.get('OBSERVACIONES', '')
                 df_shifts.loc[mask, 'Classification'] = mod.get('CLASIFICACION', 'Secuencia Normal')
             else:
+                m_month = m_date_norm.month if m_date_norm else 1
+                m_year = m_date_norm.year if m_date_norm else 2026
                 new_row = {
                     'Sheet': sheet,
-                    'Month_Header': MONTH_NAMES_SP.get(m_date.month, 'EXTRA'),
-                    'Date': m_date, 'Year': m_date.year, 'Month': m_date.month,
+                    'Month_Header': MONTH_NAMES_SP.get(m_month, 'EXTRA'),
+                    'Date': m_date_norm, 'Year': m_year, 'Month': m_month,
                     'Supernumerary': new,
                     'Excel_Row': 0, 'Excel_Col': 0, 'Header_Row': 0,
                     'Observation': mod.get('OBSERVACIONES', ''),
@@ -793,15 +812,24 @@ def load_data(excel_path):
 # Supernumerarios (solo lectura del maestro + delta personal)
 # ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# Supernumerarios (Lectura desde SharePoint: CONSOLIDADO 2026.xlsx - BD PERSONAL)
-# ---------------------------------------------------------------------------
+def _find_bd_personal_sheet(sheet_names):
+    """Localiza de manera tolerante y robusta la hoja BD PERSONAL o BD_PERSONAL."""
+    for s in sheet_names:
+        norm = str(s).strip().upper().replace("_", " ")
+        if norm in ("BD PERSONAL", "PERSONAL", "BD PERSONAL 2026", "BASE PERSONAL"):
+            return s
+    for s in sheet_names:
+        norm = str(s).strip().upper().replace("_", " ")
+        if "BD PERSONAL" in norm or "PERSONAL" in norm:
+            return s
+    return None
+
 
 @st.cache_resource(ttl=15, show_spinner=False)
 def _open_consolidado_personal(excel_path):
     """
     Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx.
-    Prioriza la ruta directa de OneDrive en el equipo local, con fallback a SharePoint y rutas alternativas.
+    Prioriza SharePoint Graph API directo o OneDrive local en el equipo del usuario.
     Sincronizado en tiempo real (TTL=15s).
     """
     onedrive_exact_path = r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx"
@@ -817,21 +845,7 @@ def _open_consolidado_personal(excel_path):
                 except Exception:
                     pass
 
-    # 1. Prioridad 1: OneDrive local en el equipo del usuario
-    if os.path.exists(onedrive_exact_path):
-        try:
-            # Copia temporal segura por si el archivo está abierto en Microsoft Excel de escritorio
-            tmp_p = f"temp_read_{os.path.basename(onedrive_exact_path)}"
-            import shutil
-            shutil.copy2(onedrive_exact_path, tmp_p)
-            xl_local = pd.ExcelFile(tmp_p)
-            if "BD PERSONAL" in xl_local.sheet_names or "PERSONAL" in xl_local.sheet_names:
-                st.session_state.pop("super_load_error", None)
-                return xl_local
-        except Exception as read_err:
-            print(f"Aviso leyendo OneDrive local: {read_err}")
-
-    # 2. Prioridad 2 (Cloud): Descarga remota desde SharePoint Graph API
+    # 1. Prioridad 1 (Cloud / SharePoint): Si Graph API está configurado
     if _use_sharepoint():
         try:
             remote_meta = gc.get_file_metadata("consolidado_personal")
@@ -855,7 +869,8 @@ def _open_consolidado_personal(excel_path):
                 
             buf = gc.download_excel("consolidado_personal")
             xl_cloud = pd.ExcelFile(buf)
-            if "BD PERSONAL" in xl_cloud.sheet_names or "PERSONAL" in xl_cloud.sheet_names:
+            target_sheet = _find_bd_personal_sheet(xl_cloud.sheet_names)
+            if target_sheet:
                 try:
                     buf.seek(0)
                     with open(cache_file, "wb") as f:
@@ -870,32 +885,34 @@ def _open_consolidado_personal(excel_path):
             else:
                 st.session_state["super_load_error"] = f"El archivo cargado desde SharePoint no contiene la hoja 'BD PERSONAL'. Hojas encontradas: {xl_cloud.sheet_names}"
         except Exception as e:
-            st.session_state["super_load_error"] = f"Error al conectar con SharePoint: {e}"
+            st.session_state["super_load_error"] = f"Aviso conexión SharePoint: {e}"
             if not force_refresh and os.path.exists(cache_file):
                 try:
                     return pd.ExcelFile(cache_file)
                 except Exception:
                     pass
 
-    # 3. Fallback: Rutas relativas o archivo del repositorio
-    fallback_paths = [
-        os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx") if excel_path else "",
-        "CONSOLIDADO 2026.xlsx",
+    # 2. Prioridad 2: OneDrive local en el equipo del usuario y rutas candidatas
+    candidate_local_paths = [
+        onedrive_exact_path,
         r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx"
+        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx",
+        os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx") if excel_path else "",
+        "CONSOLIDADO 2026.xlsx"
     ]
-    for p in fallback_paths:
+    for p in candidate_local_paths:
         if p and os.path.exists(p):
             try:
                 tmp_p = f"temp_read_{os.path.basename(p)}"
                 import shutil
                 shutil.copy2(p, tmp_p)
                 xl_local = pd.ExcelFile(tmp_p)
-                if "BD PERSONAL" in xl_local.sheet_names or "PERSONAL" in xl_local.sheet_names:
+                target_sheet = _find_bd_personal_sheet(xl_local.sheet_names)
+                if target_sheet:
                     st.session_state.pop("super_load_error", None)
                     return xl_local
-            except Exception:
-                continue
+            except Exception as read_err:
+                print(f"Aviso leyendo ruta local {p}: {read_err}")
 
     return _open_master_excel(excel_path)
 
@@ -903,30 +920,31 @@ def _open_consolidado_personal(excel_path):
 @st.cache_data(ttl=15, show_spinner=False)
 def load_supernumeraries(excel_path):
     """
-    Carga el personal directamente de la hoja 'BD PERSONAL' de CONSOLIDADO 2026.xlsx.
-    Filtra únicamente los médicos con Cargo que contenga 'SUPERNUMERARIO' y Sede 'SUPERNUMERARIO'.
-    Si el cargo cambia a 'Medico General' o la sede ya no es 'Supernumerario', la persona se excluye.
+    Carga el directorio de personal directamente de la hoja 'BD PERSONAL' / 'BD_PERSONAL' de CONSOLIDADO 2026.xlsx.
+    Carga la totalidad de los empleados y profesionales ACTIVOS (Estado == 'SI' / 'ACTIVO').
     """
     try:
         xl = _open_consolidado_personal(excel_path)
-        sheet_target = "BD PERSONAL" if "BD PERSONAL" in xl.sheet_names else ("PERSONAL" if "PERSONAL" in xl.sheet_names else xl.sheet_names[0])
+        sheet_target = _find_bd_personal_sheet(xl.sheet_names)
+        if not sheet_target:
+            sheet_target = xl.sheet_names[0]
         df = pd.read_excel(xl, sheet_name=sheet_target)
         
         # Mapeo y estandarización de columnas
         col_map = {}
         for c in df.columns:
             c_str = str(c).strip().upper()
-            if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID", "CÉDULA"):
+            if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID", "CÉDULA", "CED"):
                 col_map[c] = "CEDULA"
-            elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES", "PROFESIONAL"):
+            elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES", "PROFESIONAL", "NOMBRE"):
                 col_map[c] = "NOMBRES Y APELLIDOS"
             elif c_str in ("CARGO", "CARGO DE TRABAJO"):
                 col_map[c] = "CARGO"
-            elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO"):
+            elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO", "SEDE/CECO"):
                 col_map[c] = "SEDE / CECO"
             elif c_str in ("CORREO", "EMAIL", "CORREO ELECTRONICO", "CORREO ELECTRÓNICO"):
                 col_map[c] = "CORREO"
-            elif c_str in ("CELULAR", "TELEFONO", "MOVIL"):
+            elif c_str in ("CELULAR", "TELEFONO", "MOVIL", "TELÉFONO"):
                 col_map[c] = "CELULAR"
             elif c_str in ("STATUS", "ESTADO", "ESTADO OPERATIVO"):
                 col_map[c] = "STATUS"
@@ -945,24 +963,28 @@ def load_supernumeraries(excel_path):
         df["STATUS"] = df["STATUS"].fillna("SI").astype(str).str.strip()
         df["CORREO"] = df["CORREO"].fillna("").astype(str).str.strip()
 
-        # Regla de filtrado estricta:
-        # Traer únicamente médicos cuyo Cargo contenga 'SUPERNUMERARIO' (ej: Medico General Supernumerario), ignorando el filtro por Sede.
-        is_super_cargo = df["CARGO"].str.upper().str.contains("SUPERNUMERARI", na=False)
-        
-        # Fallback solo si la columna CARGO estaba totalmente vacía (ej. archivos locales antiguos)
-        if not is_super_cargo.any():
-            is_super_doc = df["SEDE / CECO"].str.upper().str.contains("SUPERNUMERARI", na=False)
-        else:
-            is_super_doc = is_super_cargo
-        
-        status_upper = df["STATUS"].str.upper()
-        is_active_status = status_upper.isin(["ACTIVO", "SI", "YES", "1", ""]) | ~status_upper.isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO"])
-
-        df_super = df[is_super_doc & is_active_status].copy()
-
-        df_super["CEDULA"] = df_super["CEDULA"].apply(
-            lambda x: str(int(x)) if pd.notna(x) and str(x).replace(".0", "").isdigit() else str(x).strip()
+        # Cargar todos los profesionales ACTIVOS del consolidado
+        status_upper = df["STATUS"].astype(str).str.strip().str.upper()
+        is_active_status = (
+            status_upper.isin(["ACTIVO", "SI", "YES", "1", "TRUE", "S"]) |
+            (~status_upper.isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO", "0", "FALSE"]) & (status_upper != ""))
         )
+        has_name = df["NOMBRES Y APELLIDOS"].fillna("").astype(str).str.strip().str.len() > 1
+        df_super = df[is_active_status & has_name].copy()
+
+        def _clean_cedula(val):
+            if pd.isna(val):
+                return ""
+            s_val = str(val).strip()
+            try:
+                f_val = float(s_val)
+                if f_val.is_integer():
+                    return str(int(f_val))
+                return s_val
+            except Exception:
+                return s_val.replace(".0", "").strip()
+
+        df_super["CEDULA"] = df_super["CEDULA"].apply(_clean_cedula)
         df_super["NOMBRES Y APELLIDOS"] = (
             df_super["NOMBRES Y APELLIDOS"]
             .fillna("")
@@ -974,7 +996,7 @@ def load_supernumeraries(excel_path):
         df_super["CORREO"] = df_super["CORREO"].fillna("").astype(str).str.strip()
         df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
 
-        # Crear nombres de columna amigables coincidentes con el Excel original
+        # Crear nombres de columna coincidentes para la interfaz
         df_super["Cédula"] = df_super["CEDULA"]
         df_super["Sede"] = df_super["SEDE / CECO"]
         df_super["Cargo"] = df_super["CARGO"]
@@ -1020,7 +1042,7 @@ def load_supernumeraries(excel_path):
             .reset_index(drop=True)
         )
     except Exception as e:
-        print(f"Error cargando supernumerarios de BD PERSONAL: {e}")
+        print(f"Error cargando personal de BD PERSONAL: {e}")
         return pd.DataFrame(columns=["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"])
 
 

@@ -345,7 +345,7 @@ with tab_calendar:
             if (text.includes('⚙️')) return;
             
             // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
-            if (/^\d/.test(text)) {
+            if (/^\\d/.test(text)) {
                 btn.classList.add('custom-header-btn');
                 btn.style.setProperty('background-color', '#005eb8', 'important');
                 btn.style.setProperty('color', 'white', 'important');
@@ -828,14 +828,17 @@ if st.session_state.is_admin:
         col_dir, col_hist = st.columns([1.1, 0.9])
         
         with col_dir:
-            st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal (OneDrive / SharePoint)", unsafe_allow_html=True)
-            st.info("El directorio se sincroniza directamente desde **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL** en OneDrive / SharePoint). Se muestran los médicos con Cargo **Medico General Supernumerario**.")
+            st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal Activo (CONSOLIDADO 2026)", unsafe_allow_html=True)
+            st.info("El directorio se sincroniza directamente desde **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL** en SharePoint / OneDrive). Contiene la totalidad de los profesionales activos en la organización.")
             
             num_super = len(df_super) if not df_super.empty else 0
-            col_m1, col_m2 = st.columns([1, 1])
+            num_supernumerarios = (df_super['Cargo'].astype(str).str.upper().str.contains('SUPERNUMERARI').sum()) if not df_super.empty and 'Cargo' in df_super.columns else 0
+            col_m1, col_m2, col_m3 = st.columns([1, 1, 1])
             with col_m1:
-                st.metric("Médicos Supernumerarios Activos", f"{num_super} Médicos")
+                st.metric("Total Activos BD", f"{num_super} Profesionales")
             with col_m2:
+                st.metric("Supernumerarios", f"{num_supernumerarios} Médicos")
+            with col_m3:
                 if st.button("🔄 Sincronizar Directorio", use_container_width=True):
                     st.session_state["force_refresh_personal"] = True
                     for c_file in ["CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx"]:
@@ -852,9 +855,15 @@ if st.session_state.is_admin:
                     st.success("Directorio de personal resincronizado con éxito.")
                     st.rerun()
             
-            st.markdown("##### 📋 Listado Activo de Supernumerarios")
+            st.markdown("##### 📋 Listado Activo de Personal")
             if not df_super.empty:
-                search_super = st.text_input("🔍 Buscar médico por nombre o cédula:", placeholder="Escriba un nombre o cédula...").strip().upper()
+                f_col1, f_col2 = st.columns([2, 1])
+                with f_col1:
+                    search_super = st.text_input("🔍 Buscar por nombre o cédula:", placeholder="Escriba un nombre o cédula...").strip().upper()
+                with f_col2:
+                    all_cargos = ["Todos los cargos"] + sorted([c for c in df_super['Cargo'].dropna().unique().tolist() if c]) if 'Cargo' in df_super.columns else ["Todos los cargos"]
+                    sel_cargo = st.selectbox("Filtrar por Cargo:", all_cargos)
+
                 df_show = df_super.copy()
                 if search_super:
                     col_name = 'Profesional' if 'Profesional' in df_show.columns else 'NOMBRES Y APELLIDOS'
@@ -862,6 +871,9 @@ if st.session_state.is_admin:
                     mask_name = df_show[col_name].astype(str).str.upper().str.contains(search_super, na=False)
                     mask_ced  = df_show[col_ced].astype(str).str.upper().str.contains(search_super, na=False)
                     df_show = df_show[mask_name | mask_ced]
+                
+                if sel_cargo and sel_cargo != "Todos los cargos" and 'Cargo' in df_show.columns:
+                    df_show = df_show[df_show['Cargo'] == sel_cargo]
                 
                 display_cols = [c for c in ['Cédula', 'Sede', 'Cargo', 'Profesional', 'Estado', 'Correo'] if c in df_show.columns]
                 if not display_cols:
@@ -872,9 +884,9 @@ if st.session_state.is_admin:
                     hide_index=True
                 )
             else:
-                st.warning("No se encontraron médicos activos con Cargo 'Medico General Supernumerario' en la hoja BD PERSONAL de SharePoint.")
+                st.warning("No se encontró personal activo en la hoja BD PERSONAL de CONSOLIDADO 2026.")
                 if st.session_state.get('super_load_error'):
-                    st.error(f"Detalle del error de conexión: {st.session_state.super_load_error}")
+                    st.error(f"Detalle de la conexión: {st.session_state.super_load_error}")
             
             st.markdown("---")
             st.markdown("#### ⚠️ Plan de Contingencia: Registro Manual de Médicos", unsafe_allow_html=True)

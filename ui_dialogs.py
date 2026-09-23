@@ -8,16 +8,19 @@ def get_allowed_doctors():
     df_sup = st.session_state.get('super_df', pd.DataFrame())
     june_date = datetime.date(2026, 6, 1)
     
-    docs_with_shifts = []
+    docs_set = set()
     if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
-        docs_with_shifts = df_s[df_s['Date'] >= june_date]['Supernumerary'].dropna().unique().tolist()
+        s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
+        s_names = df_s[s_dates >= june_date]['Supernumerary'].dropna().astype(str).str.strip().str.upper().tolist()
+        docs_set.update([n for n in s_names if len(n) > 2 and n not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]])
 
-    if not df_sup.empty and 'NOMBRES Y APELLIDOS' in df_sup.columns:
-        sup_docs = df_sup['NOMBRES Y APELLIDOS'].dropna().tolist()
-        allowed = sorted(list(set(sup_docs + docs_with_shifts)))
-    else:
-        allowed = sorted(list(set(docs_with_shifts)))
-    return allowed
+    if not df_sup.empty:
+        col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
+        if col_name:
+            sup_names = df_sup[col_name].dropna().astype(str).str.strip().str.upper().tolist()
+            docs_set.update([n for n in sup_names if len(n) > 2])
+
+    return sorted(list(docs_set))
 
 def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, new_name, observation, classification, current_clasif, swap_target, current_doc, load_app_data_func):
     try:
@@ -124,10 +127,12 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
 
         # Convertir a datetime.date para comparación segura
         df_s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
+        df_s_supers = df_s['Supernumerary'].astype(str).str.strip().str.upper()
+        doc_clean = str(current_doc).strip().upper()
 
         if del_scope == "Eliminar de todas las secuencias (las futuras)":
             shifts_to_delete = df_s[
-                (df_s['Supernumerary'] == current_doc) & 
+                (df_s_supers == doc_clean) & 
                 (df_s_dates >= date_check)
             ]
         else:
@@ -146,14 +151,14 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                 shifts_to_delete = df_s[
                     (df_s['Sheet'] == sheet) &
                     (df_s_dates == date_check) &
-                    (df_s['Supernumerary'] == current_doc)
+                    (df_s_supers == doc_clean)
                 ]
             
             # Fallback 2: buscar SOLO por fecha + médico (cualquier sheet)
             if shifts_to_delete.empty:
                 shifts_to_delete = df_s[
                     (df_s_dates == date_check) &
-                    (df_s['Supernumerary'] == current_doc)
+                    (df_s_supers == doc_clean)
                 ]
         
         if shifts_to_delete.empty:
