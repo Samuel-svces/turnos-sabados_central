@@ -592,6 +592,27 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                         excel_path=st.session_state.excel_path,
                         shifts_list=mods_batch
                     )
+                    # Actualización optimista instantánea en memoria
+                    new_rows = []
+                    for m in mods_batch:
+                        m_d = m['date']
+                        m_d_norm = m_d if isinstance(m_d, datetime.date) and not isinstance(m_d, datetime.datetime) else (m_d.date() if isinstance(m_d, (datetime.datetime, pd.Timestamp)) else pd.to_datetime(m_d).date())
+                        new_rows.append({
+                            'Sheet': m['sheet'],
+                            'Month_Header': dp.MONTH_NAMES_SP.get(m_d_norm.month if m_d_norm else 1, 'EXTRA'),
+                            'Date': m_d_norm,
+                            'Year': m_d_norm.year if m_d_norm else 2026,
+                            'Month': m_d_norm.month if m_d_norm else 1,
+                            'Supernumerary': str(m['doc']).strip().upper(),
+                            'Excel_Row': 0,
+                            'Excel_Col': 0,
+                            'Header_Row': 0,
+                            'Observation': str(m.get('obs', '')).strip(),
+                            'Classification': str(m.get('clasificacion', 'Secuencia Normal')).strip()
+                        })
+                    if new_rows:
+                        st.session_state.shifts_df = pd.concat([st.session_state.shifts_df, pd.DataFrame(new_rows)], ignore_index=True)
+                        dp.load_data.clear()
                 
                 st.session_state["show_add_success_alert"] = True
                 st.session_state["added_doc_name"] = new_doc

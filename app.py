@@ -91,21 +91,22 @@ if 'excel_path' not in st.session_state:
         st.session_state.excel_path = "TURNOS SABADOS.xlsx"  # placeholder (no se accede a disco)
 
 # Function to load and clean data
-def load_app_data():
+def load_app_data(reload_personal=False):
     try:
         # Load Saturday shifts
         df_shifts, errors = dp.load_data(st.session_state.excel_path)
         st.session_state.shifts_df = df_shifts
         st.session_state.errors = errors
         
-        # Load Supernumeraries directory
-        try:
-            df_super = dp.load_supernumeraries(st.session_state.excel_path)
-            st.session_state.super_df = df_super
-            st.session_state.super_load_error = None
-        except Exception as e_sup:
-            st.session_state.super_df = pd.DataFrame()
-            st.session_state.super_load_error = str(e_sup)
+        # Load Supernumeraries directory solo en inicio o sincronización explícita
+        if reload_personal or 'super_df' not in st.session_state or st.session_state.super_df.empty:
+            try:
+                df_super = dp.load_supernumeraries(st.session_state.excel_path)
+                st.session_state.super_df = df_super
+                st.session_state.super_load_error = None
+            except Exception as e_sup:
+                st.session_state.super_df = pd.DataFrame()
+                st.session_state.super_load_error = str(e_sup)
         
         st.session_state.data_loaded = True
         st.session_state.load_error = None
@@ -851,7 +852,7 @@ if st.session_state.is_admin:
                     dp.load_supernumeraries.clear()
                     st.cache_data.clear()
                     st.cache_resource.clear()
-                    load_app_data()
+                    load_app_data(reload_personal=True)
                     st.success("Directorio de personal resincronizado con éxito.")
                     st.rerun()
             
