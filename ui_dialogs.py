@@ -103,10 +103,74 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
             
         if mods_list:
             dp.save_modifications_batch(excel_path, mods_list)
+            # Actualización optimista instantánea en memoria
+            try:
+                df_s = st.session_state.shifts_df.copy()
+                df_s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
+                
+                if classification == "Cambio de turno" and swap_target:
+                    # Actualizar turno origen
+                    mask_orig = (
+                        (df_s['Sheet'] == sheet) & 
+                        (df_s['Excel_Row'] == row) & 
+                        (df_s['Excel_Col'] == col) & 
+                        (df_s_dates == date_check)
+                    ) if row > 0 and col > 0 else (
+                        (df_s['Sheet'] == sheet) & 
+                        (df_s_dates == date_check) & 
+                        (df_s['Supernumerary'].astype(str).str.strip().str.upper() == str(current_doc).strip().upper())
+                    )
+                    df_s.loc[mask_orig, 'Supernumerary'] = str(swap_target['doctor']).strip().upper()
+                    df_s.loc[mask_orig, 'Observation'] = observation.strip()
+                    df_s.loc[mask_orig, 'Classification'] = f"Cambio de turno con {swap_target['doctor']}"
+                    
+                    # Actualizar turno destino
+                    sw_date = swap_target['date']
+                    if isinstance(sw_date, datetime.datetime):
+                        sw_date = sw_date.date()
+                    elif isinstance(sw_date, str):
+                        sw_date = pd.to_datetime(sw_date).date()
+                    
+                    sw_row = swap_target.get('row', 0)
+                    sw_col = swap_target.get('col', 0)
+                    mask_dest = (
+                        (df_s['Sheet'] == swap_target['sheet']) & 
+                        (df_s['Excel_Row'] == sw_row) & 
+                        (df_s['Excel_Col'] == sw_col) & 
+                        (df_s_dates == sw_date)
+                    ) if sw_row > 0 and sw_col > 0 else (
+                        (df_s['Sheet'] == swap_target['sheet']) & 
+                        (df_s_dates == sw_date) & 
+                        (df_s['Supernumerary'].astype(str).str.strip().str.upper() == str(swap_target['doctor']).strip().upper())
+                    )
+                    df_s.loc[mask_dest, 'Supernumerary'] = str(current_doc).strip().upper()
+                    df_s.loc[mask_dest, 'Observation'] = observation.strip()
+                    df_s.loc[mask_dest, 'Classification'] = f"Cambio de turno con {current_doc}"
+                else:
+                    mask_edit = (
+                        (df_s['Sheet'] == sheet) & 
+                        (df_s['Excel_Row'] == row) & 
+                        (df_s['Excel_Col'] == col) & 
+                        (df_s_dates == date_check)
+                    ) if row > 0 and col > 0 else (
+                        (df_s['Sheet'] == sheet) & 
+                        (df_s_dates == date_check) & 
+                        (df_s['Supernumerary'].astype(str).str.strip().str.upper() == str(original_name).strip().upper())
+                    )
+                    if new_name:
+                        df_s.loc[mask_edit, 'Supernumerary'] = str(new_name).strip().upper()
+                        df_s.loc[mask_edit, 'Observation'] = observation.strip()
+                        df_s.loc[mask_edit, 'Classification'] = classification
+                    else:
+                        df_s = df_s.drop(index=df_s[mask_edit].index).reset_index(drop=True)
+                
+                st.session_state.shifts_df = df_s
+                dp.load_data.clear()
+            except Exception as e_mem:
+                print(f"Aviso actualizando memoria tras guardar cambios: {e_mem}")
             
         st.session_state.show_delete_options = False
         st.session_state.should_rerun_main = True
-        load_app_data_func()
         st.rerun()
     except Exception as e:
         st.session_state.last_error = f"Error al guardar cambios: {e}"
@@ -116,7 +180,8 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
     st.session_state["is_deleting_processing"] = True
     try:
         df_s = st.session_state.shifts_df
-        del_scope = scope
+        # Leer la opción seleccionada por el usuario con fallback a scope
+        del_scope = st.session_state.get("del_scope_radio_flat", scope)
         
         # Asegurarnos de que date_val sea datetime.date
         date_check = date_val
@@ -224,11 +289,11 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                 dp.save_modifications_batch(excel_path, mods_list)
                 # Actualización en memoria ultrarrápida para que la UI responda de inmediato
                 try:
-                    to_del_indices = set(shifts_to_delete.index)
-                    st.session_state.shifts_df = st.session_state.shifts_df.drop(index=list(to_del_indices)).reset_index(drop=True)
+                    to_del_indices = list(shifts_to_delete.index)
+                    st.session_state.shifts_df = st.session_state.shifts_df.drop(index=to_del_indices).reset_index(drop=True)
                     dp.load_data.clear()
-                except Exception:
-                    pass
+                except Exception as e_del_mem:
+                    print(f"Aviso actualizando memoria tras eliminar: {e_del_mem}")
             
             # Registrar última acción para deshacer
             st.session_state.last_action = {
@@ -248,9 +313,10 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
             st.session_state["delete_alert_counter"] = st.session_state.get("delete_alert_counter", 0) + 1
             st.session_state["show_delete_success_alert"] = True
             st.session_state["deleted_doc_name"] = current_doc
-            load_app_data_func()
+            st.rerun()
     except Exception as e:
         st.session_state.last_error = f"Error al eliminar: {e}"
+        st.rerun()
     finally:
         st.session_state["is_deleting_processing"] = False
 
@@ -618,7 +684,6 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                 st.session_state["added_doc_name"] = new_doc
                 st.session_state["add_alert_counter"] = st.session_state.get("add_alert_counter", 0) + 1
                 
-                load_app_data_func()
                 st.rerun()
             except Exception as e:
                 st.error(f"Error al agregar médico: {e}")

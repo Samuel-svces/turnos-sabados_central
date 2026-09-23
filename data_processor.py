@@ -52,6 +52,28 @@ MONTH_NAMES_SP = {
 # Helpers de acceso a los archivos delta (SharePoint o local)
 # ---------------------------------------------------------------------------
 
+import threading
+
+_sharepoint_upload_lock = threading.Lock()
+
+def _async_upload_to_sharepoint(file_key: str, file_bytes: bytes):
+    """
+    Sube el archivo a SharePoint en segundo plano mediante un hilo demonio.
+    Esto permite que la interfaz de usuario responda inmediatamente sin esperar
+    la latencia de la petición HTTP a Microsoft Graph.
+    """
+    def _worker():
+        with _sharepoint_upload_lock:
+            try:
+                buf = io.BytesIO(file_bytes)
+                gc.upload_excel(file_key, buf)
+            except Exception as e:
+                print(f"Error en sincronización en segundo plano con SharePoint ({file_key}): {e}")
+
+    thread = threading.Thread(target=_worker, daemon=True)
+    thread.start()
+
+
 def _get_modifications_path(main_excel_path):
     return os.path.join(os.path.dirname(main_excel_path), "MODIFICACIONES_SABADOS.xlsx")
 
@@ -59,13 +81,33 @@ def _get_modifications_path(main_excel_path):
 def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list):
     """
     Carga el workbook del archivo delta.
-    - En SharePoint: descarga a BytesIO.
-    - En local: abre desde disco; si no existe, lo crea.
+    - Si existe copia local en disco con datos, la abre directamente (0.5s en lugar de 9s por red).
+    - Si no existe localmente pero está configurado SharePoint, descarga y crea la copia local.
+    - Si no existe en ningún lado, crea un nuevo workbook con los encabezados.
     Devuelve (wb, ws).
     """
+    if local_path and os.path.exists(local_path) and os.path.getsize(local_path) > 0:
+        try:
+            wb = openpyxl.load_workbook(local_path)
+            if sheet_title in wb.sheetnames:
+                ws = wb[sheet_title]
+            else:
+                ws = wb.create_sheet(title=sheet_title)
+                ws.append(cols)
+            return wb, ws
+        except Exception as e_loc:
+            print(f"Aviso al cargar copia local de {file_key}: {e_loc}")
+
     if _use_sharepoint():
         try:
             buf = gc.download_excel(file_key)
+            if local_path:
+                try:
+                    with open(local_path, "wb") as f_loc:
+                        f_loc.write(buf.getvalue())
+                except Exception:
+                    pass
+            buf.seek(0)
             wb = openpyxl.load_workbook(buf)
         except Exception:
             wb = openpyxl.Workbook()
@@ -100,9 +142,11 @@ def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list)
 def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
     """
     Guarda el workbook del archivo delta.
-    - Guarda en disco local si local_path existe para actualización y coherencia inmediata.
-    - En SharePoint: serializa a BytesIO y sube para persistencia global en la nube.
+    - Guarda en disco local de forma síncrona e instantánea.
+    - Lanza la sincronización con SharePoint en segundo plano para persistencia en la nube
+      sin bloquear la experiencia de usuario.
     """
+    file_bytes = None
     if local_path:
         try:
             wb.save(local_path)
@@ -112,8 +156,8 @@ def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
     if _use_sharepoint():
         buf = io.BytesIO()
         wb.save(buf)
-        buf.seek(0)
-        gc.upload_excel(file_key, buf)
+        file_bytes = buf.getvalue()
+        _async_upload_to_sharepoint(file_key, file_bytes)
     
     wb.close()
 
@@ -121,13 +165,29 @@ def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
 def _read_delta_df(file_key: str, local_path: str, sheet_title: str, cols: list) -> pd.DataFrame:
     """
     Lee el DataFrame del archivo delta (SharePoint o local).
-    Si el remoto en SharePoint está vacío pero el archivo local del repositorio tiene registros,
-    utiliza el local y lo autorrestaura automáticamente en SharePoint.
+    Prioriza la copia local en disco si existe para máxima velocidad de lectura (0.3s vs 9s).
     """
+    if local_path and os.path.exists(local_path) and os.path.getsize(local_path) > 0:
+        try:
+            df = pd.read_excel(local_path, sheet_name=sheet_title)
+            for c in cols:
+                if c not in df.columns:
+                    df[c] = None
+            return df[cols].copy()
+        except Exception:
+            pass
+
     if _use_sharepoint():
         df_remote = pd.DataFrame(columns=cols)
         try:
             buf = gc.download_excel(file_key)
+            if local_path:
+                try:
+                    with open(local_path, "wb") as f_loc:
+                        f_loc.write(buf.getvalue())
+                except Exception:
+                    pass
+            buf.seek(0)
             df_temp = pd.read_excel(buf, sheet_name=sheet_title)
             for c in cols:
                 if c not in df_temp.columns:
@@ -135,24 +195,6 @@ def _read_delta_df(file_key: str, local_path: str, sheet_title: str, cols: list)
             df_remote = df_temp[cols].copy()
         except Exception:
             pass
-
-        if df_remote.empty and os.path.exists(local_path):
-            try:
-                df_local = pd.read_excel(local_path, sheet_name=sheet_title)
-                for c in cols:
-                    if c not in df_local.columns:
-                        df_local[c] = None
-                df_local_clean = df_local[cols].copy()
-                if not df_local_clean.empty:
-                    try:
-                        wb_local = openpyxl.load_workbook(local_path)
-                        _save_wb_delta(wb_local, file_key, local_path)
-                    except Exception as up_err:
-                        print(f"Error auto-restaurando delta en SharePoint: {up_err}")
-                    return df_local_clean
-            except Exception:
-                pass
-
         return df_remote
     else:
         if not os.path.exists(local_path):
