@@ -873,6 +873,14 @@ def load_data(excel_path):
 
     return df_shifts, errors
 
+def _clear_data_caches():
+    try:
+        load_modifications.clear()
+    except Exception:
+        pass
+
+load_data.clear = _clear_data_caches
+
 
 # ---------------------------------------------------------------------------
 # Supernumerarios (solo lectura del maestro + delta personal)

@@ -165,7 +165,7 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
                         df_s = df_s.drop(index=df_s[mask_edit].index).reset_index(drop=True)
                 
                 st.session_state.shifts_df = df_s
-                dp.load_data.clear()
+                dp.load_modifications.clear()
             except Exception as e_mem:
                 print(f"Aviso actualizando memoria tras guardar cambios: {e_mem}")
             
@@ -291,7 +291,7 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                 try:
                     to_del_indices = list(shifts_to_delete.index)
                     st.session_state.shifts_df = st.session_state.shifts_df.drop(index=to_del_indices).reset_index(drop=True)
-                    dp.load_data.clear()
+                    dp.load_modifications.clear()
                 except Exception as e_del_mem:
                     print(f"Aviso actualizando memoria tras eliminar: {e_del_mem}")
             
@@ -678,7 +678,7 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                         })
                     if new_rows:
                         st.session_state.shifts_df = pd.concat([st.session_state.shifts_df, pd.DataFrame(new_rows)], ignore_index=True)
-                        dp.load_data.clear()
+                        dp.load_modifications.clear()
                 
                 st.session_state["show_add_success_alert"] = True
                 st.session_state["added_doc_name"] = new_doc
