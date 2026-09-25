@@ -11,13 +11,13 @@ def get_allowed_doctors():
     docs_set = set()
     if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
         s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
-        s_names = df_s[s_dates >= june_date]['Supernumerary'].dropna().astype(str).str.strip().str.upper().tolist()
+        s_names = df_s[s_dates >= june_date]['Supernumerary'].dropna().apply(dp.normalize_name_no_accents).tolist()
         docs_set.update([n for n in s_names if len(n) > 2 and n not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]])
 
     if not df_sup.empty:
         col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
         if col_name:
-            sup_names = df_sup[col_name].dropna().astype(str).str.strip().str.upper().tolist()
+            sup_names = df_sup[col_name].dropna().apply(dp.normalize_name_no_accents).tolist()
             docs_set.update([n for n in sup_names if len(n) > 2])
 
     return sorted(list(docs_set))
@@ -388,7 +388,7 @@ def show_shift_dialog(action_details, load_app_data_func):
     new_clasif = st.radio("Clasificación del Turno:", clasif_options, index=default_clasif_idx, horizontal=True)
     
     allowed = get_allowed_doctors()
-    current_doc = action_details['doctor']
+    current_doc = dp.normalize_name_no_accents(action_details['doctor'])
     if current_doc not in allowed:
         allowed = sorted(list(set(allowed + [current_doc])))
     try:
@@ -571,10 +571,45 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
     st.markdown("---")
     
     df_s = st.session_state.shifts_df
-    already_assigned = [n.upper() for n in df_s[df_s['Date'] == sat_date]['Supernumerary'].tolist()]
+    already_assigned = [dp.normalize_name_no_accents(n) for n in df_s[df_s['Date'] == sat_date]['Supernumerary'].tolist()]
     
     allowed = get_allowed_doctors()
-    new_doc = st.selectbox("Seleccione Médico Supernumerario:", allowed)
+    
+    # Buscador de médicos insensible a tildes y espacios
+    search_doc = st.text_input(
+        "Buscar Médico (nombre o cédula):",
+        placeholder="Escriba para filtrar sin preocuparse por tildes ni espacios...",
+        key=f"search_doc_add_{sat_date}"
+    ).strip()
+    
+    filtered_allowed = allowed
+    if search_doc:
+        q_norm = dp.normalize_name_no_accents(search_doc)
+        q_compact = q_norm.replace(" ", "")
+        
+        # Búsqueda por cédula en df_super si está disponible
+        cedula_matches = set()
+        df_sup = st.session_state.get('super_df', pd.DataFrame())
+        if not df_sup.empty and 'CEDULA' in df_sup.columns:
+            name_col = 'Profesional' if 'Profesional' in df_sup.columns else 'NOMBRES Y APELLIDOS'
+            ced_mask = df_sup['CEDULA'].astype(str).str.contains(q_norm, na=False)
+            cedula_matches = set(df_sup[ced_mask][name_col].dropna().apply(dp.normalize_name_no_accents).tolist())
+        
+        matched = []
+        for doc in allowed:
+            doc_norm = dp.normalize_name_no_accents(doc)
+            doc_compact = doc_norm.replace(" ", "")
+            if q_norm in doc_norm or q_compact in doc_compact or doc_norm in cedula_matches:
+                matched.append(doc)
+        
+        if matched:
+            filtered_allowed = matched
+        else:
+            st.info("No se encontraron coincidencias con el filtro. Mostrando lista completa.")
+            filtered_allowed = allowed
+
+    new_doc = st.selectbox("Seleccione Médico Supernumerario:", filtered_allowed)
+    new_doc_norm = dp.normalize_name_no_accents(new_doc) if new_doc else ""
     obs = st.text_input("Observaciones (opcional):", placeholder="Ej: Pago de turno...")
     clasif = st.radio("Clasificación del Turno:", ["Secuencia Normal", "Compensación / Pago de turno"], horizontal=True)
     
@@ -593,10 +628,10 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
         already_global = {}
         if not df_s.empty:
             for fd in future_dates:
-                docs_on_date = [n.upper() for n in df_s[df_s['Date'] == fd]['Supernumerary'].tolist()]
+                docs_on_date = [dp.normalize_name_no_accents(n) for n in df_s[df_s['Date'] == fd]['Supernumerary'].tolist()]
                 already_global[fd] = docs_on_date
         
-        future_dates_to_add = [fd for fd in future_dates if new_doc and new_doc.upper() not in already_global.get(fd, [])]
+        future_dates_to_add = [fd for fd in future_dates if new_doc and new_doc_norm not in already_global.get(fd, [])]
         
         if future_dates_to_add:
             with st.expander(f"📅 Secuencia automática: se replicará en {len(future_dates_to_add)} sábados", expanded=False):
@@ -605,12 +640,12 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                 for i, fd in enumerate(future_dates_to_add):
                     cols_prev[i % 3].markdown(f"• **{fd.day} {MESES[fd.month-1]} {fd.year}**")
     
-    if new_doc and new_doc.upper() in already_assigned:
-        st.warning(f"⚠️ **{new_doc}** ya está asignado a este sábado ({sat_date.strftime('%d/%m/%Y')}). No se pueden tener duplicados.")
+    if new_doc and new_doc_norm in already_assigned:
+        st.warning(f"**{new_doc}** ya está asignado a este sábado ({sat_date.strftime('%d/%m/%Y')}). No se pueden tener duplicados.", icon=":material/warning:")
     
     if st.button("Agregar Médico", use_container_width=True, type="primary", icon=":material/person_add:"):
-        if new_doc and new_doc.upper() in already_assigned:
-            st.error(f"No se puede agregar: **{new_doc}** ya está programado para este sábado.")
+        if new_doc and new_doc_norm in already_assigned:
+            st.error(f"No se puede agregar: **{new_doc}** ya está programado para este sábado.", icon=":material/error:")
         else:
             try:
                 # GUARDAR ACCION EN LAST_ACTION PARA UNDO
@@ -619,7 +654,7 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
                     'excel_path': st.session_state.excel_path,
                     'sheet': sheet,
                     'date': sat_date,
-                    'doc': new_doc,
+                    'doc': new_doc_norm,
                     'obs': obs.strip(),
                     'clasificacion': clasif
                 }

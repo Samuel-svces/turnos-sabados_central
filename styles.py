@@ -1508,6 +1508,40 @@ def apply_styles():
     div[data-baseweb="modal"] {
         pointer-events: auto !important;
     }
+
+    /* ========================================================= */
+    /* COLOR PERSONALIZADO RGB(20, 116, 220) PARA BOTONES CLAVE */
+    /* ========================================================= */
+    button[data-testid="baseButton-primary"],
+    button[kind="primary"] {
+        background-color: rgb(20, 116, 220) !important;
+        background: rgb(20, 116, 220) !important;
+        border-color: rgb(20, 116, 220) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    button[data-testid="baseButton-primary"] *,
+    button[kind="primary"] * {
+        color: #ffffff !important;
+    }
+
+    button[data-testid="baseButton-primary"]:hover,
+    button[kind="primary"]:hover {
+        background-color: rgb(15, 95, 185) !important;
+        background: rgb(15, 95, 185) !important;
+        border-color: rgb(15, 95, 185) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(20, 116, 220, 0.35) !important;
+    }
+
+    button[data-testid="baseButton-primary"]:active,
+    button[kind="primary"]:active {
+        background-color: rgb(12, 75, 145) !important;
+        background: rgb(12, 75, 145) !important;
+        border-color: rgb(12, 75, 145) !important;
+        color: #ffffff !important;
+    }
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])

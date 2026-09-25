@@ -48,6 +48,26 @@ MONTH_NAMES_SP = {
     9: 'SEPTIEMBRE', 10: 'OCTUBRE', 11: 'NOVIEMBRE', 12: 'DICIEMBRE'
 }
 
+def normalize_name_no_accents(text: str) -> str:
+    """
+    Normaliza texto eliminando tildes (acentos) y espacios múltiples o irregulares.
+    Conserva la Ñ para nombres y apellidos colombianos (ej. MUÑOZ, PEÑA, BOLAÑOS).
+    """
+    if text is None or pd.isna(text):
+        return ""
+    s = str(text).strip().upper()
+    trans = str.maketrans({
+        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U', 'Ü': 'U',
+        'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
+        'Â': 'A', 'Ê': 'E', 'Î': 'I', 'Ô': 'O', 'Û': 'U',
+        'á': 'A', 'é': 'E', 'í': 'I', 'ó': 'O', 'ú': 'U', 'ü': 'U',
+        'à': 'A', 'è': 'E', 'ì': 'I', 'ò': 'O', 'ù': 'U',
+        'â': 'A', 'ê': 'E', 'î': 'I', 'ô': 'O', 'û': 'U',
+    })
+    s = s.translate(trans)
+    s = re.sub(r'[\s\u00A0]+', ' ', s).strip()
+    return s
+
 # ---------------------------------------------------------------------------
 # Helpers de acceso a los archivos delta (SharePoint o local)
 # ---------------------------------------------------------------------------
@@ -675,8 +695,7 @@ def _get_base_shifts_df(excel_path):
                 name_cell = row[super_col_idx]
                 if pd.notna(date_cell) and pd.notna(name_cell):
                     d = parse_flat_date(date_cell)
-                    name_str = str(name_cell).strip().upper()
-                    name_str = re.sub(r'\s+', ' ', name_str)
+                    name_str = normalize_name_no_accents(name_cell)
                     if name_str and name_str not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
                         if not name_str.replace('.', '', 1).isdigit() and len(name_str) > 3:
                             if d:
@@ -731,8 +750,7 @@ def _get_base_shifts_df(excel_path):
                             if col_idx < len(row):
                                 name = row[col_idx]
                                 if pd.notna(name):
-                                    name_str = str(name).strip()
-                                    name_str = re.sub(r'\s+', ' ', name_str).upper()
+                                    name_str = normalize_name_no_accents(name)
                                     if name_str and name_str not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
                                         if not name_str.replace('.', '', 1).isdigit() and len(name_str) > 3:
                                             all_shifts.append({
@@ -1061,11 +1079,7 @@ def load_supernumeraries(excel_path):
         df_super["CEDULA"] = df_super["CEDULA"].apply(_clean_cedula)
         df_super["NOMBRES Y APELLIDOS"] = (
             df_super["NOMBRES Y APELLIDOS"]
-            .fillna("")
-            .astype(str)
-            .str.strip()
-            .str.upper()
-            .apply(lambda x: re.sub(r"\s+", " ", x))
+            .apply(normalize_name_no_accents)
         )
         df_super["CORREO"] = df_super["CORREO"].fillna("").astype(str).str.strip()
         df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
@@ -1149,9 +1163,11 @@ def update_shift_cell(excel_path, sheet_name, row_idx, col_idx, new_name,
             orig_name = match.iloc[0]['Supernumerary'] if not match.empty else ""
 
     if original_name:
-        orig_name = original_name
+        orig_name = normalize_name_no_accents(original_name)
+    else:
+        orig_name = normalize_name_no_accents(orig_name)
 
-    cleaned_new = str(new_name).strip().upper() if new_name else ""
+    cleaned_new = normalize_name_no_accents(new_name) if new_name else ""
     mod_data = {
         'sheet': sheet_name, 'date': date_val,
         'original_name': orig_name, 'new_name': cleaned_new,
@@ -1172,7 +1188,7 @@ def delete_shift_cell(excel_path, sheet_name, row_idx, col_idx,
 
 def add_shift_to_date(excel_path, sheet_name, target_date, supernumerary_name,
                       observation='', clasificacion='Secuencia Normal'):
-    new_name = str(supernumerary_name).strip().upper()
+    new_name = normalize_name_no_accents(supernumerary_name)
     if not new_name:
         raise ValueError("El nombre del supernumerario no puede estar vacío.")
     mod_data = {
@@ -1193,7 +1209,7 @@ def duplicate_schedule_batch(excel_path, target_sheet, target_date, shifts_to_de
         mods_list.append({
             'sheet': s_del['sheet'],
             'date': target_date,
-            'original_name': s_del['doctor'],
+            'original_name': normalize_name_no_accents(s_del['doctor']),
             'new_name': '',
             'row': s_del['row'],
             'col': s_del['col'],
@@ -1208,7 +1224,7 @@ def duplicate_schedule_batch(excel_path, target_sheet, target_date, shifts_to_de
             'sheet': target_sheet,
             'date': target_date,
             'original_name': '',
-            'new_name': s_add['doctor'],
+            'new_name': normalize_name_no_accents(s_add['doctor']),
             'row': 0,
             'col': 0,
             'type': 'AGREGAR',
@@ -1224,7 +1240,7 @@ def duplicate_schedule_batch(excel_path, target_sheet, target_date, shifts_to_de
 def add_shifts_batch(excel_path, shifts_list):
     mods_list = []
     for s in shifts_list:
-        new_name = str(s['doc']).strip().upper()
+        new_name = normalize_name_no_accents(s['doc'])
         if not new_name:
             continue
         mods_list.append({

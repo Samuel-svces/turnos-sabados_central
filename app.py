@@ -367,8 +367,18 @@ with tab_calendar:
                 return;
             }
 
-            // Ignorar los botones de control de columna (Agregar / Duplicar)
-            if (text.includes("Agregar Médico") || text.includes("Duplicar")) {
+            // Estilizar botón Agregar Médico con rgb(20, 116, 220)
+            if (text.includes("Agregar Médico")) {
+                btn.style.setProperty('background-color', 'rgb(20, 116, 220)', 'important');
+                btn.style.setProperty('background', 'rgb(20, 116, 220)', 'important');
+                btn.style.setProperty('border-color', 'rgb(20, 116, 220)', 'important');
+                btn.style.setProperty('color', '#ffffff', 'important');
+                btn.querySelectorAll('*').forEach(el => el.style.setProperty('color', '#ffffff', 'important'));
+                return;
+            }
+
+            // Ignorar Duplicar
+            if (text.includes("Duplicar")) {
                 return;
             }
 
@@ -866,8 +876,12 @@ if st.session_state.is_admin:
             if search_super:
                 col_name = 'Profesional' if 'Profesional' in df_show.columns else 'NOMBRES Y APELLIDOS'
                 col_ced  = 'Cédula' if 'Cédula' in df_show.columns else 'CEDULA'
-                mask_name = df_show[col_name].astype(str).str.upper().str.contains(search_super, na=False)
-                mask_ced  = df_show[col_ced].astype(str).str.upper().str.contains(search_super, na=False)
+                q_norm = dp.normalize_name_no_accents(search_super)
+                q_compact = q_norm.replace(" ", "")
+                names_norm = df_show[col_name].fillna("").astype(str).apply(dp.normalize_name_no_accents)
+                ceds_clean = df_show[col_ced].fillna("").astype(str).str.strip()
+                mask_name = names_norm.str.contains(q_norm, na=False) | names_norm.apply(lambda x: q_compact in x.replace(" ", ""))
+                mask_ced  = ceds_clean.str.contains(q_norm, na=False)
                 df_show = df_show[mask_name | mask_ced]
             
             if sel_cargo and sel_cargo != "Todos los cargos" and 'Cargo' in df_show.columns:
