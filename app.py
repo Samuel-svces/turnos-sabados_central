@@ -316,19 +316,19 @@ with tab_calendar:
         with col_btn_f1:
             st.markdown("<div class='filter-all-marker'></div>", unsafe_allow_html=True)
             f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
-            if st.button("🔵 Todos", key="btn_filter_all", use_container_width=True, type=f_style_all):
+            if st.button("Todos", key="btn_filter_all", use_container_width=True, type=f_style_all):
                 st.session_state["filter_class"] = "Todos"
                 st.rerun()
         with col_btn_f2:
             st.markdown("<div class='filter-normal-marker'></div>", unsafe_allow_html=True)
             f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
-            if st.button("🟢 Normal", key="btn_filter_normal", use_container_width=True, type=f_style_normal):
+            if st.button("Normal", key="btn_filter_normal", use_container_width=True, type=f_style_normal):
                 st.session_state["filter_class"] = "Secuencia Normal"
                 st.rerun()
         with col_btn_f3:
             st.markdown("<div class='filter-comp-marker'></div>", unsafe_allow_html=True)
             f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
-            if st.button("🟡 Compensación", key="btn_filter_comp", use_container_width=True, type=f_style_comp):
+            if st.button("Compensación", key="btn_filter_comp", use_container_width=True, type=f_style_comp):
                 st.session_state["filter_class"] = "Compensación"
                 st.rerun()
     else:
