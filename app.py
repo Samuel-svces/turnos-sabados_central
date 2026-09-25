@@ -823,140 +823,72 @@ with tab_calendar:
 # ----------------- TAB 3: ADMIN CONTROL PANEL -----------------
 if st.session_state.is_admin:
     with tab_admin:
-        st.markdown("### <i class='bi bi-sliders2'></i> Directorio de Personal y Sincronización", unsafe_allow_html=True)
-        st.markdown("Gestión de altas, bajas y modificaciones en el directorio de médicos supernumerarios, y sincronización con el repositorio Excel.")
+        st.markdown("### Directorio de Personal y Sincronización")
+        st.caption("Directorio de profesionales activos sincronizado directamente desde el repositorio central (CONSOLIDADO 2026.xlsx, hoja BD PERSONAL en SharePoint / OneDrive).")
         
-        col_dir, col_hist = st.columns([1.1, 0.9])
+        num_super = len(df_super) if not df_super.empty else 0
+        num_supernumerarios = (df_super['Cargo'].astype(str).str.upper().str.contains('SUPERNUMERARI').sum()) if not df_super.empty and 'Cargo' in df_super.columns else 0
         
-        with col_dir:
-            st.markdown("#### <i class='bi bi-cloud-check'></i> Directorio de Personal Activo (CONSOLIDADO 2026)", unsafe_allow_html=True)
-            st.info("El directorio se sincroniza directamente desde **CONSOLIDADO 2026.xlsx** (hoja **BD PERSONAL** en SharePoint / OneDrive). Contiene la totalidad de los profesionales activos en la organización.")
-            
-            num_super = len(df_super) if not df_super.empty else 0
-            num_supernumerarios = (df_super['Cargo'].astype(str).str.upper().str.contains('SUPERNUMERARI').sum()) if not df_super.empty and 'Cargo' in df_super.columns else 0
-            col_m1, col_m2, col_m3 = st.columns([1, 1, 1])
-            with col_m1:
-                st.metric("Total Activos BD", f"{num_super} Profesionales")
-            with col_m2:
-                st.metric("Supernumerarios", f"{num_supernumerarios} Médicos")
-            with col_m3:
-                if st.button("🔄 Sincronizar Directorio", use_container_width=True):
-                    st.session_state["force_refresh_personal"] = True
-                    for c_file in ["CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx"]:
-                        if os.path.exists(c_file):
-                            try:
-                                os.remove(c_file)
-                            except Exception:
-                                pass
-                    dp._open_consolidado_personal.clear()
-                    dp.load_supernumeraries.clear()
-                    st.cache_data.clear()
-                    st.cache_resource.clear()
-                    load_app_data(reload_personal=True)
-                    st.success("Directorio de personal resincronizado con éxito.")
-                    st.rerun()
-            
-            st.markdown("##### 📋 Listado Activo de Personal")
-            if not df_super.empty:
-                f_col1, f_col2 = st.columns([2, 1])
-                with f_col1:
-                    search_super = st.text_input("🔍 Buscar por nombre o cédula:", placeholder="Escriba un nombre o cédula...").strip().upper()
-                with f_col2:
-                    all_cargos = ["Todos los cargos"] + sorted([c for c in df_super['Cargo'].dropna().unique().tolist() if c]) if 'Cargo' in df_super.columns else ["Todos los cargos"]
-                    sel_cargo = st.selectbox("Filtrar por Cargo:", all_cargos)
+        col_m1, col_m2, col_m3 = st.columns([1, 1, 1.2], vertical_alignment="bottom")
+        with col_m1:
+            st.metric("Total Activos BD", f"{num_super:,}".replace(",", ".") + " Profesionales")
+        with col_m2:
+            st.metric("Supernumerarios", f"{num_supernumerarios:,}".replace(",", ".") + " Médicos")
+        with col_m3:
+            if st.button("Sincronizar Directorio", type="primary", use_container_width=True, icon=":material/sync:"):
+                st.session_state["force_refresh_personal"] = True
+                for c_file in ["CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx"]:
+                    if os.path.exists(c_file):
+                        try:
+                            os.remove(c_file)
+                        except Exception:
+                            pass
+                dp._open_consolidado_personal.clear()
+                dp.load_supernumeraries.clear()
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                load_app_data(reload_personal=True)
+                st.success("Directorio de personal resincronizado con éxito.", icon=":material/check_circle:")
+                st.rerun()
+        
+        st.markdown("<div style='margin-top: 1.2rem; margin-bottom: 0.8rem; border-top: 1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
+        st.markdown("#### Listado Activo de Personal")
+        
+        if not df_super.empty:
+            f_col1, f_col2, f_col3 = st.columns([2.5, 1.5, 1], vertical_alignment="bottom")
+            with f_col1:
+                search_super = st.text_input("Buscar por nombre o cédula:", placeholder="Escriba un nombre o cédula...", key="dir_search_super").strip().upper()
+            with f_col2:
+                all_cargos = ["Todos los cargos"] + sorted([c for c in df_super['Cargo'].dropna().unique().tolist() if c]) if 'Cargo' in df_super.columns else ["Todos los cargos"]
+                sel_cargo = st.selectbox("Filtrar por Cargo:", all_cargos, key="dir_sel_cargo")
 
-                df_show = df_super.copy()
-                if search_super:
-                    col_name = 'Profesional' if 'Profesional' in df_show.columns else 'NOMBRES Y APELLIDOS'
-                    col_ced  = 'Cédula' if 'Cédula' in df_show.columns else 'CEDULA'
-                    mask_name = df_show[col_name].astype(str).str.upper().str.contains(search_super, na=False)
-                    mask_ced  = df_show[col_ced].astype(str).str.upper().str.contains(search_super, na=False)
-                    df_show = df_show[mask_name | mask_ced]
-                
-                if sel_cargo and sel_cargo != "Todos los cargos" and 'Cargo' in df_show.columns:
-                    df_show = df_show[df_show['Cargo'] == sel_cargo]
-                
-                display_cols = [c for c in ['Cédula', 'Sede', 'Cargo', 'Profesional', 'Estado', 'Correo'] if c in df_show.columns]
-                if not display_cols:
-                    display_cols = df_show.columns.tolist()
-                st.dataframe(
-                    df_show[display_cols],
-                    use_container_width=True,
-                    hide_index=True
-                )
-            else:
-                st.warning("No se encontró personal activo en la hoja BD PERSONAL de CONSOLIDADO 2026.")
-                if st.session_state.get('super_load_error'):
-                    st.error(f"Detalle de la conexión: {st.session_state.super_load_error}")
+            df_show = df_super.copy()
+            if search_super:
+                col_name = 'Profesional' if 'Profesional' in df_show.columns else 'NOMBRES Y APELLIDOS'
+                col_ced  = 'Cédula' if 'Cédula' in df_show.columns else 'CEDULA'
+                mask_name = df_show[col_name].astype(str).str.upper().str.contains(search_super, na=False)
+                mask_ced  = df_show[col_ced].astype(str).str.upper().str.contains(search_super, na=False)
+                df_show = df_show[mask_name | mask_ced]
             
-            st.markdown("---")
-            st.markdown("#### ⚠️ Plan de Contingencia: Registro Manual de Médicos", unsafe_allow_html=True)
-            st.caption("Si un médico no ha sido ingresado a tiempo en la BD PERSONAL de SharePoint, puedes registrarlo temporalmente aquí para que aparezca en el sistema.")
+            if sel_cargo and sel_cargo != "Todos los cargos" and 'Cargo' in df_show.columns:
+                df_show = df_show[df_show['Cargo'] == sel_cargo]
             
-            with st.expander("➕ Registrar Médico Manualmente (Contingencia)", expanded=False):
-                with st.form("admin_manual_doc_form", clear_on_submit=True):
-                    m_cedula = st.text_input("Cédula / Identificación:").strip()
-                    m_nombre = st.text_input("Nombre Completo (APELLIDOS NOMBRES):").strip().upper()
-                    m_sede = st.selectbox("Sede / CECO:", ["SUPERNUMERARIOS", "INDUCCION"])
-                    m_celular = st.text_input("Celular (opcional):").strip()
-                    m_obs = st.text_area("Observaciones de Contingencia:", placeholder="Ej: Registro urgente por turno sábado...", height=70).strip()
-                    
-                    sub_manual = st.form_submit_button("Registrar Médico en Contingencia", use_container_width=True)
-                    if sub_manual:
-                        if not m_cedula or not m_nombre:
-                            st.error("Cédula y Nombre Completo son obligatorios.")
-                        else:
-                            doc_data = {
-                                'cedula': m_cedula,
-                                'nombres_y_apellidos': m_nombre,
-                                'cargo': 'MEDICO GENERAL SUPERNUMERARIO',
-                                'celular': m_celular,
-                                'sede_ceco': m_sede,
-                                'observaciones': m_obs if m_obs else 'Registro manual por contingencia'
-                            }
-                            try:
-                                dp.save_manual_supernumerary(st.session_state.excel_path, doc_data)
-                                st.success(f"Médico {m_nombre} registrado correctamente por contingencia. Sincronizado en SharePoint.")
-                                load_app_data()
-                                st.rerun()
-                            except Exception as ex_m:
-                                st.error(f"Error al guardar registro manual: {ex_m}")
-
-            # Mostrar registros manuales activos para poder retirarlos si ya están en SharePoint
-            try:
-                df_man = dp.load_manual_supernumeraries(st.session_state.excel_path)
-                if not df_man.empty:
-                    st.markdown("##### 📝 Médicos Registrados Manualmente por Contingencia")
-                    for _, r_man in df_man.iterrows():
-                        col_m_info, col_m_btn = st.columns([3, 1])
-                        with col_m_info:
-                            st.markdown(f"• **{r_man['NOMBRES Y APELLIDOS']}** (CC: {r_man['CEDULA']}) | Sede: {r_man['SEDE / CECO']}")
-                        with col_m_btn:
-                            if st.button("Desactivar", key=f"deact_{r_man['CEDULA']}", use_container_width=True):
-                                dp.deactivate_manual_supernumerary(st.session_state.excel_path, r_man['CEDULA'])
-                                st.success(f"Médico {r_man['NOMBRES Y APELLIDOS']} desactivado del registro manual.")
-                                load_app_data()
-                                st.rerun()
-            except Exception:
-                pass
-                        
-        with col_hist:
-            st.markdown("#### 📜 Historial de Actividad (Últimos Movimientos)")
-            try:
-                df_hist = dp.load_modifications(st.session_state.excel_path)
-                if not df_hist.empty and 'TIMESTAMP' in df_hist.columns:
-                    df_hist_show = df_hist.sort_values(by='ID', ascending=False).head(15)
-                    for _, r_hist in df_hist_show.iterrows():
-                        fecha_accion = r_hist['TIMESTAMP']
-                        tipo = r_hist['TYPE']
-                        doc_inv = r_hist['NEW_NAME'] if r_hist['NEW_NAME'] else r_hist['ORIGINAL_NAME']
-                        dia_afectado = r_hist['DATE'].strftime('%d/%m/%Y') if pd.notna(r_hist['DATE']) else ""
-                        icon = "➕" if tipo == "AGREGAR" else ("❌" if tipo == "ELIMINAR" else "🔄")
-                        st.markdown(f"- **{fecha_accion}** | {icon} **{tipo}**: {doc_inv} en la fecha {dia_afectado}")
-                else:
-                    st.write("No hay historial reciente registrado.")
-            except Exception:
-                st.write("El historial no está disponible actualmente.")
+            with f_col3:
+                st.caption(f"Mostrando **{len(df_show)}** de **{len(df_super)}** registros")
+            
+            display_cols = [c for c in ['Cédula', 'Sede', 'Cargo', 'Profesional', 'Estado', 'Correo'] if c in df_show.columns]
+            if not display_cols:
+                display_cols = df_show.columns.tolist()
+            st.dataframe(
+                df_show[display_cols],
+                use_container_width=True,
+                hide_index=True,
+                height=520
+            )
+        else:
+            st.warning("No se encontró personal activo en la hoja BD PERSONAL de CONSOLIDADO 2026.", icon=":material/warning:")
+            if st.session_state.get('super_load_error'):
+                st.error(f"Detalle de la conexión: {st.session_state.super_load_error}", icon=":material/error:")
 
 # Footer
 st.markdown(
