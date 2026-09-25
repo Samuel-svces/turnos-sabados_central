@@ -302,8 +302,9 @@ def apply_styles():
         border-color: #0d47a1 !important;
     }
     
-    /* Ocultar el marcador de columna de sábados */
-    div[data-testid="stElementContainer"]:has(.saturday-col-marker) {
+    /* Ocultar el marcador de columna de sábados y fecha */
+    div[data-testid="stElementContainer"]:has(.saturday-col-marker),
+    div[data-testid="stElementContainer"]:has(.date-header-marker) {
         display: none !important;
         height: 0px !important;
         margin: 0 !important;
@@ -941,7 +942,7 @@ def apply_styles():
     
     /* 8. Botón de Encabezado de Fecha (Degradado Azul Eléctrico Vibrante) */
     button.custom-header-btn,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
         background: linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
         background-color: #0866ea !important;
         color: #ffffff !important;
@@ -963,7 +964,8 @@ def apply_styles():
     }
     button.custom-header-btn:hover,
     button.custom-header-btn:focus,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button:hover {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover,
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:focus {
         background: linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
         color: #ffffff !important;
         border: none !important;
@@ -971,7 +973,7 @@ def apply_styles():
         transform: translateY(-1px) !important;
     }
     button.custom-header-btn:active,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button:active {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:active {
         background: linear-gradient(180deg, #0e7ae6 0%, #054eb8 100%) !important;
         transform: translateY(0px) !important;
         box-shadow: 0 2px 8px rgba(8, 102, 234, 0.3) !important;
@@ -979,10 +981,45 @@ def apply_styles():
     button.custom-header-btn p, 
     button.custom-header-btn span, 
     button.custom-header-btn *,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button * {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
         color: #ffffff !important;
         background-color: transparent !important;
         font-weight: 700 !important;
+    }
+
+    /* 9. Botones de Médico en Modo Editor (Admin) - Fondo Blanco */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn),
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn) {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #262730 !important;
+        border: 1px solid rgba(49, 51, 63, 0.2) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        font-weight: 500 !important;
+        font-size: 0.8rem !important;
+        padding: 0.22rem 0.5rem !important;
+        line-height: 1.25 !important;
+        text-shadow: none !important;
+    }
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn) *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn) * {
+        color: #262730 !important;
+        background-color: transparent !important;
+        font-weight: 500 !important;
+        text-shadow: none !important;
+    }
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover {
+        background: #f1f5f9 !important;
+        background-color: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #1e293b !important;
+        transform: scale(1.01) !important;
+    }
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover * {
+        color: #1e293b !important;
     }
     
     .custom-search-marker + div[data-testid="stTextInput"] input {

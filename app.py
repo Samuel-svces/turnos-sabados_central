@@ -384,10 +384,10 @@ with tab_calendar:
                 return;
             }
 
-            let bg = '#fbf6eb'; // crema premium
-            let fg = '#5c4d3c'; // marrón oscuro elegante
-            let border = '#e6dec9';
-            let shadow = '0 1px 3px rgba(0,0,0,0.05)';
+            let bg = '#ffffff'; // Blanco limpio
+            let fg = '#262730'; // Texto oscuro nítido
+            let border = 'rgba(49, 51, 63, 0.2)';
+            let shadow = '0 1px 2px rgba(0, 0, 0, 0.04)';
 
             if (text.includes('🎯')) {
                 bg = '#fff8e1';
@@ -408,6 +408,7 @@ with tab_calendar:
                 border = '#c8e6c9';
             }
 
+            btn.style.setProperty('background', bg, 'important');
             btn.style.setProperty('background-color', bg, 'important');
             btn.style.setProperty('color', fg, 'important');
             btn.style.setProperty('border-color', border, 'important');
@@ -423,11 +424,13 @@ with tab_calendar:
             btn.style.setProperty('margin-bottom', '0px', 'important');
             btn.style.setProperty('min-height', 'auto', 'important');
             btn.style.setProperty('line-height', '1.15', 'important');
+            btn.style.setProperty('text-shadow', 'none', 'important');
 
             const childs = btn.querySelectorAll('*');
             childs.forEach(c => {
                 c.style.setProperty('color', fg, 'important');
                 c.style.setProperty('background-color', 'transparent', 'important');
+                c.style.setProperty('text-shadow', 'none', 'important');
             });
         });
     }
@@ -638,6 +641,7 @@ with tab_calendar:
                     if sort_type == "asc":
                         header_text += " 🔤"
                         
+                    st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
                     if st.button(header_text, key=f"header_sort_admin_{sat_date}", use_container_width=True):
                         st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
                         st.rerun()
@@ -790,6 +794,7 @@ with tab_calendar:
                         if sort_type == "asc":
                             header_text += " 🔤"
                             
+                        st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
                         if st.button(header_text, key=f"header_sort_pub_{sat_date}", use_container_width=True):
                             st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
                             st.rerun()
