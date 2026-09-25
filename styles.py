@@ -972,33 +972,48 @@ def apply_styles():
         color: #ffffff !important;
     }
     
-    /* 8. Botón de Encabezado de Fecha (Azul) */
-    button.custom-header-btn {
-        background-color: #005eb8 !important;
-        color: white !important;
+    /* 8. Botón de Encabezado de Fecha (Degradado Azul Eléctrico Vibrante) */
+    button.custom-header-btn,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button {
+        background: linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
+        background-color: #0866ea !important;
+        color: #ffffff !important;
         border: none !important;
-        box-shadow: 0 4px 10px rgba(0, 94, 184, 0.15) !important;
+        box-shadow: 0 4px 14px rgba(8, 102, 234, 0.35) !important;
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
         font-size: 0.92rem !important;
         line-height: 1.3 !important;
-        padding: 0.55rem 0.6rem !important;
+        padding: 0.6rem 0.6rem !important;
         width: 100% !important;
         display: block !important;
         margin-bottom: 0.75rem !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         min-height: unset !important;
         height: auto !important;
-        transition: background-color 0.15s ease, transform 0.1s ease !important;
+        transition: all 0.2s ease !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
     }
-    button.custom-header-btn:hover, button.custom-header-btn:active, button.custom-header-btn:focus {
-        background-color: #004b93 !important;
-        color: white !important;
+    button.custom-header-btn:hover,
+    button.custom-header-btn:focus,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button:hover {
+        background: linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
+        color: #ffffff !important;
         border: none !important;
-        box-shadow: 0 6px 14px rgba(0, 75, 147, 0.25) !important;
+        box-shadow: 0 6px 18px rgba(8, 102, 234, 0.5) !important;
+        transform: translateY(-1px) !important;
     }
-    button.custom-header-btn p, button.custom-header-btn span, button.custom-header-btn * {
-        color: white !important;
+    button.custom-header-btn:active,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button:active {
+        background: linear-gradient(180deg, #0e7ae6 0%, #054eb8 100%) !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 8px rgba(8, 102, 234, 0.3) !important;
+    }
+    button.custom-header-btn p, 
+    button.custom-header-btn span, 
+    button.custom-header-btn *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stButton"]:first-child button * {
+        color: #ffffff !important;
         background-color: transparent !important;
         font-weight: 700 !important;
     }

@@ -334,7 +334,7 @@ with tab_calendar:
     else:
         st.session_state["filter_class"] = "Todos"
 
-    st.components.v1.html("""
+    st.components.v1.html(r"""
     <script>
     function styleButtons() {
         // Estilizar botones de médico y encabezados en modo Administrador/Público (en la grilla de columnas)
@@ -346,22 +346,24 @@ with tab_calendar:
             if (text.includes('⚙️')) return;
             
             // 2a. Si empieza con un número, es el botón del ENCABEZADO de la fecha
-            if (/^\\d/.test(text)) {
+            if (/^\d/.test(text)) {
                 btn.classList.add('custom-header-btn');
-                btn.style.setProperty('background-color', '#005eb8', 'important');
-                btn.style.setProperty('color', 'white', 'important');
+                btn.style.setProperty('background', 'linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%)', 'important');
+                btn.style.setProperty('background-color', '#0866ea', 'important');
+                btn.style.setProperty('color', '#ffffff', 'important');
                 btn.style.setProperty('border', 'none', 'important');
-                btn.style.setProperty('box-shadow', '0 4px 10px rgba(0,94,184,0.15)', 'important');
+                btn.style.setProperty('box-shadow', '0 4px 14px rgba(8, 102, 234, 0.35)', 'important');
                 btn.style.setProperty('font-weight', '700', 'important');
                 btn.style.setProperty('font-size', '0.92rem', 'important');
-                btn.style.setProperty('border-radius', '8px', 'important');
+                btn.style.setProperty('border-radius', '12px', 'important');
                 btn.style.setProperty('width', '100%', 'important');
                 btn.style.setProperty('display', 'block', 'important');
                 btn.style.setProperty('margin-bottom', '0.75rem', 'important');
-                btn.style.setProperty('padding', '0.55rem 0.6rem', 'important');
+                btn.style.setProperty('padding', '0.6rem 0.6rem', 'important');
+                btn.style.setProperty('text-shadow', '0 1px 2px rgba(0, 0, 0, 0.15)', 'important');
                 const pHeader = btn.querySelector('p, span');
                 if (pHeader) {
-                    pHeader.style.setProperty('color', 'white', 'important');
+                    pHeader.style.setProperty('color', '#ffffff', 'important');
                     pHeader.style.setProperty('font-weight', '700', 'important');
                 }
                 return;
