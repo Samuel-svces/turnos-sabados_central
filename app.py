@@ -834,7 +834,6 @@ with tab_calendar:
 if st.session_state.is_admin:
     with tab_admin:
         st.markdown("### Directorio de Personal y Sincronización")
-        st.caption("Directorio de profesionales activos sincronizado directamente desde el repositorio central (CONSOLIDADO 2026.xlsx, hoja BD PERSONAL en SharePoint / OneDrive).")
         
         num_super = len(df_super) if not df_super.empty else 0
         num_supernumerarios = (df_super['Cargo'].astype(str).str.upper().str.contains('SUPERNUMERARI').sum()) if not df_super.empty and 'Cargo' in df_super.columns else 0
