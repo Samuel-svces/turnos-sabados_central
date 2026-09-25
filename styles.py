@@ -672,12 +672,15 @@ def apply_styles():
         padding: 0px !important;
     }
 
-    /* 1. Botón de Buscar (Azul) */
+    /* 1. Botón de Buscar (Degradado Azul) */
     div[data-testid="stColumn"]:has(.search-btn-marker) button {
-        background-color: #ffffff !important;
-        border: 1.5px solid #1a73e8 !important;
-        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%231a73e8"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') !important;
+        background: linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
+        background-color: #0866ea !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 14px rgba(8, 102, 234, 0.35) !important;
+        transition: all 0.2s ease !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') !important;
         background-repeat: no-repeat !important;
         background-position: center !important;
         background-size: 1.25rem !important;
@@ -686,19 +689,26 @@ def apply_styles():
         font-size: 0 !important; /* Oculta la letra original B */
     }
     div[data-testid="stColumn"]:has(.search-btn-marker) button:hover,
-    div[data-testid="stColumn"]:has(.search-btn-marker) button:active,
     div[data-testid="stColumn"]:has(.search-btn-marker) button:focus {
-        background-color: #1a73e8 !important;
-        border-color: #1a73e8 !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') !important;
+        background: linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
+        box-shadow: 0 6px 18px rgba(8, 102, 234, 0.5) !important;
+        transform: translateY(-1px) !important;
+    }
+    div[data-testid="stColumn"]:has(.search-btn-marker) button:active {
+        background: linear-gradient(180deg, #0e7ae6 0%, #054eb8 100%) !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 8px rgba(8, 102, 234, 0.3) !important;
     }
     
-    /* 2. Botón de Limpiar (Rojo) */
+    /* 2. Botón de Limpiar (Degradado Rojo) */
     div[data-testid="stColumn"]:has(.clear-btn-marker) button {
-        background-color: #ffffff !important;
-        border: 1.5px solid #dc3545 !important;
-        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23dc3545"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') !important;
+        background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+        background-color: #dc2626 !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35) !important;
+        transition: all 0.2s ease !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') !important;
         background-repeat: no-repeat !important;
         background-position: center !important;
         background-size: 1.25rem !important;
@@ -707,19 +717,26 @@ def apply_styles():
         font-size: 0 !important; /* Oculta la letra original L */
     }
     div[data-testid="stColumn"]:has(.clear-btn-marker) button:hover,
-    div[data-testid="stColumn"]:has(.clear-btn-marker) button:active,
     div[data-testid="stColumn"]:has(.clear-btn-marker) button:focus {
-        background-color: #dc3545 !important;
-        border-color: #dc3545 !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') !important;
+        background: linear-gradient(180deg, #f87171 0%, #b91c1c 100%) !important;
+        box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5) !important;
+        transform: translateY(-1px) !important;
+    }
+    div[data-testid="stColumn"]:has(.clear-btn-marker) button:active {
+        background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%) !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
     }
     
-    /* 3. Botón de Refrescar (Verde) */
+    /* 3. Botón de Refrescar (Degradado Verde) */
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button {
-        background-color: #ffffff !important;
-        border: 1.5px solid #198754 !important;
-        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23198754"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') !important;
+        background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
+        background-color: #15803d !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35) !important;
+        transition: all 0.2s ease !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') !important;
         background-repeat: no-repeat !important;
         background-position: center !important;
         background-size: 1.25rem !important;
@@ -728,11 +745,15 @@ def apply_styles():
         font-size: 0 !important; /* Oculta la letra original R */
     }
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button:hover,
-    div[data-testid="stColumn"]:has(.refresh-btn-marker) button:active,
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button:focus {
-        background-color: #198754 !important;
-        border-color: #198754 !important;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') !important;
+        background: linear-gradient(180deg, #34d399 0%, #166534 100%) !important;
+        box-shadow: 0 6px 18px rgba(21, 128, 61, 0.5) !important;
+        transform: translateY(-1px) !important;
+    }
+    div[data-testid="stColumn"]:has(.refresh-btn-marker) button:active {
+        background: linear-gradient(180deg, #15803d 0%, #14532d 100%) !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 2px 8px rgba(21, 128, 61, 0.3) !important;
     }
 
     /* Ocultar marcadores de botones de filtro */
