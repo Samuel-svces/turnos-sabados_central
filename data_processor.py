@@ -466,8 +466,15 @@ def load_modifications(excel_path):
             records = []
             for it in items:
                 m_type = str(it.get('TYPE', '')).strip().upper()
+                row_val = int(pd.to_numeric(it.get('ROW', 0), errors='coerce') or 0)
+                col_val = int(pd.to_numeric(it.get('COL', 0), errors='coerce') or 0)
+                
+                # Proteger integridad: permitir AGREGAR, REEMPLAZAR y ELIMINAR únicamente para turnos agregados (row==0, col==0)
                 if m_type not in ('AGREGAR', 'REEMPLAZAR'):
-                    continue  # Proteger integridad: solo cambios de turno y agregados
+                    if m_type == 'ELIMINAR' and row_val == 0 and col_val == 0:
+                        pass
+                    else:
+                        continue
                 
                 raw_date = it.get('FECHA')
                 parsed_date = None
@@ -483,8 +490,8 @@ def load_modifications(excel_path):
                     'DATE': parsed_date,
                     'ORIGINAL_NAME': str(it.get('ORIGINAL_NAME', '')).strip().upper(),
                     'NEW_NAME': str(it.get('NEW_NAME', '')).strip().upper(),
-                    'ROW': pd.to_numeric(it.get('ROW', 0), errors='coerce'),
-                    'COL': pd.to_numeric(it.get('COL', 0), errors='coerce'),
+                    'ROW': row_val,
+                    'COL': col_val,
                     'TYPE': m_type,
                     'OBSERVACIONES': str(it.get('OBSERVACIONES', '')).strip(),
                     'CLASIFICACION': str(it.get('CLASIFICACION', 'Secuencia Normal')).strip(),
@@ -509,15 +516,18 @@ def load_modifications(excel_path):
     if df.empty:
         return df
 
-    # Filtrar solo AGREGAR y REEMPLAZAR
-    df = df[df['TYPE'].isin(['AGREGAR', 'REEMPLAZAR'])].copy()
+    # Filtrar AGREGAR, REEMPLAZAR y ELIMINAR solo para turnos agregados (ROW==0 y COL==0)
+    row_num = pd.to_numeric(df['ROW'], errors='coerce').fillna(0).astype(int)
+    col_num = pd.to_numeric(df['COL'], errors='coerce').fillna(0).astype(int)
+    mask_valid = df['TYPE'].isin(['AGREGAR', 'REEMPLAZAR']) | ((df['TYPE'] == 'ELIMINAR') & (row_num == 0) & (col_num == 0))
+    df = df[mask_valid].copy()
     df['ID'] = pd.to_numeric(df['ID'], errors='coerce').fillna(0).astype(int)
     df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
     df['SHEET'] = df['SHEET'].astype(str).str.strip()
     df['ORIGINAL_NAME'] = df['ORIGINAL_NAME'].fillna('').astype(str).str.strip().str.upper()
     df['NEW_NAME'] = df['NEW_NAME'].fillna('').astype(str).str.strip().str.upper()
-    df['ROW'] = pd.to_numeric(df['ROW'], errors='coerce').fillna(0).astype(int)
-    df['COL'] = pd.to_numeric(df['COL'], errors='coerce').fillna(0).astype(int)
+    df['ROW'] = row_num
+    df['COL'] = col_num
     df['TYPE'] = df['TYPE'].astype(str).str.strip().str.upper()
     df['OBSERVACIONES'] = df['OBSERVACIONES'].fillna('').astype(str).str.strip()
     df['CLASIFICACION'] = df['CLASIFICACION'].fillna('Secuencia Normal').astype(str).str.strip()
@@ -530,9 +540,15 @@ def save_modification(excel_path, mod_data):
     y en el archivo local de respaldo. No guarda eliminaciones de turnos base.
     """
     m_type = mod_data.get('type', '').strip().upper()
+    row_val = int(mod_data.get('row', 0))
+    col_val = int(mod_data.get('col', 0))
     if m_type not in ('AGREGAR', 'REEMPLAZAR'):
-        # Solo se persisten cambios de turno y turnos agregados
-        return False
+        # Solo permitir ELIMINAR si es un turno agregado manualmente (row==0, col==0)
+        # Los turnos base del maestro están blindados contra eliminación
+        if m_type == 'ELIMINAR' and row_val == 0 and col_val == 0:
+            pass
+        else:
+            return False
 
     date_val = mod_data['date']
     d_iso = None
@@ -597,7 +613,17 @@ def save_modifications_batch(excel_path, mods_list):
     Guarda una lista de modificaciones en lote directamente en la Lista de SharePoint
     y en el archivo local de respaldo.
     """
-    valid_mods = [m for m in mods_list if m.get('type', '').strip().upper() in ('AGREGAR', 'REEMPLAZAR')]
+    valid_mods = []
+    for m in mods_list:
+        m_t = m.get('type', '').strip().upper()
+        r_val = int(m.get('row', 0))
+        c_val = int(m.get('col', 0))
+        if m_t in ('AGREGAR', 'REEMPLAZAR'):
+            valid_mods.append(m)
+        elif m_t == 'ELIMINAR' and r_val == 0 and c_val == 0:
+            # Solo se permite eliminar turnos agregados manualmente
+            valid_mods.append(m)
+
     if not valid_mods:
         return True
 
@@ -877,8 +903,8 @@ def load_data(excel_path):
     records = df_shifts_base.to_dict('records')
 
     # Índices rápidos en memoria para O(1) matching:
-    # 1. Por (sheet, row, col)
-    # 2. Por (sheet, date_norm, super_clean)
+    # 1. Por (sheet, row, col) para turnos base
+    # 2. Por (date_norm, sup_norm) independiente del nombre de la hoja y normalizado sin tildes
     cell_map = {}
     key_map = {}
 
@@ -891,9 +917,9 @@ def load_data(excel_path):
         
         d = r['Date']
         d_norm = d if isinstance(d, datetime.date) and not isinstance(d, datetime.datetime) else (d.date() if isinstance(d, (datetime.datetime, pd.Timestamp)) else (pd.to_datetime(d).date() if pd.notna(d) else None))
-        sup = str(r.get('Supernumerary', '')).strip().upper()
-        if d_norm and sup:
-            key_map[(s, d_norm, sup)] = idx
+        sup_norm = normalize_name_no_accents(r.get('Supernumerary', ''))
+        if d_norm and sup_norm:
+            key_map[(d_norm, sup_norm)] = idx
 
     deleted_indices = set()
 
@@ -920,24 +946,28 @@ def load_data(excel_path):
                 except Exception:
                     pass
 
+        orig_norm = normalize_name_no_accents(orig)
+        new_norm  = normalize_name_no_accents(new)
+
         # Buscar índice del turno a modificar o eliminar
         target_idx = None
         if row > 0 and col > 0 and (sheet, row, col) in cell_map:
             target_idx = cell_map[(sheet, row, col)]
-        elif (sheet, m_date_norm, orig) in key_map:
-            target_idx = key_map[(sheet, m_date_norm, orig)]
+        elif (m_date_norm, orig_norm) in key_map:
+            target_idx = key_map[(m_date_norm, orig_norm)]
 
         if m_type == 'REEMPLAZAR':
             if target_idx is not None and target_idx not in deleted_indices:
                 old_sup = records[target_idx].get('Supernumerary', '')
+                old_sup_norm = normalize_name_no_accents(old_sup)
                 records[target_idx]['Supernumerary'] = new
                 records[target_idx]['Observation'] = obs
                 records[target_idx]['Classification'] = clasif
                 if m_date_norm:
-                    if old_sup and (sheet, m_date_norm, old_sup) in key_map:
-                        del key_map[(sheet, m_date_norm, old_sup)]
-                    if new:
-                        key_map[(sheet, m_date_norm, new)] = target_idx
+                    if old_sup_norm and (m_date_norm, old_sup_norm) in key_map:
+                        del key_map[(m_date_norm, old_sup_norm)]
+                    if new_norm:
+                        key_map[(m_date_norm, new_norm)] = target_idx
 
         elif m_type == 'ELIMINAR':
             # Blindaje de integridad: Los turnos base del maestro nunca se eliminan.
@@ -947,11 +977,14 @@ def load_data(excel_path):
                 is_base = (int(rec.get('Excel_Row', 0)) > 0 and int(rec.get('Excel_Col', 0)) > 0)
                 if not is_base:
                     deleted_indices.add(target_idx)
+                    sup_del_norm = normalize_name_no_accents(rec.get('Supernumerary', ''))
+                    if m_date_norm and (m_date_norm, sup_del_norm) in key_map:
+                        del key_map[(m_date_norm, sup_del_norm)]
 
         elif m_type == 'AGREGAR':
             # Si ya existía uno agregado para esa fecha y médico, actualizarlo
-            if (sheet, m_date_norm, new) in key_map:
-                existing_idx = key_map[(sheet, m_date_norm, new)]
+            if (m_date_norm, new_norm) in key_map:
+                existing_idx = key_map[(m_date_norm, new_norm)]
                 if existing_idx not in deleted_indices:
                     records[existing_idx]['Observation'] = obs
                     records[existing_idx]['Classification'] = clasif
@@ -979,8 +1012,8 @@ def load_data(excel_path):
             }
             new_idx = len(records)
             records.append(new_rec)
-            if m_date_norm and new:
-                key_map[(sheet, m_date_norm, new)] = new_idx
+            if m_date_norm and new_norm:
+                key_map[(m_date_norm, new_norm)] = new_idx
 
     final_records = [r for idx, r in enumerate(records) if idx not in deleted_indices]
     df_shifts = pd.DataFrame(final_records) if final_records else pd.DataFrame(columns=df_shifts_base.columns)
