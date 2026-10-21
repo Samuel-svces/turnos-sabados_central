@@ -442,20 +442,75 @@ def deactivate_manual_supernumerary(excel_path, cedula):
 # MODIFICACIONES_SABADOS
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# MODIFICACIONES_SABADOS (SharePoint List + Fallback Local)
+# ---------------------------------------------------------------------------
+
 _COLS_SABADOS = ['ID', 'SHEET', 'DATE', 'ORIGINAL_NAME', 'NEW_NAME',
                  'ROW', 'COL', 'TYPE', 'OBSERVACIONES', 'CLASIFICACION', 'TIMESTAMP']
 _SHEET_SABADOS = 'MODIFICACIONES'
 _KEY_SABADOS   = 'modificaciones_sabados'
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(ttl=60, show_spinner=False)
 def load_modifications(excel_path):
+    """
+    Carga las modificaciones de turnos.
+    - Si SharePoint está configurado, lee en tiempo real de la Lista de SharePoint 'MODIFICACIONES_SABADOS'.
+    - Si no hay conexión o no está configurado, lee del archivo local MODIFICACIONES_SABADOS.xlsx como fallback.
+    - Mantiene solo registros de tipo 'AGREGAR' y 'REEMPLAZAR' (no eliminaciones destructivas).
+    """
+    if _use_sharepoint():
+        try:
+            items = gc.get_sharepoint_list_items(_KEY_SABADOS)
+            records = []
+            for it in items:
+                m_type = str(it.get('TYPE', '')).strip().upper()
+                if m_type not in ('AGREGAR', 'REEMPLAZAR'):
+                    continue  # Proteger integridad: solo cambios de turno y agregados
+                
+                raw_date = it.get('FECHA')
+                parsed_date = None
+                if raw_date:
+                    try:
+                        parsed_date = pd.to_datetime(raw_date).date()
+                    except Exception:
+                        pass
+                
+                records.append({
+                    'ID': pd.to_numeric(it.get('id', 0), errors='coerce'),
+                    'SHEET': str(it.get('SHEET', 'SABADOS 2026')).strip(),
+                    'DATE': parsed_date,
+                    'ORIGINAL_NAME': str(it.get('ORIGINAL_NAME', '')).strip().upper(),
+                    'NEW_NAME': str(it.get('NEW_NAME', '')).strip().upper(),
+                    'ROW': pd.to_numeric(it.get('ROW', 0), errors='coerce'),
+                    'COL': pd.to_numeric(it.get('COL', 0), errors='coerce'),
+                    'TYPE': m_type,
+                    'OBSERVACIONES': str(it.get('OBSERVACIONES', '')).strip(),
+                    'CLASIFICACION': str(it.get('CLASIFICACION', 'Secuencia Normal')).strip(),
+                    'TIMESTAMP': str(it.get('Created', it.get('Modified', ''))),
+                    '_item_id': str(it.get('_item_id', ''))
+                })
+            
+            df = pd.DataFrame(records)
+            if not df.empty:
+                df['ID'] = df['ID'].fillna(0).astype(int)
+                df['ROW'] = df['ROW'].fillna(0).astype(int)
+                df['COL'] = df['COL'].fillna(0).astype(int)
+                return df.sort_values(by='ID')
+            return pd.DataFrame(columns=_COLS_SABADOS)
+        except Exception as e_sp:
+            print(f"Aviso cargando Lista de SharePoint: {e_sp}. Usando fallback local...")
+
+    # Fallback local desde Excel
     local_path = _get_modifications_path(excel_path)
     df = _read_delta_df(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
 
     if df.empty:
         return df
 
+    # Filtrar solo AGREGAR y REEMPLAZAR
+    df = df[df['TYPE'].isin(['AGREGAR', 'REEMPLAZAR'])].copy()
     df['ID'] = pd.to_numeric(df['ID'], errors='coerce').fillna(0).astype(int)
     df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
     df['SHEET'] = df['SHEET'].astype(str).str.strip()
@@ -470,107 +525,141 @@ def load_modifications(excel_path):
 
 
 def save_modification(excel_path, mod_data):
-    local_path = _get_modifications_path(excel_path)
-    wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
-
-    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-    if 'OBSERVACIONES' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'OBSERVACIONES'
-        header.append('OBSERVACIONES')
-    if 'CLASIFICACION' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'CLASIFICACION'
-        header.append('CLASIFICACION')
-
-    if 'TIMESTAMP' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
-        header.append('TIMESTAMP')
-
-    max_id = 0
-    for r in range(2, ws.max_row + 1):
-        val = ws.cell(row=r, column=1).value
-        if val is not None:
-            try:
-                max_id = max(max_id, int(val))
-            except ValueError:
-                pass
-    next_id = max_id + 1
+    """
+    Guarda una modificación (Cambio de Turno o Agregado) de forma síncrona en la Lista de SharePoint
+    y en el archivo local de respaldo. No guarda eliminaciones de turnos base.
+    """
+    m_type = mod_data.get('type', '').strip().upper()
+    if m_type not in ('AGREGAR', 'REEMPLAZAR'):
+        # Solo se persisten cambios de turno y turnos agregados
+        return False
 
     date_val = mod_data['date']
+    d_iso = None
     if isinstance(date_val, (datetime.date, datetime.datetime)):
-        date_val = date_val.strftime('%Y-%m-%d')
+        d_iso = date_val.strftime('%Y-%m-%dT00:00:00Z')
+    elif date_val:
+        try:
+            d_iso = pd.to_datetime(date_val).strftime('%Y-%m-%dT00:00:00Z')
+        except Exception:
+            pass
 
-    val_map = {
-        'ID': next_id,
-        'SHEET': mod_data['sheet'],
-        'DATE': date_val,
+    doc_title = (mod_data.get('new_name') or mod_data.get('original_name') or 'TURNO').strip().upper()
+    
+    fields = {
+        'Title': doc_title,
         'ORIGINAL_NAME': mod_data.get('original_name', '').strip().upper(),
         'NEW_NAME': mod_data.get('new_name', '').strip().upper(),
-        'ROW': mod_data.get('row', 0),
-        'COL': mod_data.get('col', 0),
-        'TYPE': mod_data['type'].strip().upper(),
-        'OBSERVACIONES': str(mod_data.get('observaciones', '')).strip(),
+        'TYPE': m_type,
+        'SHEET': mod_data.get('sheet', 'SABADOS 2026'),
         'CLASIFICACION': mod_data.get('clasificacion', 'Secuencia Normal').strip(),
-        'TIMESTAMP': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        'OBSERVACIONES': str(mod_data.get('observaciones', '')).strip(),
+        'ROW': int(mod_data.get('row', 0)),
+        'COL': int(mod_data.get('col', 0)),
     }
+    if d_iso:
+        fields['FECHA'] = d_iso
 
-    row_data = [val_map.get(col_name, '') for col_name in header]
-    ws.append(row_data)
+    # 1. Guardar en Lista de SharePoint Online si está configurado
+    if _use_sharepoint():
+        gc.add_sharepoint_list_item(_KEY_SABADOS, fields)
 
-    _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    # 2. Respaldo local en Excel
+    local_path = _get_modifications_path(excel_path)
+    try:
+        wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
+        max_id = 0
+        for r in range(2, ws.max_row + 1):
+            val = ws.cell(row=r, column=1).value
+            if val is not None:
+                try:
+                    max_id = max(max_id, int(val))
+                except ValueError:
+                    pass
+        next_id = max_id + 1
+        d_str = date_val.strftime('%Y-%m-%d') if isinstance(date_val, (datetime.date, datetime.datetime)) else str(date_val)
+        ws.append([
+            next_id, fields['SHEET'], d_str, fields['ORIGINAL_NAME'],
+            fields['NEW_NAME'], fields['ROW'], fields['COL'], fields['TYPE'],
+            fields['OBSERVACIONES'], fields['CLASIFICACION'],
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ])
+        _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    except Exception as e_local:
+        print(f"Aviso guardando respaldo local: {e_local}")
+
     load_modifications.clear()
-    return next_id
+    return True
 
 
 def save_modifications_batch(excel_path, mods_list):
-    if not mods_list:
+    """
+    Guarda una lista de modificaciones en lote directamente en la Lista de SharePoint
+    y en el archivo local de respaldo.
+    """
+    valid_mods = [m for m in mods_list if m.get('type', '').strip().upper() in ('AGREGAR', 'REEMPLAZAR')]
+    if not valid_mods:
         return True
-    local_path = _get_modifications_path(excel_path)
-    wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
 
-    header = [ws.cell(row=1, column=c).value for c in range(1, ws.max_column + 1)]
-    if 'OBSERVACIONES' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'OBSERVACIONES'
-        header.append('OBSERVACIONES')
-    if 'CLASIFICACION' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'CLASIFICACION'
-        header.append('CLASIFICACION')
-    if 'TIMESTAMP' not in header:
-        ws.cell(row=1, column=ws.max_column + 1).value = 'TIMESTAMP'
-        header.append('TIMESTAMP')
-
-    max_id = 0
-    for r in range(2, ws.max_row + 1):
-        val = ws.cell(row=r, column=1).value
-        if val is not None:
-            try:
-                max_id = max(max_id, int(val))
-            except ValueError:
-                pass
-    next_id = max_id + 1
-
-    for mod_data in mods_list:
-        date_val = mod_data['date']
+    batch_fields = []
+    for m in valid_mods:
+        date_val = m['date']
+        d_iso = None
         if isinstance(date_val, (datetime.date, datetime.datetime)):
-            date_val = date_val.strftime('%Y-%m-%d')
+            d_iso = date_val.strftime('%Y-%m-%dT00:00:00Z')
+        elif date_val:
+            try:
+                d_iso = pd.to_datetime(date_val).strftime('%Y-%m-%dT00:00:00Z')
+            except Exception:
+                pass
 
-        val_map = {
-            'ID': next_id,
-            'SHEET': mod_data['sheet'],
-            'DATE': date_val,
-            'ORIGINAL_NAME': mod_data.get('original_name', '').strip().upper(),
-            'NEW_NAME': mod_data.get('new_name', '').strip().upper(),
-            'ROW': mod_data.get('row', 0),
-            'COL': mod_data.get('col', 0),
-            'TYPE': mod_data['type'].strip().upper(),
-            'OBSERVACIONES': str(mod_data.get('observaciones', '')).strip(),
-            'CLASIFICACION': mod_data.get('clasificacion', 'Secuencia Normal').strip(),
-            'TIMESTAMP': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        doc_title = (m.get('new_name') or m.get('original_name') or 'TURNO').strip().upper()
+        f_item = {
+            'Title': doc_title,
+            'ORIGINAL_NAME': m.get('original_name', '').strip().upper(),
+            'NEW_NAME': m.get('new_name', '').strip().upper(),
+            'TYPE': m['type'].strip().upper(),
+            'SHEET': m.get('sheet', 'SABADOS 2026'),
+            'CLASIFICACION': m.get('clasificacion', 'Secuencia Normal').strip(),
+            'OBSERVACIONES': str(m.get('observaciones', '')).strip(),
+            'ROW': int(m.get('row', 0)),
+            'COL': int(m.get('col', 0)),
         }
-        row_data = [val_map.get(col_name, '') for col_name in header]
-        ws.append(row_data)
-        next_id += 1
+        if d_iso:
+            f_item['FECHA'] = d_iso
+        batch_fields.append(f_item)
 
-    _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    # 1. Guardar en Lista de SharePoint Online
+    if _use_sharepoint():
+        gc.add_sharepoint_list_items_batch(_KEY_SABADOS, batch_fields)
+
+    # 2. Respaldo local en Excel
+    local_path = _get_modifications_path(excel_path)
+    try:
+        wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
+        max_id = 0
+        for r in range(2, ws.max_row + 1):
+            val = ws.cell(row=r, column=1).value
+            if val is not None:
+                try:
+                    max_id = max(max_id, int(val))
+                except ValueError:
+                    pass
+        next_id = max_id + 1
+        for m, f_item in zip(valid_mods, batch_fields):
+            d_val = m['date']
+            d_str = d_val.strftime('%Y-%m-%d') if isinstance(d_val, (datetime.date, datetime.datetime)) else str(d_val)
+            ws.append([
+                next_id, f_item['SHEET'], d_str, f_item['ORIGINAL_NAME'],
+                f_item['NEW_NAME'], f_item['ROW'], f_item['COL'], f_item['TYPE'],
+                f_item['OBSERVACIONES'], f_item['CLASIFICACION'],
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ])
+            next_id += 1
+        _save_wb_delta(wb, _KEY_SABADOS, local_path)
+    except Exception as e_local:
+        print(f"Aviso guardando lote en respaldo local: {e_local}")
+
     load_modifications.clear()
     return True
 
@@ -840,15 +929,24 @@ def load_data(excel_path):
 
         if m_type == 'REEMPLAZAR':
             if target_idx is not None and target_idx not in deleted_indices:
+                old_sup = records[target_idx].get('Supernumerary', '')
                 records[target_idx]['Supernumerary'] = new
                 records[target_idx]['Observation'] = obs
                 records[target_idx]['Classification'] = clasif
-                if m_date_norm and new:
-                    key_map[(sheet, m_date_norm, new)] = target_idx
+                if m_date_norm:
+                    if old_sup and (sheet, m_date_norm, old_sup) in key_map:
+                        del key_map[(sheet, m_date_norm, old_sup)]
+                    if new:
+                        key_map[(sheet, m_date_norm, new)] = target_idx
 
         elif m_type == 'ELIMINAR':
+            # Blindaje de integridad: Los turnos base del maestro nunca se eliminan.
+            # Únicamente se permite suprimir turnos manuales adicionales (row == 0 y col == 0).
             if target_idx is not None:
-                deleted_indices.add(target_idx)
+                rec = records[target_idx]
+                is_base = (int(rec.get('Excel_Row', 0)) > 0 and int(rec.get('Excel_Col', 0)) > 0)
+                if not is_base:
+                    deleted_indices.add(target_idx)
 
         elif m_type == 'AGREGAR':
             # Si ya existía uno agregado para esa fecha y médico, actualizarlo
@@ -886,8 +984,7 @@ def load_data(excel_path):
 
     final_records = [r for idx, r in enumerate(records) if idx not in deleted_indices]
     df_shifts = pd.DataFrame(final_records) if final_records else pd.DataFrame(columns=df_shifts_base.columns)
-    if not df_shifts.empty:
-        df_shifts = df_shifts.drop_duplicates(subset=['Date', 'Supernumerary'], keep='last').reset_index(drop=True)
+    # No se eliminan duplicados ciegamente para permitir que la alerta visual de duplicados funcione correctamente
 
     return df_shifts, errors
 

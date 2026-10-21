@@ -5,4 +5,6 @@ temp_read_*.xlsx
 *_cached.xlsx
 *_cached_meta.txt
 .streamlit/secrets.toml
+*_backup_*.xlsx
+agent-skills-main/
 

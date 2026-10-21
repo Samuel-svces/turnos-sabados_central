@@ -35,12 +35,12 @@ def save_changes_callback(excel_path, sheet, row, col, date_val, original_name, 
 
         # 1. Limpiar contraparte anterior si esta asignación ya tenía un cambio registrado
         if "Cambio de turno con" in current_clasif:
-            old_counterpart = current_clasif.replace("Cambio de turno con ", "").strip()
+            old_counterpart = current_clasif.replace("Cambio de turno con ", "").strip().upper()
             df_s = st.session_state.shifts_df
-            df_s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
-            match_counterpart = df_s[(df_s['Supernumerary'] == old_counterpart) & 
-                                     (df_s['Classification'].str.contains(current_doc, na=False)) &
-                                     (df_s_dates == date_check)]
+            match_counterpart = df_s[
+                (df_s['Supernumerary'].astype(str).str.strip().str.upper() == old_counterpart) & 
+                (df_s['Classification'].str.contains(current_doc, na=False))
+            ]
             for _, r_match in match_counterpart.iterrows():
                 mods_list.append({
                     'sheet': r_match['Sheet'],
@@ -240,17 +240,10 @@ def delete_shift_callback(excel_path, sheet, row, col, date_val, current_doc, cu
                 
                 # Limpiar contraparte si era un cambio de turno
                 if "Cambio de turno con" in row_clasif:
-                    old_counterpart = row_clasif.replace("Cambio de turno con ", "").strip()
-                    r_del_date = r_del['Date']
-                    if isinstance(r_del_date, datetime.datetime):
-                        r_del_date = r_del_date.date()
-                    elif isinstance(r_del_date, str):
-                        r_del_date = pd.to_datetime(r_del_date).date()
-
+                    old_counterpart = row_clasif.replace("Cambio de turno con ", "").strip().upper()
                     match_counterpart = df_s[
-                        (df_s['Supernumerary'] == old_counterpart) & 
-                        (df_s['Classification'].str.contains(r_del['Supernumerary'], na=False)) &
-                        (df_s_dates == r_del_date)
+                        (df_s['Supernumerary'].astype(str).str.strip().str.upper() == old_counterpart) & 
+                        (df_s['Classification'].str.contains(r_del['Supernumerary'], na=False))
                     ]
                     for _, cp_row in match_counterpart.iterrows():
                         mods_list.append({
@@ -469,37 +462,22 @@ def show_shift_dialog(action_details, load_app_data_func):
         st.markdown("---")
         st.markdown("##### 🗑️ Confirmar Eliminación de Asignación")
         
-        is_processing = st.session_state.get("is_deleting_processing", False)
-        
-        if is_processing:
-            st.markdown(
-                """
-                <div style="background-color: #fee2e2; border: 2px solid #ef4444; border-radius: 10px; padding: 15px; text-align: center; margin: 10px 0 15px 0;">
-                    <h4 style="color: #991b1b; margin: 0 0 5px 0;">⏳ Sincronizando eliminación con SharePoint...</h4>
-                    <p style="color: #7f1d1d; margin: 0; font-size: 13px;">Por favor espere. <b>No cierre esta ventana ni haga clic afuera</b> mientras se procesa la eliminación en las secuencias.</p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-        
-        del_scope = st.radio(
-            "Seleccione una opción para eliminar:",
-            ["Eliminar solo de esta secuencia", "Eliminar de todas las secuencias (las futuras)"],
-            index=1,
-            key="del_scope_radio_flat",
-            disabled=is_processing
-        )
+    is_base_shift = (int(action_details.get('row', 0)) > 0 and int(action_details.get('col', 0)) > 0)
+
+    if not is_base_shift and st.session_state.get("show_delete_options", False):
+        st.markdown("---")
+        st.markdown(f"##### 🗑️ ¿Remover esta asignación adicional de **{current_doc}**?")
+        st.caption("Esta acción removerá únicamente este médico agregado para este sábado específico.")
         
         col_confirm, col_cancel = st.columns(2)
         with col_confirm:
             st.button(
-                "Confirmar", 
+                "Confirmar Remoción", 
                 use_container_width=True, 
                 type="primary", 
                 key="btn_confirm_delete_action",
                 on_click=delete_shift_callback,
                 icon=":material/check_circle:",
-                disabled=is_processing,
                 args=(
                     st.session_state.excel_path,
                     action_details['sheet'],
@@ -517,13 +495,10 @@ def show_shift_dialog(action_details, load_app_data_func):
                 use_container_width=True, 
                 key="btn_cancel_delete_action",
                 on_click=cancel_delete_options_callback,
-                disabled=is_processing,
                 icon=":material/cancel:"
             )
     else:
-        col_save, col_delete = st.columns(2)
-        
-        with col_save:
+        if is_base_shift:
             st.button(
                 "Guardar Cambios", 
                 use_container_width=True, 
@@ -547,16 +522,42 @@ def show_shift_dialog(action_details, load_app_data_func):
                     load_app_data_func
                 )
             )
-
-        with col_delete:
-            st.button(
-                "Eliminar Asignación", 
-                use_container_width=True, 
-                type="secondary", 
-                key="btn_show_delete_options_action",
-                on_click=show_delete_options_callback,
-                icon=":material/delete:"
-            )
+            st.caption("🔒 *Turno de programación base protegido contra borrado accidental. Para modificar, use Cambio de turno o Compensación.*")
+        else:
+            col_save, col_delete = st.columns(2)
+            with col_save:
+                st.button(
+                    "Guardar Cambios", 
+                    use_container_width=True, 
+                    type="primary", 
+                    key="btn_save_changes_action",
+                    on_click=save_changes_callback,
+                    icon=":material/save:",
+                    args=(
+                        st.session_state.excel_path,
+                        action_details['sheet'],
+                        action_details['row'],
+                        action_details['col'],
+                        action_details['date'],
+                        current_doc,
+                        new_doc,
+                        new_obs,
+                        new_clasif,
+                        current_clasif,
+                        swap_target,
+                        current_doc,
+                        load_app_data_func
+                    )
+                )
+            with col_delete:
+                st.button(
+                    "Remover Agregado", 
+                    use_container_width=True, 
+                    type="secondary", 
+                    key="btn_show_delete_options_action",
+                    on_click=show_delete_options_callback,
+                    icon=":material/delete:"
+                )
 
 @st.dialog("Agregar Médico Adicional")
 def show_add_dialog(sat_date, sheet, load_app_data_func):

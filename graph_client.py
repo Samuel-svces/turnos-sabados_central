@@ -41,7 +41,10 @@ def _cfg(key: str) -> str:
         pass
 def is_sharepoint_configured() -> bool:
     """Retorna True si las credenciales de Azure AD (tenant_id, client_id, client_secret) están configuradas."""
-    return bool(_cfg("tenant_id") and _cfg("client_id") and _cfg("client_secret"))
+    try:
+        return bool(_cfg("tenant_id") and _cfg("client_id") and _cfg("client_secret"))
+    except Exception:
+        return False
 
 
 def _get_access_token() -> str:
@@ -76,11 +79,6 @@ def _file_urls(file_key: str, action: str = "content") -> list:
             "item"    → consulta metadatos del item
     """
     urls = []
-    token = None
-    try:
-        token = _get_access_token()
-    except Exception:
-        pass
 
     if file_key in ("consolidado_personal", "bd_personal"):
         # 1. Prioridad Máxima: Acceso directo por Drive ID y File ID de SharePoint
@@ -254,14 +252,6 @@ def upload_excel(file_key: str, buffer: io.BytesIO, max_retries: int = 3) -> Non
         )
 
 
-def is_sharepoint_configured() -> bool:
-    """Devuelve True si las credenciales de Azure están configuradas."""
-    try:
-        return bool(_cfg("tenant_id") and _cfg("client_id") and _cfg("client_secret"))
-    except Exception:
-        return False
-
-
 def get_file_metadata(file_key: str) -> dict:
     """Obtiene los metadatos de un archivo en SharePoint/OneDrive."""
     token = _get_access_token()
@@ -280,3 +270,118 @@ def get_file_metadata(file_key: str) -> dict:
     raise RuntimeError(
         f"Error al obtener metadatos de '{file_key}': {last_err}"
     )
+
+
+# ---------------------------------------------------------------------------
+# API para Listas de SharePoint (Microsoft Lists)
+# ---------------------------------------------------------------------------
+
+SHAREPOINT_SITE_ID = "unionsaludvida.sharepoint.com,3ae0a0e5-4854-4903-80cb-af549a6238f1,fbc28049-2c16-434d-a551-81d39bb06441"
+
+def _get_list_id(list_key: str = "modificaciones_sabados") -> str:
+    if list_key == "modificaciones_sabados":
+        return _cfg("list_id_mod_sab") or "9f243781-9542-410f-b918-d817eba70d31"
+    return _cfg(f"list_id_{list_key}") or ""
+
+
+def get_sharepoint_list_items(list_key: str = "modificaciones_sabados") -> list:
+    """
+    Obtiene todos los elementos de la lista de SharePoint indicada,
+    siguiendo la paginación (@odata.nextLink) hasta recuperar todos los registros.
+    """
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    if not list_id:
+        raise ValueError(f"No se ha configurado list_id para '{list_key}'.")
+
+    url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items?expand=fields&$top=5000"
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    all_items = []
+    while url:
+        resp = requests.get(url, headers=headers, timeout=30)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Error al consultar lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+        data = resp.json()
+        items = data.get("value", [])
+        for it in items:
+            fields = it.get("fields", {})
+            fields["_item_id"] = it.get("id")
+            all_items.append(fields)
+        url = data.get("@odata.nextLink")
+
+    return all_items
+
+
+def add_sharepoint_list_item(list_key: str = "modificaciones_sabados", fields: dict = None) -> dict:
+    """
+    Inserta un nuevo elemento en la lista de SharePoint.
+    """
+    if not fields:
+        return {}
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    payload = {"fields": fields}
+    resp = requests.post(url, headers=headers, json=payload, timeout=20)
+    if resp.status_code in (200, 201):
+        return resp.json()
+    raise RuntimeError(f"Error al insertar en lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+
+
+def add_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados", items: list = None) -> bool:
+    """
+    Inserta una lista de elementos en la lista de SharePoint mediante peticiones por lotes ($batch)
+    de hasta 20 elementos cada una.
+    """
+    if not items:
+        return True
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    import math
+    batch_size = 20
+    num_batches = math.ceil(len(items) / batch_size)
+
+    for b_idx in range(num_batches):
+        batch_slice = items[b_idx * batch_size : (b_idx + 1) * batch_size]
+        requests_payload = []
+        for i_idx, it_fields in enumerate(batch_slice):
+            requests_payload.append({
+                "id": str(i_idx + 1),
+                "method": "POST",
+                "url": f"/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items",
+                "headers": {"Content-Type": "application/json"},
+                "body": {"fields": it_fields}
+            })
+        batch_body = {"requests": requests_payload}
+        resp = requests.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Error en lote {b_idx + 1} de SharePoint List: HTTP {resp.status_code} — {resp.text[:300]}")
+
+    return True
+
+
+def delete_sharepoint_list_item(list_key: str = "modificaciones_sabados", item_id: str = "") -> bool:
+    """
+    Elimina un elemento específico de la lista de SharePoint por su ID.
+    """
+    if not item_id:
+        return False
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items/{item_id}"
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = requests.delete(url, headers=headers, timeout=20)
+    if resp.status_code in (200, 204):
+        return True
+    raise RuntimeError(f"Error al eliminar item {item_id} de lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+
