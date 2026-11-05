@@ -140,7 +140,21 @@ if 'last_action' not in st.session_state:
 
 st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
-col_gear, col_spacer, col_empty = st.columns([1, 10, 1])
+col_banner, col_gear = st.columns([11, 1])
+
+with col_banner:
+    st.markdown("""
+        <div class="premium-banner-transparent">
+            <div class="premium-banner-icon">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div class="premium-banner-text">
+                <h1>Turnos Sábados</h1>
+                <p>Secuencia sabados</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
 with col_gear:
     st.markdown("<div class='admin-gear-marker'></div>", unsafe_allow_html=True)
     with st.popover("⚙️", help="Administración"):
@@ -267,15 +281,6 @@ with col_gear:
             if st.session_state.pwd_error:
                 st.error(st.session_state.pwd_error)
 
-with col_spacer:
-    st.markdown("""
-        <div class="premium-banner-transparent">
-            <div class="premium-banner-text">
-                <h1>Turnos Sabados</h1>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
 if not st.session_state.data_loaded or st.session_state.load_error:
     st.error(f"### Error al cargar datos")
     st.info(f"Detalle: {st.session_state.load_error}")
@@ -291,9 +296,9 @@ tab_calendar = st.container()
 with tab_calendar:
     if not st.session_state.is_admin:
         st.markdown("""
-        <div style="background-color:#e8f4fd; border-radius:8px; padding:12px; text-align:center;">
+        <div class="info-notice-card">
             Cualquier solicitud de cambio de turno o cambio de secuencia, favor enviar correo a 
-            <a href="mailto:central@unionsaludvida.com"><strong>central@unionsaludvida.com</strong></a>. 
+            <a href="mailto:central@unionsaludvida.com">central@unionsaludvida.com</a>. 
             Una vez sea aceptado por el correo, se verá reflejado en este cuadro.
         </div>
         """, unsafe_allow_html=True)

@@ -127,31 +127,40 @@ def apply_styles():
         justify-content: center;
     }
     
+    /* Alinear el botón de la tuerca a la derecha dentro de la columna */
+    div[data-testid="stColumn"]:has(.admin-gear-marker) {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+    
     /* Transparent container for title text inside banner */
     .premium-banner-transparent {
         display: flex;
         align-items: center;
         justify-content: flex-start;
         height: 100%;
-        padding-left: 10px;
+        padding-left: 2px;
     }
-    
 
     .premium-banner-icon {
-        background-color: rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        width: 48px;
-        height: 48px;
+        background-color: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 10px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 18px;
-        box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
-    }
+        margin-right: 14px;
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.08);
     }
     .premium-banner-icon i {
-        color: white;
-        font-size: 1.3rem;
+        color: #ffffff;
+        font-size: 1.35rem;
+        line-height: 1;
     }
     .premium-banner-text {
         display: flex;
@@ -159,21 +168,42 @@ def apply_styles():
         justify-content: center;
     }
     .premium-banner-text h1 {
-        color: white !important;
-        font-size: 1.85rem !important;
+        color: #ffffff !important;
+        font-size: 1.65rem !important;
         margin: 0 !important;
         padding: 0 !important;
         font-weight: 700 !important;
-        letter-spacing: 0px !important;
+        letter-spacing: -0.01em !important;
         line-height: 1.2 !important;
-        -webkit-text-fill-color: white !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
     .premium-banner-text p {
-        color: rgba(255, 255, 255, 0.85) !important;
-        margin: 0 !important;
+        color: rgba(255, 255, 255, 0.8) !important;
+        margin: 3px 0 0 0 !important;
         padding: 0 !important;
-        font-size: 0.85rem !important;
+        font-size: 0.82rem !important;
         font-weight: 400 !important;
+        letter-spacing: 0.01em !important;
+    }
+    
+    /* Tarjeta informativa de solicitud de cambios */
+    .info-notice-card {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 12px 20px !important;
+        text-align: center !important;
+        color: #334155 !important;
+        font-size: 0.92rem !important;
+        line-height: 1.5 !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+    .info-notice-card a {
+        color: #0284c7 !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
     }
     
     /* Premium Cards (Glassmorphism style) */
@@ -289,17 +319,18 @@ def apply_styles():
     
     /* ---- Saturday Column Card Styling ---- */
     div[data-testid="stColumn"]:has(.saturday-col-marker) {
-        background: #f0f4ff !important;
-        border: 1px solid #c2dcf6 !important;
-        border-radius: 14px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
         padding: 0.8rem !important;
-        box-shadow: 0 2px 10px rgba(13, 71, 161, 0.02) !important;
-        transition: border-color 0.2s !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
         box-sizing: border-box !important;
     }
     
     div[data-testid="stColumn"]:has(.saturday-col-marker):hover {
-        border-color: #0d47a1 !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
     }
     
     /* Ocultar el marcador de columna de sábados y fecha */
@@ -548,16 +579,16 @@ def apply_styles():
         display: none;
     }
 
-    /* Fila de búsqueda como una tarjeta interna */
+    /* Fila de búsqueda sin recuadro de borde */
     div[data-testid="stHorizontalBlock"]:has(.search-label) {
-        background-color: #f8fafc !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 1.25rem 1.5rem !important;
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 0px !important;
+        padding: 0.35rem 0rem !important;
         align-items: center !important;
         justify-content: center !important;
-        margin-bottom: 0.5rem !important;
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
+        margin-bottom: 0.25rem !important;
+        box-shadow: none !important;
     }
     
     /* Ocultar por completo el contenedor del marcador para que no ocupe espacio vertical */
@@ -568,21 +599,21 @@ def apply_styles():
         padding: 0 !important;
     }
 
-    /* Contenedor de columnas como una tarjeta interna premium (recuadro) */
+    /* Contenedor de columnas como una tarjeta interna premium (recuadro de la tabla de turnos) */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) {
-        background-color: #f8fafc !important;
+        background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
         
         /* -------------------------------------------------------------------------
            AJUSTA EL ESPACIADO AQUÍ SI DESEAS ACERCAR O ALEJAR LOS NOMBRES:
            ------------------------------------------------------------------------- */
-        padding: 0rem 1.5rem 1.5rem 1.5rem !important; /* El primer valor (0.4rem) es el espacio interno superior */
-        margin-top: -0.82rem !important;                  /* Espacio exterior superior */
-        margin-bottom: 1rem !important;               /* Espacio exterior inferior */
+        padding: 1rem 1.25rem 1.5rem 1.25rem !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 1.5rem !important;
         /* ------------------------------------------------------------------------- */
         
-        box-shadow: inset 0 1px 2px rgba(0,0,0,0.01) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
     }
     
     /* ---- Calendar Grid: compactar elementos ---- */
