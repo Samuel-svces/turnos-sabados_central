@@ -145,12 +145,13 @@ def apply_styles():
     }
     
     .top-nav-title {
-        font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-        font-size: 1.35rem !important;
-        font-weight: 700 !important;
-        color: #0a1128 !important;
-        letter-spacing: -0.01em;
-        line-height: 1.1 !important;
+        font-family: 'Outfit', sans-serif;
+        font-size: 21px;
+        font-weight: 600;
+        color: #0f172a;
+        letter-spacing: -0.2px;
+        white.space: nowrap;
+        -webkit-text-fill-color:#0f172a; 
     }
     
     /* Banner institucional degradado de Turnos Sábados recortado */
