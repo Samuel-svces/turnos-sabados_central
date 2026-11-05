@@ -128,7 +128,9 @@ def apply_styles():
     .top-nav-left {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 18px;
+        height: 100%;
+        min-width:0;
     }
     
     .top-nav-logo {
