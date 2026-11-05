@@ -1,33 +1,22 @@
-# Task Checklist: Reestructuración de Turnos en Excel Online
+# Task Checklist: Nueva Conexión SharePoint y Consolidado Histórico
 
-## Fase 1: Respaldo y Depuración de Datos
-- [x] **Tarea 1.1**: Crear script de respaldo y depuración de `MODIFICACIONES_SABADOS.xlsx` (`clean_modifications.py`).
-- [x] **Tarea 1.2**: Ejecutar la depuración para remover los 516 registros de `ELIMINAR` accidentales, conservando todos los `AGREGAR` y `REEMPLAZAR`.
-- [x] **Tarea 1.3**: Validar la integridad del nuevo archivo Excel y la restauración de los turnos en `load_data()`.
+## Fase 1: Limpieza de Secretos y Configuración de Conexión
+- [x] **Tarea 1.1**: Limpiar `turnos-sabados_central/.streamlit/secrets.toml` retirando variables de archivos Excel antiguos y agregando `consolidado_conexion = "7B4DC31EBF-4E2F-4399-BC10-D2B224AAA12B%7D"` conservando `admin_password`.
+- [x] **Tarea 1.2**: Actualizar `graph_client.py` para parsear y normalizar el GUID de `consolidado_conexion` y generar las URLs de descarga de SharePoint.
 
-## Checkpoint 1: Integridad de Datos Restaurada
-- [x] 0 registros de tipo `ELIMINAR` en el libro delta.
-- [x] Todos los médicos de sábados futuros vuelven a ser visibles en el DataFrame de turnos (1.247 turnos totales restaurados).
+## Fase 2: Implementación de la Lógica de Validación de Turnos
+- [x] **Tarea 2.1**: Implementar en `data_processor.py` la lectura de las hojas `CONSOLIDADO 2026 HISTORICO` y `SUPERNUMERARIO 2026 HISTORICO`.
+- [x] **Tarea 2.2**: Implementar el filtro en `CONSOLIDADO 2026 HISTORICO`: `FECHA CUBRIMIENTO` es sábado y fecha >= 31 de octubre de 2026.
+- [x] **Tarea 2.3**: Implementar la validación cruzada y alternancia de sábados con `SUPERNUMERARIO 2026 HISTORICO`:
+  - Secuencia 31 Octubre (pares): coincidencia de `NOMBRE SUPER VALIDADO` con `Nombre` y `Restriccion` == `"sin restriccion"`.
+  - Sábado contrario (impares): coincidencia de `NOMBRE SUPER VALIDADO` con `Nombre` y `Restriccion` == `"con restriccion"`.
+- [x] **Tarea 2.4**: Actualizar `load_supernumeraries()` y `get_allowed_doctors(target_date)` para alimentar el directorio de profesionales y filtrar dinámicamente los menús desplegables según la alternancia del sábado seleccionado.
 
----
+## Fase 3: Integración y Blindaje de Procesos Existentes
+- [x] **Tarea 3.1**: Asegurar que `load_data()` integre los turnos validados con la Lista de SharePoint de modificaciones (`MODIFICACIONES_SABADOS`) sin afectar los procesos de reemplazo/eliminación/adición.
+- [x] **Tarea 3.2**: Manejar resiliencia de nombres de hojas (`2026` vs `20206`) y nombres de columnas (tildes, mayúsculas, espacios).
 
-## Fase 2: Corrección de Errores de Código y SharePoint
-- [x] **Tarea 2.1**: Conectar la nueva Lista de SharePoint `MODIFICACIONES_SABADOS` vía Graph API y migrar los 1.129 registros limpios.
-- [x] **Tarea 2.2**: Corregir en `graph_client.py` las funciones duplicadas (`is_sharepoint_configured`), llamadas residuales y agregar métodos de lista (`get_sharepoint_list_items`, `add_sharepoint_list_item`, `add_sharepoint_list_items_batch`, `delete_sharepoint_list_item`).
-- [x] **Tarea 2.3**: En `data_processor.py`, implementar persistencia y lectura directa de la Lista de SharePoint con respaldo local.
-- [x] **Tarea 2.4**: Blindar `load_data` para proteger los turnos base contra cualquier intento de eliminación y corregir el seguimiento de índices.
-
-## Checkpoint 2: Capa de Datos Blindada
-- [x] Cero sobreescrituras destructivas con archivos locales viejos.
-- [x] Cada modificación se guarda como un elemento independiente en la Lista de SharePoint (sin errores 423 de archivo bloqueado).
-
----
-
-## Fase 3: Protección de la Interfaz de Usuario y Flujo de Turnos
-- [x] **Tarea 3.1**: En `ui_dialogs.py`, deshabilitar la opción de borrar turnos base del maestro para que nunca se pierdan datos.
-- [x] **Tarea 3.2**: Corregir el bug de contraparte en "Cambio de turno" (buscar a la contraparte en su fecha correspondiente de la secuencia opuesta, no en la fecha actual).
-- [x] **Tarea 3.3**: Proteger la función de duplicar para que solo aplique adiciones sin borrados masivos.
-
-## Checkpoint Final
-- [x] Compilación limpia de todos los módulos Python (`py_compile`).
-- [x] Suite de pruebas automatizadas integradas completada exitosamente.
+## Fase 4: Pruebas y Verificación
+- [x] **Tarea 4.1**: Crear suite de pruebas `tests/test_consolidado_historico.py` con datos simulados y validación de reglas de negocio (6/6 aprobados).
+- [x] **Tarea 4.2**: Compilación limpia de todos los módulos Python (`py_compile`).
+- [x] **Tarea 4.3**: Verificación integral de interoperabilidad entre módulos.

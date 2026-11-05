@@ -1,10 +1,7 @@
-# Implementation Plan: Arquitectura y Conexión con Lista de SharePoint
+# Implementation Plan: Nueva Conexión SharePoint y Lectura de Turnos desde Consolidado Histórico
 
-La especificación completa del sistema y su arquitectura final se encuentra en:
-👉 [plan_arquitectura_sharepoint_list.md](file:///C:/Users/JuanJoseOsorioMolina/.gemini/antigravity-ide/brain/19db3254-4b37-47f6-b541-6f8d3c368134/plan_arquitectura_sharepoint_list.md)
+La especificación completa del plan se encuentra en el artefacto principal:
+👉 [plan_conexion_consolidado_turnos.md](file:///C:/Users/JuanJoseOsorioMolina/.gemini/antigravity/brain/24848266-3e94-4d5c-9e6b-cc2e48955b7e/plan_conexion_consolidado_turnos.md)
 
-Historial del plan de depuración inicial:
-👉 [plan_sistema_turnos_excel_online.md](file:///C:/Users/JuanJoseOsorioMolina/.gemini/antigravity-ide/brain/19db3254-4b37-47f6-b541-6f8d3c368134/plan_sistema_turnos_excel_online.md)
-
-Checklist de tareas de verificación:
+Checklist de tareas en progreso:
 👉 [todo.md](file:///c:/Users/JuanJoseOsorioMolina/Desktop/TURNOS_SABADO_DEFINITIVO/turnos-sabados_central/tasks/todo.md)

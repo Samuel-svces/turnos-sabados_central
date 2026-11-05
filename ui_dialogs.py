@@ -3,22 +3,54 @@ import datetime
 import data_processor as dp
 import pandas as pd
 
-def get_allowed_doctors():
+def get_allowed_doctors(target_date=None):
     df_s = st.session_state.get('shifts_df', pd.DataFrame())
     df_sup = st.session_state.get('super_df', pd.DataFrame())
-    june_date = datetime.date(2026, 6, 1)
     
     docs_set = set()
-    if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
-        s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
-        s_names = df_s[s_dates >= june_date]['Supernumerary'].dropna().apply(dp.normalize_name_no_accents).tolist()
-        docs_set.update([n for n in s_names if len(n) > 2 and n not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]])
+    
+    # 1. Si se pasa target_date, filtrar dinámicamente según la regla de alternancia:
+    # Secuencia A (pares desde 31/10/2026: 31 oct, 14 nov, etc.) -> 'sin restriccion'
+    # Secuencia B (impares: 7 nov, 21 nov, etc.) -> 'con restriccion'
+    if target_date is not None and not df_sup.empty:
+        t_date = target_date
+        if isinstance(t_date, str):
+            try:
+                t_date = pd.to_datetime(t_date).date()
+            except Exception:
+                pass
+        elif isinstance(t_date, datetime.datetime):
+            t_date = t_date.date()
 
-    if not df_sup.empty:
-        col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
-        if col_name:
-            sup_names = df_sup[col_name].dropna().apply(dp.normalize_name_no_accents).tolist()
-            docs_set.update([n for n in sup_names if len(n) > 2])
+        base_date = datetime.date(2026, 10, 31)
+        delta_weeks = (t_date - base_date).days // 7
+        name_col = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
+        restr_col = 'Restriccion' if 'Restriccion' in df_sup.columns else ('RESTRICCION' if 'RESTRICCION' in df_sup.columns else None)
+
+        if name_col and restr_col:
+            for _, r in df_sup.iterrows():
+                doc_name = dp.normalize_name_no_accents(str(r[name_col])).strip()
+                restr_val = dp.normalize_name_no_accents(str(r.get(restr_col, ''))).strip().lower()
+                if delta_weeks % 2 == 0:
+                    # Sábado secuencia 31 Oct: sin restricción
+                    if "sin restric" in restr_val:
+                        docs_set.add(doc_name)
+                else:
+                    # Sábado contrario: con restricción
+                    if "con restric" in restr_val or ("restric" in restr_val and "sin" not in restr_val):
+                        docs_set.add(doc_name)
+
+    # 2. Si no hay target_date o no hubo resultados filtrados, cargar el conjunto completo
+    if not docs_set:
+        if not df_sup.empty:
+            col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
+            if col_name:
+                sup_names = df_sup[col_name].dropna().apply(dp.normalize_name_no_accents).tolist()
+                docs_set.update([n for n in sup_names if len(n) > 2])
+
+        if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
+            s_names = df_s['Supernumerary'].dropna().apply(dp.normalize_name_no_accents).tolist()
+            docs_set.update([n for n in s_names if len(n) > 2 and n not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]])
 
     return sorted(list(docs_set))
 
@@ -380,7 +412,7 @@ def show_shift_dialog(action_details, load_app_data_func):
         default_clasif_idx = 0
     new_clasif = st.radio("Clasificación del Turno:", clasif_options, index=default_clasif_idx, horizontal=True)
     
-    allowed = get_allowed_doctors()
+    allowed = get_allowed_doctors(target_date=action_details.get('date'))
     current_doc = dp.normalize_name_no_accents(action_details['doctor'])
     if current_doc not in allowed:
         allowed = sorted(list(set(allowed + [current_doc])))
@@ -461,19 +493,13 @@ def show_shift_dialog(action_details, load_app_data_func):
 
     if st.session_state.get("show_delete_options", False):
         st.markdown("---")
-        st.markdown("##### 🗑️ Confirmar Eliminación de Asignación")
-        
-    is_base_shift = (int(action_details.get('row', 0)) > 0 and int(action_details.get('col', 0)) > 0)
-
-    if not is_base_shift and st.session_state.get("show_delete_options", False):
-        st.markdown("---")
-        st.markdown(f"##### 🗑️ ¿Remover esta asignación adicional de **{current_doc}**?")
-        st.caption("Esta acción removerá únicamente este médico agregado para este sábado específico.")
+        st.markdown(f"##### 🗑️ ¿Confirmar eliminación del turno de **{current_doc}**?")
+        st.caption("Esta acción eliminará el turno para este sábado directamente en la Lista de SharePoint.")
         
         col_confirm, col_cancel = st.columns(2)
         with col_confirm:
             st.button(
-                "Confirmar Remoción", 
+                "Confirmar Eliminación", 
                 use_container_width=True, 
                 type="primary", 
                 key="btn_confirm_delete_action",
@@ -499,7 +525,8 @@ def show_shift_dialog(action_details, load_app_data_func):
                 icon=":material/cancel:"
             )
     else:
-        if is_base_shift:
+        col_save, col_delete = st.columns([2, 1])
+        with col_save:
             st.button(
                 "Guardar Cambios", 
                 use_container_width=True, 
@@ -523,42 +550,15 @@ def show_shift_dialog(action_details, load_app_data_func):
                     load_app_data_func
                 )
             )
-            st.caption("🔒 *Turno de programación base protegido contra borrado accidental. Para modificar, use Cambio de turno o Compensación.*")
-        else:
-            col_save, col_delete = st.columns(2)
-            with col_save:
-                st.button(
-                    "Guardar Cambios", 
-                    use_container_width=True, 
-                    type="primary", 
-                    key="btn_save_changes_action",
-                    on_click=save_changes_callback,
-                    icon=":material/save:",
-                    args=(
-                        st.session_state.excel_path,
-                        action_details['sheet'],
-                        action_details['row'],
-                        action_details['col'],
-                        action_details['date'],
-                        current_doc,
-                        new_doc,
-                        new_obs,
-                        new_clasif,
-                        current_clasif,
-                        swap_target,
-                        current_doc,
-                        load_app_data_func
-                    )
-                )
-            with col_delete:
-                st.button(
-                    "Remover Agregado", 
-                    use_container_width=True, 
-                    type="secondary", 
-                    key="btn_show_delete_options_action",
-                    on_click=show_delete_options_callback,
-                    icon=":material/delete:"
-                )
+        with col_delete:
+            st.button(
+                "Remover Turno", 
+                use_container_width=True, 
+                type="secondary", 
+                key="btn_show_delete_options_action",
+                on_click=show_delete_options_callback,
+                icon=":material/delete:"
+            )
 
 @st.dialog("Agregar Médico Adicional")
 def show_add_dialog(sat_date, sheet, load_app_data_func):
@@ -575,7 +575,7 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
     df_s = st.session_state.shifts_df
     already_assigned = [dp.normalize_name_no_accents(n) for n in df_s[df_s['Date'] == sat_date]['Supernumerary'].tolist()]
     
-    allowed = get_allowed_doctors()
+    allowed = get_allowed_doctors(target_date=sat_date)
     
     # Buscador de médicos insensible a tildes y espacios
     search_doc = st.text_input(

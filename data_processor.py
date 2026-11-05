@@ -69,6 +69,12 @@ def normalize_name_no_accents(text: str) -> str:
     return s
 
 # ---------------------------------------------------------------------------
+# Directorio interno de caché (.cache/) para no ensuciar la raíz del proyecto
+# ---------------------------------------------------------------------------
+_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache")
+os.makedirs(_CACHE_DIR, exist_ok=True)
+
+# ---------------------------------------------------------------------------
 # Helpers de acceso a los archivos delta (SharePoint o local)
 # ---------------------------------------------------------------------------
 
@@ -173,11 +179,8 @@ def _save_wb_delta(wb: openpyxl.Workbook, file_key: str, local_path: str):
         except Exception as local_err:
             print(f"Aviso guardando copia local de delta {file_key}: {local_err}")
 
-    if _use_sharepoint():
-        buf = io.BytesIO()
-        wb.save(buf)
-        file_bytes = buf.getvalue()
-        _async_upload_to_sharepoint(file_key, file_bytes)
+    # Ya no se sube MODIFICACIONES_SABADOS.xlsx a SharePoint porque toda la persistencia
+    # se gestiona 100% directamente a través de la Lista de SharePoint.
     
     wb.close()
 
@@ -453,12 +456,11 @@ _KEY_SABADOS   = 'modificaciones_sabados'
 
 
 @st.cache_data(ttl=60, show_spinner=False)
-def load_modifications(excel_path):
+def load_modifications(excel_path=None):
     """
-    Carga las modificaciones de turnos.
-    - Si SharePoint está configurado, lee en tiempo real de la Lista de SharePoint 'MODIFICACIONES_SABADOS'.
-    - Si no hay conexión o no está configurado, lee del archivo local MODIFICACIONES_SABADOS.xlsx como fallback.
-    - Mantiene solo registros de tipo 'AGREGAR' y 'REEMPLAZAR' (no eliminaciones destructivas).
+    Carga todas las modificaciones de turnos directamente desde la Lista de SharePoint 'MODIFICACIONES_SABADOS'.
+    Incluye todos los tipos de mutaciones: AGREGAR, REEMPLAZAR y ELIMINAR.
+    Ordena cronológicamente por 'Created' e 'ID' para que la última modificación prevalezca siempre.
     """
     if _use_sharepoint():
         try:
@@ -466,15 +468,11 @@ def load_modifications(excel_path):
             records = []
             for it in items:
                 m_type = str(it.get('TYPE', '')).strip().upper()
+                if m_type not in ('AGREGAR', 'REEMPLAZAR', 'ELIMINAR'):
+                    continue
+
                 row_val = int(pd.to_numeric(it.get('ROW', 0), errors='coerce') or 0)
                 col_val = int(pd.to_numeric(it.get('COL', 0), errors='coerce') or 0)
-                
-                # Proteger integridad: permitir AGREGAR, REEMPLAZAR y ELIMINAR únicamente para turnos agregados (row==0, col==0)
-                if m_type not in ('AGREGAR', 'REEMPLAZAR'):
-                    if m_type == 'ELIMINAR' and row_val == 0 and col_val == 0:
-                        pass
-                    else:
-                        continue
                 
                 raw_date = it.get('FECHA')
                 parsed_date = None
@@ -483,9 +481,13 @@ def load_modifications(excel_path):
                         parsed_date = pd.to_datetime(raw_date).date()
                     except Exception:
                         pass
+
+                item_id_raw = it.get('id', it.get('_item_id', 0))
+                item_id_num = int(pd.to_numeric(item_id_raw, errors='coerce') or 0)
+                created_raw = str(it.get('Created', it.get('Modified', '')))
                 
                 records.append({
-                    'ID': pd.to_numeric(it.get('id', 0), errors='coerce'),
+                    'ID': item_id_num,
                     'SHEET': str(it.get('SHEET', 'SABADOS 2026')).strip(),
                     'DATE': parsed_date,
                     'ORIGINAL_NAME': str(it.get('ORIGINAL_NAME', '')).strip().upper(),
@@ -495,7 +497,8 @@ def load_modifications(excel_path):
                     'TYPE': m_type,
                     'OBSERVACIONES': str(it.get('OBSERVACIONES', '')).strip(),
                     'CLASIFICACION': str(it.get('CLASIFICACION', 'Secuencia Normal')).strip(),
-                    'TIMESTAMP': str(it.get('Created', it.get('Modified', ''))),
+                    'TIMESTAMP': created_raw,
+                    'Created_dt': pd.to_datetime(created_raw, errors='coerce') if created_raw else pd.Timestamp.min,
                     '_item_id': str(it.get('_item_id', ''))
                 })
             
@@ -504,51 +507,24 @@ def load_modifications(excel_path):
                 df['ID'] = df['ID'].fillna(0).astype(int)
                 df['ROW'] = df['ROW'].fillna(0).astype(int)
                 df['COL'] = df['COL'].fillna(0).astype(int)
-                return df.sort_values(by='ID')
+                # Ordenamiento cronológico determinista: primero por fecha de creación, luego por ID
+                df = df.sort_values(by=['Created_dt', 'ID']).reset_index(drop=True)
+                return df
             return pd.DataFrame(columns=_COLS_SABADOS)
         except Exception as e_sp:
-            print(f"Aviso cargando Lista de SharePoint: {e_sp}. Usando fallback local...")
+            print(f"Error consultando Lista de SharePoint: {e_sp}")
 
-    # Fallback local desde Excel
-    local_path = _get_modifications_path(excel_path)
-    df = _read_delta_df(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
-
-    if df.empty:
-        return df
-
-    # Filtrar AGREGAR, REEMPLAZAR y ELIMINAR solo para turnos agregados (ROW==0 y COL==0)
-    row_num = pd.to_numeric(df['ROW'], errors='coerce').fillna(0).astype(int)
-    col_num = pd.to_numeric(df['COL'], errors='coerce').fillna(0).astype(int)
-    mask_valid = df['TYPE'].isin(['AGREGAR', 'REEMPLAZAR']) | ((df['TYPE'] == 'ELIMINAR') & (row_num == 0) & (col_num == 0))
-    df = df[mask_valid].copy()
-    df['ID'] = pd.to_numeric(df['ID'], errors='coerce').fillna(0).astype(int)
-    df['DATE'] = pd.to_datetime(df['DATE'], errors='coerce').dt.date
-    df['SHEET'] = df['SHEET'].astype(str).str.strip()
-    df['ORIGINAL_NAME'] = df['ORIGINAL_NAME'].fillna('').astype(str).str.strip().str.upper()
-    df['NEW_NAME'] = df['NEW_NAME'].fillna('').astype(str).str.strip().str.upper()
-    df['ROW'] = row_num
-    df['COL'] = col_num
-    df['TYPE'] = df['TYPE'].astype(str).str.strip().str.upper()
-    df['OBSERVACIONES'] = df['OBSERVACIONES'].fillna('').astype(str).str.strip()
-    df['CLASIFICACION'] = df['CLASIFICACION'].fillna('Secuencia Normal').astype(str).str.strip()
-    return df.sort_values(by='ID')
+    return pd.DataFrame(columns=_COLS_SABADOS)
 
 
 def save_modification(excel_path, mod_data):
     """
-    Guarda una modificación (Cambio de Turno o Agregado) de forma síncrona en la Lista de SharePoint
-    y en el archivo local de respaldo. No guarda eliminaciones de turnos base.
+    Guarda una modificación (Cambio de Turno, Agregado o Eliminado) directamente
+    en la Lista de SharePoint 'MODIFICACIONES_SABADOS' de forma inmediata.
     """
     m_type = mod_data.get('type', '').strip().upper()
-    row_val = int(mod_data.get('row', 0))
-    col_val = int(mod_data.get('col', 0))
-    if m_type not in ('AGREGAR', 'REEMPLAZAR'):
-        # Solo permitir ELIMINAR si es un turno agregado manualmente (row==0, col==0)
-        # Los turnos base del maestro están blindados contra eliminación
-        if m_type == 'ELIMINAR' and row_val == 0 and col_val == 0:
-            pass
-        else:
-            return False
+    if m_type not in ('AGREGAR', 'REEMPLAZAR', 'ELIMINAR'):
+        return False
 
     date_val = mod_data['date']
     d_iso = None
@@ -576,33 +552,9 @@ def save_modification(excel_path, mod_data):
     if d_iso:
         fields['FECHA'] = d_iso
 
-    # 1. Guardar en Lista de SharePoint Online si está configurado
+    # Guardar directamente en la Lista de SharePoint Online
     if _use_sharepoint():
         gc.add_sharepoint_list_item(_KEY_SABADOS, fields)
-
-    # 2. Respaldo local en Excel
-    local_path = _get_modifications_path(excel_path)
-    try:
-        wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
-        max_id = 0
-        for r in range(2, ws.max_row + 1):
-            val = ws.cell(row=r, column=1).value
-            if val is not None:
-                try:
-                    max_id = max(max_id, int(val))
-                except ValueError:
-                    pass
-        next_id = max_id + 1
-        d_str = date_val.strftime('%Y-%m-%d') if isinstance(date_val, (datetime.date, datetime.datetime)) else str(date_val)
-        ws.append([
-            next_id, fields['SHEET'], d_str, fields['ORIGINAL_NAME'],
-            fields['NEW_NAME'], fields['ROW'], fields['COL'], fields['TYPE'],
-            fields['OBSERVACIONES'], fields['CLASIFICACION'],
-            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        ])
-        _save_wb_delta(wb, _KEY_SABADOS, local_path)
-    except Exception as e_local:
-        print(f"Aviso guardando respaldo local: {e_local}")
 
     load_modifications.clear()
     return True
@@ -610,18 +562,13 @@ def save_modification(excel_path, mod_data):
 
 def save_modifications_batch(excel_path, mods_list):
     """
-    Guarda una lista de modificaciones en lote directamente en la Lista de SharePoint
-    y en el archivo local de respaldo.
+    Guarda una lista de modificaciones en lote directamente en la Lista de SharePoint 'MODIFICACIONES_SABADOS'.
+    Soporta AGREGAR, REEMPLAZAR y ELIMINAR sin exclusiones artificiales.
     """
     valid_mods = []
     for m in mods_list:
         m_t = m.get('type', '').strip().upper()
-        r_val = int(m.get('row', 0))
-        c_val = int(m.get('col', 0))
-        if m_t in ('AGREGAR', 'REEMPLAZAR'):
-            valid_mods.append(m)
-        elif m_t == 'ELIMINAR' and r_val == 0 and c_val == 0:
-            # Solo se permite eliminar turnos agregados manualmente
+        if m_t in ('AGREGAR', 'REEMPLAZAR', 'ELIMINAR'):
             valid_mods.append(m)
 
     if not valid_mods:
@@ -655,36 +602,9 @@ def save_modifications_batch(excel_path, mods_list):
             f_item['FECHA'] = d_iso
         batch_fields.append(f_item)
 
-    # 1. Guardar en Lista de SharePoint Online
+    # Guardar directamente en la Lista de SharePoint Online en lotes de 20
     if _use_sharepoint():
         gc.add_sharepoint_list_items_batch(_KEY_SABADOS, batch_fields)
-
-    # 2. Respaldo local en Excel
-    local_path = _get_modifications_path(excel_path)
-    try:
-        wb, ws = _load_wb_delta(_KEY_SABADOS, local_path, _SHEET_SABADOS, _COLS_SABADOS)
-        max_id = 0
-        for r in range(2, ws.max_row + 1):
-            val = ws.cell(row=r, column=1).value
-            if val is not None:
-                try:
-                    max_id = max(max_id, int(val))
-                except ValueError:
-                    pass
-        next_id = max_id + 1
-        for m, f_item in zip(valid_mods, batch_fields):
-            d_val = m['date']
-            d_str = d_val.strftime('%Y-%m-%d') if isinstance(d_val, (datetime.date, datetime.datetime)) else str(d_val)
-            ws.append([
-                next_id, f_item['SHEET'], d_str, f_item['ORIGINAL_NAME'],
-                f_item['NEW_NAME'], f_item['ROW'], f_item['COL'], f_item['TYPE'],
-                f_item['OBSERVACIONES'], f_item['CLASIFICACION'],
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            ])
-            next_id += 1
-        _save_wb_delta(wb, _KEY_SABADOS, local_path)
-    except Exception as e_local:
-        print(f"Aviso guardando lote en respaldo local: {e_local}")
 
     load_modifications.clear()
     return True
@@ -694,189 +614,355 @@ def save_modifications_batch(excel_path, mods_list):
 # Carga del Excel maestro (solo lectura — igual que el despliegue anterior)
 # ---------------------------------------------------------------------------
 
+def _find_sheet(sheet_names, target_patterns):
+    """Busca una hoja en una lista de nombres de hojas según una lista de patrones."""
+    for pattern in target_patterns:
+        pat_clean = normalize_name_no_accents(pattern).upper().replace(" ", "")
+        for s in sheet_names:
+            s_clean = normalize_name_no_accents(s).upper().replace(" ", "")
+            if pat_clean in s_clean or s_clean in pat_clean:
+                return s
+    return None
+
+
 @st.cache_resource(ttl=600, show_spinner=False)
-def _open_master_excel(excel_path):
+def _open_consolidado_conexion(excel_path=None):
     """
-    Devuelve un pd.ExcelFile del Excel maestro (TURNOS SABADOS.xlsx).
-    En SharePoint: usa una caché en disco local (TURNOS_SABADOS_cached.xlsx).
-      1. Obtiene la metadata (lastModifiedDateTime y size) del archivo remoto.
-      2. Compara con la metadata local guardada en TURNOS_SABADOS_cached_meta.txt.
-      3. Si coincide y el archivo local existe, lee el archivo local directamente (ahorra descargar 4.4MB).
-      4. Si no coincide, descarga el archivo de SharePoint, actualiza la caché local y lo lee.
-    En local: abre desde la ruta directamente.
+    Devuelve un pd.ExcelFile del nuevo archivo CONSOLIDADO CONEXION.
+    Prioriza SharePoint Graph API directo mediante 'consolidado_conexion' y utiliza caché local.
     """
+    cache_file = os.path.join(_CACHE_DIR, "CONSOLIDADO_CONEXION_cached.xlsx")
+    meta_file = os.path.join(_CACHE_DIR, "CONSOLIDADO_CONEXION_cached_meta.txt")
+    force_refresh = False
+    try:
+        force_refresh = st.session_state.pop("force_refresh_personal", False) or st.session_state.pop("force_refresh_consolidado", False)
+    except Exception:
+        pass
+
+    if force_refresh:
+        for f_del in [cache_file, meta_file, os.path.join(_CACHE_DIR, "temp_read_CONSOLIDADO CONEXION.xlsx")]:
+            if os.path.exists(f_del):
+                try:
+                    os.remove(f_del)
+                except Exception:
+                    pass
+
     if _use_sharepoint():
-        cache_file = "TURNOS_SABADOS_cached.xlsx"
-        meta_file = "TURNOS_SABADOS_cached_meta.txt"
-        
         try:
-            # 1. Obtener metadatos remotos de forma rápida
-            remote_meta = gc.get_file_metadata("turnos_sabados")
+            remote_meta = gc.get_file_metadata("consolidado_conexion")
             remote_last_mod = remote_meta.get("lastModifiedDateTime", "")
             remote_size = remote_meta.get("size", 0)
-            
-            # 2. Comprobar si tenemos el archivo guardado y coincide
+
             use_cached = False
-            if os.path.exists(cache_file) and os.path.exists(meta_file):
+            if not force_refresh and os.path.exists(cache_file) and os.path.exists(meta_file):
                 try:
                     with open(meta_file, "r", encoding="utf-8") as f:
                         saved_meta = f.read().strip().split("|")
-                    if len(saved_meta) == 2:
-                        saved_last_mod, saved_size = saved_meta[0], int(saved_meta[1])
-                        if saved_last_mod == remote_last_mod and saved_size == remote_size:
-                            use_cached = True
+                    if len(saved_meta) == 2 and saved_meta[0] == remote_last_mod and int(saved_meta[1]) == remote_size:
+                        use_cached = True
                 except Exception:
                     pass
-            
-            # 3. Si coincide, usar el archivo local
+
             if use_cached:
                 return pd.ExcelFile(cache_file)
-                
-            # 4. Si no coincide, descargar el archivo completo
-            buf = gc.download_excel("turnos_sabados")
-            # Guardar en disco local
+
+            buf = gc.download_excel("consolidado_conexion")
             try:
+                buf.seek(0)
                 with open(cache_file, "wb") as f:
                     f.write(buf.getvalue())
                 with open(meta_file, "w", encoding="utf-8") as f:
                     f.write(f"{remote_last_mod}|{remote_size}")
             except Exception as cache_err:
-                print(f"Error escribiendo en caché de disco local: {cache_err}")
-                
+                print(f"Error escribiendo caché de consolidado: {cache_err}")
+
             buf.seek(0)
             return pd.ExcelFile(buf)
-            
         except Exception as e:
-            # Fallback offline si la conexión a SharePoint falla
-            if os.path.exists(cache_file):
+            if not force_refresh and os.path.exists(cache_file):
                 try:
                     return pd.ExcelFile(cache_file)
                 except Exception:
                     pass
-            raise FileNotFoundError(f"No se pudo descargar ni recuperar de la caché local el Excel maestro desde SharePoint: {e}")
-    else:
-        if not os.path.exists(excel_path):
-            raise FileNotFoundError(f"El archivo Excel no existe en: {excel_path}")
-        return pd.ExcelFile(excel_path)
+
+    # Fallback local
+    candidate_paths = [
+        excel_path,
+        os.path.join(os.path.dirname(__file__), "CONSOLIDADO CONEXION.xlsx"),
+        "CONSOLIDADO CONEXION.xlsx",
+        os.path.join(_CACHE_DIR, "CONSOLIDADO_CONEXION_cached.xlsx"),
+        os.path.join(os.path.dirname(__file__), "CONSOLIDADO 2026.xlsx"),
+        "CONSOLIDADO 2026.xlsx",
+        os.path.join(_CACHE_DIR, "CONSOLIDADO_2026_cached.xlsx"),
+        os.path.join(os.path.dirname(__file__), "backups", "CONSOLIDADO_2026_cached.xlsx"),
+        os.path.join(os.path.dirname(__file__), "TURNOS SABADOS.xlsx"),
+        "TURNOS SABADOS.xlsx",
+        cache_file
+    ]
+    for cp in candidate_paths:
+        if cp and os.path.exists(cp) and os.path.getsize(cp) > 0:
+            try:
+                return pd.ExcelFile(cp)
+            except Exception:
+                pass
+
+    raise FileNotFoundError("No se pudo cargar el archivo Excel maestro ni desde SharePoint ni desde rutas locales.")
+
+_open_master_excel = _open_consolidado_conexion
 
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def _get_base_shifts_df(excel_path):
-    xl = _open_master_excel(excel_path)
-
-    months = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
-              'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
-
-    candidate_sheets = []
-    for s in xl.sheet_names:
-        s_upper = s.upper()
-        if s_upper in ["SABADOS 2025", "SABADOS 2026"]:
-            candidate_sheets.append(s)
-        elif any(m in s_upper for m in months) and re.search(r'\b(202\d)\b', s_upper):
-            if not s_upper.startswith("TABLA") and "EXTRA" not in s_upper:
-                candidate_sheets.append(s)
-
+    xl = _open_consolidado_conexion(excel_path)
     all_shifts = []
     errors = []
 
-    for sheet_name in candidate_sheets:
-        df = pd.read_excel(xl, sheet_name=sheet_name, header=None)
-        if len(df) == 0:
-            continue
+    # 1. Identificar si están las hojas del nuevo CONSOLIDADO CONEXION
+    sheet_consol = _find_sheet(xl.sheet_names, [
+        "CONSOLIDADO 2026 HISTORICO",
+        "CONSOLIDADO 20206 HISTORICO",
+        "CONSOLIDADO HISTORICO"
+    ])
+    sheet_super = _find_sheet(xl.sheet_names, [
+        "SUPERNUMERARIO 2026 HISTORICO",
+        "SUPERNUMERARIO 20206 HISTORICO",
+        "SUPERNUMERARIOS HISTORICO",
+        "SUPERNUMERARIOS"
+    ])
 
-        header_row_idx = None
-        sabado_col_idx = None
-        super_col_idx = None
+    if sheet_consol and sheet_super:
+        # Modo Nuevo: Validación de turnos a partir de las dos hojas históricas
+        df_super_sheet = pd.read_excel(xl, sheet_name=sheet_super)
+        df_consol = pd.read_excel(xl, sheet_name=sheet_consol)
 
-        for r_idx in range(min(5, len(df))):
-            row_vals = [str(val).strip().upper() for val in df.iloc[r_idx] if pd.notna(val)]
-            if 'SABADO' in row_vals and 'SUPERNUMERARIO' in row_vals:
-                header_row_idx = r_idx
-                for c_idx, val in enumerate(df.iloc[r_idx]):
-                    if pd.notna(val):
-                        val_str = str(val).strip().upper()
-                        if val_str == 'SABADO':
-                            sabado_col_idx = c_idx
-                        elif val_str == 'SUPERNUMERARIO':
-                            super_col_idx = c_idx
-                break
+        # Mapear columnas en SUPERNUMERARIO 2026 HISTORICO
+        col_nombre_super = None
+        col_restr_super = None
+        for c in df_super_sheet.columns:
+            c_norm = normalize_name_no_accents(str(c)).upper().strip()
+            if c_norm in ("NOMBRE", "NOMBRES", "PROFESIONAL", "NOMBRES Y APELLIDOS", "NOMBRE SUPER"):
+                col_nombre_super = c
+            elif "NOMBRE" in c_norm and not col_nombre_super:
+                col_nombre_super = c
+            if "RESTRIC" in c_norm:
+                col_restr_super = c
 
-        if header_row_idx is not None and sabado_col_idx is not None and super_col_idx is not None:
-            month_header = sheet_name.split(' ')[0].upper()
-            for idx in range(header_row_idx + 1, len(df)):
-                row = df.iloc[idx]
-                date_cell = row[sabado_col_idx]
-                name_cell = row[super_col_idx]
-                if pd.notna(date_cell) and pd.notna(name_cell):
-                    d = parse_flat_date(date_cell)
-                    name_str = normalize_name_no_accents(name_cell)
-                    if name_str and name_str not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
-                        if not name_str.replace('.', '', 1).isdigit() and len(name_str) > 3:
-                            if d:
-                                all_shifts.append({
-                                    'Sheet': sheet_name, 'Month_Header': month_header,
-                                    'Date': d, 'Year': d.year, 'Month': d.month,
-                                    'Supernumerary': name_str,
-                                    'Excel_Row': int(idx + 1),
-                                    'Excel_Col': int(super_col_idx + 1),
-                                    'Header_Row': int(header_row_idx + 1)
-                                })
-                            else:
-                                errors.append(f"No se pudo parsear la fecha en fila {idx+1} de {sheet_name}")
+        super_restriction_map = {}
+        for _, row_sup in df_super_sheet.iterrows():
+            if col_nombre_super and pd.notna(row_sup[col_nombre_super]):
+                doc_n = normalize_name_no_accents(str(row_sup[col_nombre_super])).strip().upper()
+                if doc_n:
+                    restr_val = ""
+                    if col_restr_super and pd.notna(row_sup[col_restr_super]):
+                        restr_val = normalize_name_no_accents(str(row_sup[col_restr_super])).strip().lower()
+                    super_restriction_map[doc_n] = restr_val
 
-        elif sheet_name.upper() in ["SABADOS 2025", "SABADOS 2026"]:
-            current_month_num = None
-            current_year = None
-            current_month_name = None
-            date_cols = {}
+        # Mapear columnas en CONSOLIDADO 2026 HISTORICO
+        col_fecha = None
+        col_super = None
+        col_obs = None
+        for c in df_consol.columns:
+            c_norm = normalize_name_no_accents(str(c)).upper().strip()
+            if "FECHA" in c_norm and "CUBRIMIENTO" in c_norm:
+                col_fecha = c
+            elif "FECHA" in c_norm and not col_fecha:
+                col_fecha = c
+            if "NOMBRE" in c_norm and "SUPER" in c_norm and "VALIDADO" in c_norm:
+                col_super = c
+            elif "SUPER" in c_norm and "VALIDADO" in c_norm and not col_super:
+                col_super = c
+            elif "NOMBRE" in c_norm and "SUPER" in c_norm and not col_super:
+                col_super = c
+            elif "OBSERVAC" in c_norm:
+                col_obs = c
+
+        if not col_fecha or not col_super:
+            errors.append(f"No se encontraron las columnas requeridas (FECHA CUBRIMIENTO y NOMBRE SUPER VALIDADO) en '{sheet_consol}'.")
+            return pd.DataFrame(columns=[
+                'Sheet', 'Month_Header', 'Date', 'Year', 'Month', 'Supernumerary',
+                'Excel_Row', 'Excel_Col', 'Header_Row', 'Observation', 'Classification'
+            ]), errors
+
+        col_super_idx = list(df_consol.columns).index(col_super) if col_super in df_consol.columns else 0
+        base_date = datetime.date(2026, 10, 31)
+
+        for idx, row in df_consol.iterrows():
+            raw_date = row[col_fecha]
+            d = parse_flat_date(raw_date)
+            if not d:
+                try:
+                    dt = pd.to_datetime(raw_date, errors='coerce')
+                    if pd.notna(dt):
+                        d = dt.date()
+                except Exception:
+                    pass
+
+            if not d:
+                continue
+
+            # Filtro 1: Solo desde el 31 de octubre de 2026 en adelante
+            if d < base_date:
+                continue
+
+            # Filtro 2: Solo sábados (weekday == 5)
+            if d.weekday() != 5:
+                continue
+
+            # Filtro 3: Validar nombre del supernumerario
+            raw_doc = row[col_super]
+            if pd.isna(raw_doc):
+                continue
+            doc_norm = normalize_name_no_accents(str(raw_doc)).strip().upper()
+            if not doc_norm or len(doc_norm) < 3 or doc_norm in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
+                continue
+
+            # Filtro 4: Cruce y regla de alternancia con SUPERNUMERARIO 2026 HISTORICO
+            if doc_norm not in super_restriction_map:
+                continue
+
+            doc_restr = super_restriction_map[doc_norm]
+            delta_weeks = (d - base_date).days // 7
+
+            if delta_weeks % 2 == 0:
+                # Secuencia del 31 de Octubre (pares): solo médicos 'sin restriccion'
+                if "sin restric" not in doc_restr:
+                    continue
+            else:
+                # Sábado contrario (impares): solo médicos 'con restriccion'
+                if "con restric" not in doc_restr and not ("restric" in doc_restr and "sin" not in doc_restr):
+                    continue
+
+            # Validado exitosamente -> Incorporar al cuadro
+            m_header = MONTH_NAMES_SP.get(d.month, 'EXTRA')
+            s_name = f"{m_header} {d.year}"
+            obs_text = str(row[col_obs]).strip() if col_obs and pd.notna(row[col_obs]) else ""
+
+            all_shifts.append({
+                'Sheet': s_name,
+                'Month_Header': m_header,
+                'Date': d,
+                'Year': d.year,
+                'Month': d.month,
+                'Supernumerary': doc_norm,
+                'Excel_Row': int(idx + 2),
+                'Excel_Col': int(col_super_idx + 1),
+                'Header_Row': 1,
+                'Observation': obs_text,
+                'Classification': 'Secuencia Normal'
+            })
+
+    else:
+        # Fallback a lectura de archivo tradicional por meses
+        months = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+                  'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
+
+        candidate_sheets = []
+        for s in xl.sheet_names:
+            s_upper = s.upper()
+            if s_upper in ["SABADOS 2025", "SABADOS 2026"]:
+                candidate_sheets.append(s)
+            elif any(m in s_upper for m in months) and re.search(r'\b(202\d)\b', s_upper):
+                if not s_upper.startswith("TABLA") and "EXTRA" not in s_upper:
+                    candidate_sheets.append(s)
+
+        for sheet_name in candidate_sheets:
+            df = pd.read_excel(xl, sheet_name=sheet_name, header=None)
+            if len(df) == 0:
+                continue
+
             header_row_idx = None
-            i = 0
-            n_rows = len(df)
-            while i < n_rows:
-                row = df.iloc[i]
-                is_header = False
-                header_val = None
-                for val in row:
-                    if isinstance(val, str) and "MES:" in val:
-                        is_header = True
-                        header_val = val
-                        break
-                if is_header:
-                    current_month_num, current_year, current_month_name = clean_month_year(header_val)
-                    header_row_idx = i
-                    i += 1
-                    if i >= n_rows:
-                        break
-                    date_row = df.iloc[i]
-                    date_cols = {}
-                    for col_idx, val in enumerate(date_row):
+            sabado_col_idx = None
+            super_col_idx = None
+
+            for r_idx in range(min(5, len(df))):
+                row_vals = [str(val).strip().upper() for val in df.iloc[r_idx] if pd.notna(val)]
+                if 'SABADO' in row_vals and 'SUPERNUMERARIO' in row_vals:
+                    header_row_idx = r_idx
+                    for c_idx, val in enumerate(df.iloc[r_idx]):
                         if pd.notna(val):
-                            d = parse_date_cell(val, current_month_num, current_year)
-                            if d:
-                                date_cols[col_idx] = d
-                            else:
-                                val_str = str(val).strip()
-                                if val_str and val_str != '\xa0':
-                                    errors.append(f"No se pudo parsear fecha '{val_str}' fila {i+1} de {sheet_name}")
-                else:
-                    if current_month_num is not None:
-                        for col_idx, d in date_cols.items():
-                            if col_idx < len(row):
-                                name = row[col_idx]
-                                if pd.notna(name):
-                                    name_str = normalize_name_no_accents(name)
-                                    if name_str and name_str not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
-                                        if not name_str.replace('.', '', 1).isdigit() and len(name_str) > 3:
-                                            all_shifts.append({
-                                                'Sheet': sheet_name, 'Month_Header': current_month_name,
-                                                'Date': d, 'Year': d.year, 'Month': d.month,
-                                                'Supernumerary': name_str,
-                                                'Excel_Row': int(i + 1),
-                                                'Excel_Col': int(col_idx + 1),
-                                                'Header_Row': int(header_row_idx + 1)
-                                            })
-                i += 1
+                            val_str = str(val).strip().upper()
+                            if val_str == 'SABADO':
+                                sabado_col_idx = c_idx
+                            elif val_str == 'SUPERNUMERARIO':
+                                super_col_idx = c_idx
+                    break
+
+            if header_row_idx is not None and sabado_col_idx is not None and super_col_idx is not None:
+                month_header = sheet_name.split(' ')[0].upper()
+                for idx in range(header_row_idx + 1, len(df)):
+                    row = df.iloc[idx]
+                    date_cell = row[sabado_col_idx]
+                    name_cell = row[super_col_idx]
+                    if pd.notna(date_cell) and pd.notna(name_cell):
+                        d = parse_flat_date(date_cell)
+                        name_str = normalize_name_no_accents(name_cell)
+                        if name_str and name_str not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
+                            if not name_str.replace('.', '', 1).isdigit() and len(name_str) > 3:
+                                if d:
+                                    all_shifts.append({
+                                        'Sheet': sheet_name, 'Month_Header': month_header,
+                                        'Date': d, 'Year': d.year, 'Month': d.month,
+                                        'Supernumerary': name_str,
+                                        'Excel_Row': int(idx + 1),
+                                        'Excel_Col': int(super_col_idx + 1),
+                                        'Header_Row': int(header_row_idx + 1)
+                                    })
+                                else:
+                                    errors.append(f"No se pudo parsear la fecha en fila {idx+1} de {sheet_name}")
+
+            elif sheet_name.upper() in ["SABADOS 2025", "SABADOS 2026"]:
+                current_month_num = None
+                current_year = None
+                current_month_name = None
+                date_cols = {}
+                header_row_idx = None
+                i = 0
+                n_rows = len(df)
+                while i < n_rows:
+                    row = df.iloc[i]
+                    is_header = False
+                    header_val = None
+                    for val in row:
+                        if isinstance(val, str) and "MES:" in val:
+                            is_header = True
+                            header_val = val
+                            break
+                    if is_header:
+                        current_month_num, current_year, current_month_name = clean_month_year(header_val)
+                        header_row_idx = i
+                        i += 1
+                        if i >= n_rows:
+                            break
+                        date_row = df.iloc[i]
+                        date_cols = {}
+                        for col_idx, val in enumerate(date_row):
+                            if pd.notna(val):
+                                d = parse_date_cell(val, current_month_num, current_year)
+                                if d:
+                                    date_cols[col_idx] = d
+                                else:
+                                    val_str = str(val).strip()
+                                    if val_str and val_str != '\xa0':
+                                        errors.append(f"No se pudo parsear fecha '{val_str}' fila {i+1} de {sheet_name}")
+                    else:
+                        if current_month_num is not None:
+                            for col_idx, d in date_cols.items():
+                                if col_idx < len(row):
+                                    name = row[col_idx]
+                                    if pd.notna(name):
+                                        name_str = normalize_name_no_accents(name)
+                                        if name_str and name_str not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
+                                            if not name_str.replace('.', '', 1).isdigit() and len(name_str) > 3:
+                                                all_shifts.append({
+                                                    'Sheet': sheet_name, 'Month_Header': current_month_name,
+                                                    'Date': d, 'Year': d.year, 'Month': d.month,
+                                                    'Supernumerary': name_str,
+                                                    'Excel_Row': int(i + 1),
+                                                    'Excel_Col': int(col_idx + 1),
+                                                    'Header_Row': int(header_row_idx + 1)
+                                                })
+                    i += 1
 
     df_shifts = pd.DataFrame(all_shifts) if all_shifts else pd.DataFrame(columns=[
         'Sheet', 'Month_Header', 'Date', 'Year', 'Month', 'Supernumerary',
@@ -970,16 +1056,13 @@ def load_data(excel_path):
                         key_map[(m_date_norm, new_norm)] = target_idx
 
         elif m_type == 'ELIMINAR':
-            # Blindaje de integridad: Los turnos base del maestro nunca se eliminan.
-            # Únicamente se permite suprimir turnos manuales adicionales (row == 0 y col == 0).
+            # Eliminación explícita respetada: elimina tanto turnos base como turnos agregados
             if target_idx is not None:
+                deleted_indices.add(target_idx)
                 rec = records[target_idx]
-                is_base = (int(rec.get('Excel_Row', 0)) > 0 and int(rec.get('Excel_Col', 0)) > 0)
-                if not is_base:
-                    deleted_indices.add(target_idx)
-                    sup_del_norm = normalize_name_no_accents(rec.get('Supernumerary', ''))
-                    if m_date_norm and (m_date_norm, sup_del_norm) in key_map:
-                        del key_map[(m_date_norm, sup_del_norm)]
+                sup_del_norm = normalize_name_no_accents(rec.get('Supernumerary', ''))
+                if m_date_norm and (m_date_norm, sup_del_norm) in key_map:
+                    del key_map[(m_date_norm, sup_del_norm)]
 
         elif m_type == 'AGREGAR':
             # Si ya existía uno agregado para esa fecha y médico, actualizarlo
@@ -1047,107 +1130,28 @@ def _find_bd_personal_sheet(sheet_names):
     return None
 
 
-@st.cache_resource(ttl=15, show_spinner=False)
-def _open_consolidado_personal(excel_path):
-    """
-    Obtiene pd.ExcelFile para CONSOLIDADO 2026.xlsx.
-    Prioriza SharePoint Graph API directo o OneDrive local en el equipo del usuario.
-    Sincronizado en tiempo real (TTL=15s).
-    """
-    onedrive_exact_path = r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx"
-    cache_file = "CONSOLIDADO_2026_cached.xlsx"
-    meta_file = "CONSOLIDADO_2026_cached_meta.txt"
-    force_refresh = st.session_state.pop("force_refresh_personal", False)
-
-    if force_refresh:
-        for f_del in [cache_file, meta_file, "temp_read_CONSOLIDADO 2026.xlsx"]:
-            if os.path.exists(f_del):
-                try:
-                    os.remove(f_del)
-                except Exception:
-                    pass
-
-    # 1. Prioridad 1 (Cloud / SharePoint): Si Graph API está configurado
-    if _use_sharepoint():
-        try:
-            remote_meta = gc.get_file_metadata("consolidado_personal")
-            remote_last_mod = remote_meta.get("lastModifiedDateTime", "")
-            remote_size = remote_meta.get("size", 0)
-            
-            use_cached = False
-            if not force_refresh and os.path.exists(cache_file) and os.path.exists(meta_file):
-                try:
-                    with open(meta_file, "r", encoding="utf-8") as f:
-                        saved_meta = f.read().strip().split("|")
-                    if len(saved_meta) == 2:
-                        saved_last_mod, saved_size_str = saved_meta[0], saved_meta[1]
-                        if saved_last_mod == remote_last_mod and int(saved_size_str) == remote_size:
-                            use_cached = True
-                except Exception:
-                    pass
-            
-            if use_cached:
-                return pd.ExcelFile(cache_file)
-                
-            buf = gc.download_excel("consolidado_personal")
-            xl_cloud = pd.ExcelFile(buf)
-            target_sheet = _find_bd_personal_sheet(xl_cloud.sheet_names)
-            if target_sheet:
-                try:
-                    buf.seek(0)
-                    with open(cache_file, "wb") as f:
-                        f.write(buf.getvalue())
-                    with open(meta_file, "w", encoding="utf-8") as f:
-                        f.write(f"{remote_last_mod}|{remote_size}")
-                except Exception as cache_err:
-                    print(f"Error escribiendo caché local de personal: {cache_err}")
-                buf.seek(0)
-                st.session_state.pop("super_load_error", None)
-                return pd.ExcelFile(buf)
-            else:
-                st.session_state["super_load_error"] = f"El archivo cargado desde SharePoint no contiene la hoja 'BD PERSONAL'. Hojas encontradas: {xl_cloud.sheet_names}"
-        except Exception as e:
-            st.session_state["super_load_error"] = f"Aviso conexión SharePoint: {e}"
-            if not force_refresh and os.path.exists(cache_file):
-                try:
-                    return pd.ExcelFile(cache_file)
-                except Exception:
-                    pass
-
-    # 2. Prioridad 2: OneDrive local en el equipo del usuario y rutas candidatas
-    candidate_local_paths = [
-        onedrive_exact_path,
-        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CENTRAL DE NOVEDADES CONSOLIDADOS - Documentos\CONSOLIDADOS\CONSOLIDADO 2026\CONSOLIDADO 2026.xlsx",
-        r"C:\Users\JuanJoseOsorioMolina\OneDrive - U.T SAN VICENTE CES\CONSOLIDADO 2026.xlsx",
-        os.path.join(os.path.dirname(excel_path), "CONSOLIDADO 2026.xlsx") if excel_path else "",
-        "CONSOLIDADO 2026.xlsx"
-    ]
-    for p in candidate_local_paths:
-        if p and os.path.exists(p):
-            try:
-                tmp_p = f"temp_read_{os.path.basename(p)}"
-                import shutil
-                shutil.copy2(p, tmp_p)
-                xl_local = pd.ExcelFile(tmp_p)
-                target_sheet = _find_bd_personal_sheet(xl_local.sheet_names)
-                if target_sheet:
-                    st.session_state.pop("super_load_error", None)
-                    return xl_local
-            except Exception as read_err:
-                print(f"Aviso leyendo ruta local {p}: {read_err}")
-
-    return _open_master_excel(excel_path)
+@st.cache_resource(ttl=600, show_spinner=False)
+def _open_consolidado_personal(excel_path=None):
+    return _open_consolidado_conexion(excel_path)
 
 
 @st.cache_data(ttl=15, show_spinner=False)
-def load_supernumeraries(excel_path):
+def load_supernumeraries(excel_path=None):
     """
-    Carga el directorio de personal directamente de la hoja 'BD PERSONAL' / 'BD_PERSONAL' de CONSOLIDADO 2026.xlsx.
-    Carga la totalidad de los empleados y profesionales ACTIVOS (Estado == 'SI' / 'ACTIVO').
+    Carga el directorio de supernumerarios directamente de la hoja 'SUPERNUMERARIO 2026 HISTORICO'
+    (o 'BD PERSONAL' si es archivo anterior) de CONSOLIDADO CONEXION.
     """
     try:
         xl = _open_consolidado_personal(excel_path)
-        sheet_target = _find_bd_personal_sheet(xl.sheet_names)
+        sheet_target = _find_sheet(xl.sheet_names, [
+            "SUPERNUMERARIO 2026 HISTORICO",
+            "SUPERNUMERARIO 20206 HISTORICO",
+            "SUPERNUMERARIOS HISTORICO",
+            "SUPERNUMERARIOS",
+            "BD PERSONAL"
+        ])
+        if not sheet_target:
+            sheet_target = _find_bd_personal_sheet(xl.sheet_names)
         if not sheet_target:
             sheet_target = xl.sheet_names[0]
         df = pd.read_excel(xl, sheet_name=sheet_target)
@@ -1160,6 +1164,8 @@ def load_supernumeraries(excel_path):
                 col_map[c] = "CEDULA"
             elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES", "PROFESIONAL", "NOMBRE"):
                 col_map[c] = "NOMBRES Y APELLIDOS"
+            elif "RESTRIC" in c_str:
+                col_map[c] = "RESTRICCION"
             elif c_str in ("CARGO", "CARGO DE TRABAJO"):
                 col_map[c] = "CARGO"
             elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO", "SEDE/CECO"):
@@ -1175,15 +1181,18 @@ def load_supernumeraries(excel_path):
 
         df = df.rename(columns=col_map)
         
-        for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "CORREO", "STATUS", "CELULAR", "OBSERVACIONES"]:
+        for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "RESTRICCION", "CARGO", "SEDE / CECO", "CORREO", "STATUS", "CELULAR", "OBSERVACIONES"]:
             if req_col not in df.columns:
                 df[req_col] = ""
 
         # Limpieza de textos y valores nulos
         df["CARGO"] = df["CARGO"].fillna("").astype(str).str.strip()
         df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip()
-        df["STATUS"] = df["STATUS"].fillna("SI").astype(str).str.strip()
+        df["STATUS"] = df["STATUS"].replace("", "SI").fillna("SI").astype(str).str.strip()
         df["CORREO"] = df["CORREO"].fillna("").astype(str).str.strip()
+        df["RESTRICCION"] = df["RESTRICCION"].fillna("").astype(str).str.strip().str.lower()
+        if not df["RESTRICCION"].any():
+            df["RESTRICCION"] = "sin restriccion"
 
         # Cargar todos los profesionales ACTIVOS del consolidado
         status_upper = df["STATUS"].astype(str).str.strip().str.upper()
@@ -1221,6 +1230,7 @@ def load_supernumeraries(excel_path):
         df_super["Profesional"] = df_super["NOMBRES Y APELLIDOS"]
         df_super["Estado"] = df_super["STATUS"]
         df_super["Correo"] = df_super["CORREO"]
+        df_super["Restriccion"] = df_super["RESTRICCION"]
 
         # Combinar médicos agregados manualmente por contingencia desde PERSONAL_MANUAL
         try:
@@ -1236,6 +1246,7 @@ def load_supernumeraries(excel_path):
                         manual_rows.append({
                             "CEDULA": m_ced,
                             "NOMBRES Y APELLIDOS": m_name,
+                            "RESTRICCION": "sin restriccion",
                             "CARGO": str(m_row.get("CARGO", "MEDICO GENERAL SUPERNUMERARIO")).strip(),
                             "SEDE / CECO": str(m_row.get("SEDE / CECO", "SUPERNUMERARIOS")).strip(),
                             "CORREO": "",
@@ -1247,7 +1258,8 @@ def load_supernumeraries(excel_path):
                             "Cargo": str(m_row.get("CARGO", "MEDICO GENERAL SUPERNUMERARIO")).strip(),
                             "Profesional": m_name,
                             "Estado": "SI",
-                            "Correo": ""
+                            "Correo": "",
+                            "Restriccion": "sin restriccion"
                         })
                 if manual_rows:
                     df_super = pd.concat([df_super, pd.DataFrame(manual_rows)], ignore_index=True)
@@ -1255,13 +1267,13 @@ def load_supernumeraries(excel_path):
             print(f"Error combinando médicos manuales de contingencia: {manual_err}")
         
         return (
-            df_super[["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"]]
+            df_super[["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "Restriccion", "CEDULA", "NOMBRES Y APELLIDOS", "RESTRICCION", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"]]
             .sort_values(by="Profesional")
             .reset_index(drop=True)
         )
     except Exception as e:
         print(f"Error cargando personal de BD PERSONAL: {e}")
-        return pd.DataFrame(columns=["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "CEDULA", "NOMBRES Y APELLIDOS", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"])
+        return pd.DataFrame(columns=["Cédula", "Sede", "Cargo", "Profesional", "Estado", "Correo", "Restriccion", "CEDULA", "NOMBRES Y APELLIDOS", "RESTRICCION", "CARGO", "SEDE / CECO", "STATUS", "CORREO", "CELULAR", "OBSERVACIONES"])
 
 
 # ---------------------------------------------------------------------------
@@ -1332,36 +1344,71 @@ def add_shift_to_date(excel_path, sheet_name, target_date, supernumerary_name,
 
 
 def duplicate_schedule_batch(excel_path, target_sheet, target_date, shifts_to_delete_list, shifts_to_add_list):
+    """
+    Duplica la programación emparejando ranuras de forma inteligente (smart-diff):
+    - Reemplaza en las ranuras existentes destino a los médicos del sábado origen (REEMPLAZAR).
+    - Si el sábado origen tiene más médicos, añade los adicionales (AGREGAR).
+    - Si el sábado origen tiene menos médicos, suprime las ranuras sobrantes (ELIMINAR).
+    Evita la creación masiva e innecesaria de cientos de registros duplicados en SharePoint.
+    """
     mods_list = []
+    n_dest = len(shifts_to_delete_list)
+    n_src = len(shifts_to_add_list)
     
-    # 1. Preparar las eliminaciones
-    for s_del in shifts_to_delete_list:
-        mods_list.append({
-            'sheet': s_del['sheet'],
-            'date': target_date,
-            'original_name': normalize_name_no_accents(s_del['doctor']),
-            'new_name': '',
-            'row': s_del['row'],
-            'col': s_del['col'],
-            'type': 'ELIMINAR',
-            'observaciones': '',
-            'clasificacion': 'Secuencia Normal'
-        })
+    # 1. Emparejar ranura a ranura existente
+    min_len = min(n_dest, n_src)
+    for i in range(min_len):
+        dest_item = shifts_to_delete_list[i]
+        src_item = shifts_to_add_list[i]
+        dest_doc = normalize_name_no_accents(dest_item['doctor'])
+        src_doc = normalize_name_no_accents(src_item['doctor'])
         
-    # 2. Preparar las adiciones
-    for s_add in shifts_to_add_list:
-        mods_list.append({
-            'sheet': target_sheet,
-            'date': target_date,
-            'original_name': '',
-            'new_name': normalize_name_no_accents(s_add['doctor']),
-            'row': 0,
-            'col': 0,
-            'type': 'AGREGAR',
-            'observaciones': s_add.get('observation', ''),
-            'clasificacion': s_add.get('classification', 'Secuencia Normal')
-        })
-        
+        # Solo registrar mutación si el médico realmente cambia
+        if dest_doc != src_doc:
+            mods_list.append({
+                'sheet': dest_item.get('sheet', target_sheet),
+                'date': target_date,
+                'original_name': dest_doc,
+                'new_name': src_doc,
+                'row': int(dest_item.get('row', 0)),
+                'col': int(dest_item.get('col', 0)),
+                'type': 'REEMPLAZAR',
+                'observaciones': src_item.get('observation', ''),
+                'clasificacion': src_item.get('classification', 'Secuencia Normal')
+            })
+            
+    # 2. Si el origen tiene más médicos que el destino, agregar los adicionales
+    if n_src > n_dest:
+        for i in range(min_len, n_src):
+            src_item = shifts_to_add_list[i]
+            mods_list.append({
+                'sheet': target_sheet,
+                'date': target_date,
+                'original_name': '',
+                'new_name': normalize_name_no_accents(src_item['doctor']),
+                'row': 0,
+                'col': 0,
+                'type': 'AGREGAR',
+                'observaciones': src_item.get('observation', ''),
+                'clasificacion': src_item.get('classification', 'Secuencia Normal')
+            })
+            
+    # 3. Si el destino tenía más médicos que el origen, suprimir los sobrantes
+    elif n_dest > n_src:
+        for i in range(min_len, n_dest):
+            dest_item = shifts_to_delete_list[i]
+            mods_list.append({
+                'sheet': dest_item.get('sheet', target_sheet),
+                'date': target_date,
+                'original_name': normalize_name_no_accents(dest_item['doctor']),
+                'new_name': '',
+                'row': int(dest_item.get('row', 0)),
+                'col': int(dest_item.get('col', 0)),
+                'type': 'ELIMINAR',
+                'observaciones': '',
+                'clasificacion': 'Secuencia Normal'
+            })
+            
     if mods_list:
         save_modifications_batch(excel_path, mods_list)
     return True

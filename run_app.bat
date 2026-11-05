@@ -5,6 +5,9 @@ echo   📅 Lanzador de la Aplicación de Turnos de Sábados (Supernumerarios)
 echo ====================================================================
 echo.
 
+:: Asegurar que el directorio de trabajo sea la carpeta exacta del script
+cd /d "%~dp0"
+
 :: Check if the python launcher exists
 where py >nul 2>nul
 if %errorlevel% neq 0 (
@@ -15,7 +18,7 @@ if %errorlevel% neq 0 (
 )
 
 echo [1/2] Verificando dependencias necesarias de Python...
-py -m pip install pandas openpyxl streamlit plotly streamlit-sortables --quiet
+py -m pip install pandas openpyxl streamlit plotly streamlit-sortables msal requests --quiet
 if %errorlevel% neq 0 (
     echo [WARNING] Hubo un problema instalando dependencias. 
     echo Intentando continuar con la ejecución...
@@ -24,13 +27,14 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [2/2] Iniciando el servidor local de Streamlit...
-echo La aplicación web se abrirá automáticamente en tu navegador.
+echo [2/2] Iniciando el servidor local de Streamlit en puerto dedicado 8505...
+echo La aplicación web se abrirá automáticamente en tu navegador en http://localhost:8505
+echo (Puerto 8505 asignado para evitar conflicto con horas-conexion u otros proyectos)
 echo Para cerrar la aplicación, cierra esta ventana negra.
 echo.
 
-:: Run Streamlit
-py -m streamlit run app.py
+:: Run Streamlit en puerto 8505 dedicado
+py -m streamlit run app.py --server.port 8505 --server.headless false
 
 if %errorlevel% neq 0 (
     echo.

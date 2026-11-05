@@ -27,18 +27,64 @@ import base64
 # Configuración — lee de st.secrets si existe, si no de variables de entorno
 # ---------------------------------------------------------------------------
 
-def _cfg(key: str) -> str:
+def _load_fallback_secrets() -> dict:
+    """Carga .streamlit/secrets.toml directamente si st.secrets no está disponible."""
     try:
-        if "azure" in st.secrets and key in st.secrets["azure"]:
-            val = st.secrets["azure"][key]
-            if val:
-                return str(val).strip()
-        if key in st.secrets:
-            val = st.secrets[key]
-            if val:
-                return str(val).strip()
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
+        secrets_path = os.path.join(cur_dir, ".streamlit", "secrets.toml")
+        if not os.path.exists(secrets_path):
+            secrets_path = os.path.join(os.getcwd(), ".streamlit", "secrets.toml")
+        if os.path.exists(secrets_path):
+            try:
+                import tomllib
+                with open(secrets_path, "rb") as f:
+                    return tomllib.load(f)
+            except ImportError:
+                import toml
+                return toml.load(secrets_path)
     except Exception:
         pass
+    return {}
+
+_cached_fallback_secrets = None
+
+def _cfg(key: str) -> str:
+    global _cached_fallback_secrets
+    try:
+        if hasattr(st, "secrets") and st.secrets:
+            if "azure" in st.secrets and key in st.secrets["azure"]:
+                val = st.secrets["azure"][key]
+                if val:
+                    return str(val).strip()
+            if key in st.secrets:
+                val = st.secrets[key]
+                if val:
+                    return str(val).strip()
+    except Exception:
+        pass
+
+    # Fallback 1: variables de entorno
+    env_key = "AZURE_" + key.upper()
+    env_val = os.environ.get(key) or os.environ.get(env_key)
+    if env_val:
+        return env_val.strip()
+
+    # Fallback 2: archivo secrets.toml directo
+    if _cached_fallback_secrets is None:
+        _cached_fallback_secrets = _load_fallback_secrets()
+    if _cached_fallback_secrets:
+        if "azure" in _cached_fallback_secrets and key in _cached_fallback_secrets["azure"]:
+            val = _cached_fallback_secrets["azure"][key]
+            if val:
+                return str(val).strip()
+        if key in _cached_fallback_secrets:
+            val = _cached_fallback_secrets[key]
+            if val:
+                return str(val).strip()
+
+    return ""
+
+
 def is_sharepoint_configured() -> bool:
     """Retorna True si las credenciales de Azure AD (tenant_id, client_id, client_secret) están configuradas."""
     try:
@@ -72,6 +118,19 @@ def _get_access_token() -> str:
     return result["access_token"]
 
 
+def _clean_guid(val: str) -> str:
+    """Limpia y extrae un UUID / GUID válido eliminando prefijos/sufijos URL y corchetes."""
+    if not val:
+        return ""
+    unquoted = urllib.parse.unquote(str(val)).strip()
+    cleaned = unquoted.replace("{", "").replace("}", "").strip()
+    if cleaned.upper().startswith("7B"):
+        cleaned = cleaned[2:]
+    if cleaned.upper().endswith("7D"):
+        cleaned = cleaned[:-2]
+    return cleaned.strip("-").strip()
+
+
 def _file_urls(file_key: str, action: str = "content") -> list:
     """
     Construye las posibles URLs de Graph API para el archivo indicado.
@@ -80,79 +139,58 @@ def _file_urls(file_key: str, action: str = "content") -> list:
     """
     urls = []
 
-    if file_key in ("consolidado_personal", "bd_personal"):
-        # 1. Prioridad Máxima: Acceso directo por Drive ID y File ID de SharePoint
-        drive_id = _cfg("drive_id_consolidado") or "b!5aDgOlRIA0mAy69UmmI48UmAwvsWLE1DpVGB05uwZEGrXHTv5jvcQrNGanYZcfd7"
-        file_id  = _cfg("file_id_consolidado") or "01FCYVDYL6NI7AZQWDWNB22BOOVLEXUPEV"
+    site_domain = "unionsaludvida.sharepoint.com"
+    site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+    site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
+
+    if file_key in ("consolidado_conexion", "consolidado_historico", "consolidado_personal", "bd_personal", "turnos_sabados"):
+        # 1. Prioridad: GUID configurado en consolidado_conexion
+        raw_guid = _cfg("consolidado_conexion") or "7B4DC31EBF-4E2F-4399-BC10-D2B224AAA12B%7D"
+        guid = _clean_guid(raw_guid)
+
+        # Acceso por Drive ID y File ID si estuviesen presentes
+        drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos")
+        file_id  = _cfg("file_id_consolidado") or _cfg("file_id_turnos")
         if drive_id and file_id:
             if action == "content":
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
             else:
                 urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
 
-        site_domain = "unionsaludvida.sharepoint.com"
-        site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
-        guid = "0c3e6a7e-c3c2-43b3-ad05-ceaac97a3c95"
-        site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
-        
-        # 2. Share tokens para enlaces de SharePoint (fallback secundario)
-        share_urls = [
-            "https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B0C3E6A7E-C3C2-43B3-AD05-CEAAC97A3C95%7D&file=CONSOLIDADO%202026.xlsx&action=default&mobileredirect=true",
-            "https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/Documentos%20compartidos/CONSOLIDADOS/CONSOLIDADO%202026/CONSOLIDADO%202026.xlsx",
-            f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D"
-        ]
-        
-        for surl in share_urls:
-            stoken = "u!" + base64.b64encode(surl.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
-            if action == "content":
-                urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem/content")
-            else:
-                urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem")
+        # Share tokens para enlaces de SharePoint con el GUID
+        if guid:
+            share_urls = [
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D",
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid.lower()}%7D",
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid.upper()}%7D",
+                f"https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D",
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D&action=default&mobileredirect=true"
+            ]
+            for surl in share_urls:
+                stoken = "u!" + base64.b64encode(surl.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
+                if action == "content":
+                    urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem/content")
+                else:
+                    urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem")
 
-        # 3. Fallback por rutas relativas dentro del sitio de SharePoint
-        candidate_rel_paths = [
-            "CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/CONSOLIDADO 2026.xlsx",
-            "CONSOLIDADO 2026.xlsx"
-        ]
-        for cpath in candidate_rel_paths:
-            item_path = urllib.parse.quote(cpath, safe='/')
-            base_url = f"{site_base}:/drive/root:/{item_path}"
+            # Endpoint directo de Graph por item id
             if action == "content":
-                urls.append(f"{base_url}:/content")
+                urls.append(f"{site_base}/drive/items/{guid}/content")
             else:
-                urls.append(base_url)
+                urls.append(f"{site_base}/drive/items/{guid}")
 
     site_domain = "unionsaludvida.sharepoint.com"
     site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
     site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
 
     key_map = {
-        "turnos_sabados":         (
+        "turnos_sabados": (
             "drive_id_turnos",  
             "file_id_turnos", 
             [
                 "TURNOS SABADOS.xlsx",
                 "CONSOLIDADOS/CONSOLIDADO 2026/TURNOS SABADOS.xlsx",
                 "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/TURNOS SABADOS.xlsx"
-            ]
-        ),
-        "modificaciones_sabados": (
-            "drive_id_mod_sab", 
-            "file_id_mod_sab", 
-            [
-                "MODIFICACIONES_SABADOS.xlsx",
-                "CONSOLIDADOS/CONSOLIDADO 2026/MODIFICACIONES_SABADOS.xlsx",
-                "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/MODIFICACIONES_SABADOS.xlsx"
-            ]
-        ),
-        "modificaciones_personal": (
-            "drive_id_mod_per", 
-            "file_id_mod_per", 
-            [
-                "MODIFICACIONES_PERSONAL.xlsx",
-                "CONSOLIDADOS/CONSOLIDADO 2026/MODIFICACIONES_PERSONAL.xlsx"
             ]
         ),
     }
@@ -384,4 +422,44 @@ def delete_sharepoint_list_item(list_key: str = "modificaciones_sabados", item_i
     if resp.status_code in (200, 204):
         return True
     raise RuntimeError(f"Error al eliminar item {item_id} de lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+
+
+def delete_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados", item_ids: list = None) -> int:
+    """
+    Elimina una lista de elementos de SharePoint en lotes ($batch) de hasta 20 por petición.
+    Retorna la cantidad de elementos eliminados exitosamente.
+    """
+    if not item_ids:
+        return 0
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    import math
+    batch_size = 20
+    num_batches = math.ceil(len(item_ids) / batch_size)
+    deleted_total = 0
+
+    for b_idx in range(num_batches):
+        batch_slice = item_ids[b_idx * batch_size : (b_idx + 1) * batch_size]
+        requests_payload = []
+        for i_idx, it_id in enumerate(batch_slice):
+            requests_payload.append({
+                "id": str(i_idx + 1),
+                "method": "DELETE",
+                "url": f"/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items/{it_id}"
+            })
+        batch_body = {"requests": requests_payload}
+        resp = requests.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
+        if resp.status_code == 200:
+            for r in resp.json().get("responses", []):
+                if r.get("status") in (200, 204):
+                    deleted_total += 1
+        else:
+            raise RuntimeError(f"Error en lote {b_idx + 1} de borrado: HTTP {resp.status_code} — {resp.text[:300]}")
+
+    return deleted_total
 

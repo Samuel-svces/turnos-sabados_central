@@ -8,3 +8,5 @@ temp_read_*.xlsx
 *_backup_*.xlsx
 agent-skills-main/
 
+.cache/
+backups/

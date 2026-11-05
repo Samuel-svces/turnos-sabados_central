@@ -76,6 +76,10 @@ if 'excel_path' not in st.session_state:
     if platform.system() == "Windows":
         # Ejecución local en Windows: buscar el maestro en rutas conocidas
         default_paths = [
+            os.path.join(os.path.dirname(__file__), "CONSOLIDADO CONEXION.xlsx"),
+            "CONSOLIDADO CONEXION.xlsx",
+            os.path.join(os.path.dirname(__file__), "CONSOLIDADO 2026.xlsx"),
+            "CONSOLIDADO 2026.xlsx",
             os.path.join(os.path.dirname(__file__), "TURNOS SABADOS.xlsx"),
             "TURNOS SABADOS.xlsx",
             r"c:\Users\JuanJoseOsorioMolina\Desktop\TURNOS SABADOS\TURNOS SABADOS.xlsx",
@@ -853,7 +857,16 @@ if st.session_state.is_admin:
         with col_m3:
             if st.button("Sincronizar Directorio", type="primary", use_container_width=True, icon=":material/sync:"):
                 st.session_state["force_refresh_personal"] = True
-                for c_file in ["CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx"]:
+                c_dir = os.path.join(os.path.dirname(__file__), ".cache")
+                for c_file in [
+                    "CONSOLIDADO_CONEXION_cached.xlsx", "CONSOLIDADO_CONEXION_cached_meta.txt",
+                    "CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx",
+                    os.path.join(c_dir, "CONSOLIDADO_CONEXION_cached.xlsx"),
+                    os.path.join(c_dir, "CONSOLIDADO_CONEXION_cached_meta.txt"),
+                    os.path.join(c_dir, "CONSOLIDADO_2026_cached.xlsx"),
+                    os.path.join(c_dir, "CONSOLIDADO_2026_cached_meta.txt"),
+                    os.path.join(c_dir, "temp_read_CONSOLIDADO 2026.xlsx")
+                ]:
                     if os.path.exists(c_file):
                         try:
                             os.remove(c_file)
