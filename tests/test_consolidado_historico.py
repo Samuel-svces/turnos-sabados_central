@@ -55,21 +55,17 @@ def run_tests():
     ])
 
     df_consol_test = pd.DataFrame([
-        # Caso 1: Sábado 31 Oct (Secuencia A) + Sin Restricción -> DEBE PASAR
+        # Caso 1: Sábado 31 Oct (Secuencia A) + Sin Restricción -> DEBE PASAR en 31 Oct
         {"FECHA CUBRIMIENTO": "2026-10-31", "NOMBRE SUPER VALIDADO": "CARLOS PEREZ", "OBSERVACION": "Normal 31 Oct"},
-        # Caso 2: Sábado 31 Oct (Secuencia A) + Con Restricción -> DEBE SER DESCARTADO
-        {"FECHA CUBRIMIENTO": "2026-10-31", "NOMBRE SUPER VALIDADO": "JUAN RODRIGUEZ", "OBSERVACION": "No debe pasar"},
-        # Caso 3: Sábado 7 Nov (Secuencia B / Contrario) + Con Restricción -> DEBE PASAR
-        {"FECHA CUBRIMIENTO": "2026-11-07", "NOMBRE SUPER VALIDADO": "JUAN RODRIGUEZ", "OBSERVACION": "Normal 7 Nov"},
-        # Caso 4: Sábado 7 Nov (Secuencia B / Contrario) + Sin Restricción -> DEBE SER DESCARTADO
-        {"FECHA CUBRIMIENTO": "2026-11-07", "NOMBRE SUPER VALIDADO": "CARLOS PEREZ", "OBSERVACION": "No debe pasar"},
-        # Caso 5: Fecha anterior al 31 de Octubre (24 Oct) -> DEBE SER DESCARTADO
+        # Caso 2: Sábado 31 Oct + Con Restricción -> DEBE PASAR AL SÁBADO CONTRARIO (7 Nov)
+        {"FECHA CUBRIMIENTO": "2026-10-31", "NOMBRE SUPER VALIDADO": "ANA MARTINEZ", "OBSERVACION": "31 Oct con restriccion -> sábado contrario 7 Nov"},
+        # Caso 3: Fecha anterior al 31 de Octubre (24 Oct) -> DEBE SER DESCARTADO
         {"FECHA CUBRIMIENTO": "2026-10-24", "NOMBRE SUPER VALIDADO": "CARLOS PEREZ", "OBSERVACION": "Antes del 31 oct"},
-        # Caso 6: Día entre semana (4 Nov - Miércoles) -> DEBE SER DESCARTADO
+        # Caso 4: Día entre semana (4 Nov - Miércoles) -> DEBE SER DESCARTADO
         {"FECHA CUBRIMIENTO": "2026-11-04", "NOMBRE SUPER VALIDADO": "CARLOS PEREZ", "OBSERVACION": "Miercoles no es sabado"},
-        # Caso 7: Médico no registrado en hoja de supernumerarios -> DEBE SER DESCARTADO
+        # Caso 5: Médico no registrado en hoja de supernumerarios -> DEBE SER DESCARTADO
         {"FECHA CUBRIMIENTO": "2026-10-31", "NOMBRE SUPER VALIDADO": "MEDICO FANTASMA", "OBSERVACION": "No existe"},
-        # Caso 8: Sábado 14 Nov (Secuencia A) + Sin Restricción -> DEBE PASAR
+        # Caso 6: Sábado 14 Nov (Secuencia A) + Sin Restricción -> DEBE PASAR en 14 Nov
         {"FECHA CUBRIMIENTO": "2026-11-14", "NOMBRE SUPER VALIDADO": "MARIA GOMEZ", "OBSERVACION": "Normal 14 Nov"}
     ])
 
@@ -85,7 +81,7 @@ def run_tests():
         print(f"  -> Total turnos validados obtenidos: {len(df_shifts)}")
         print(df_shifts[["Date", "Supernumerary", "Observation"]])
 
-        # Validar que solo los casos 1, 3 y 8 pasaron (total 3 turnos)
+        # Validar que los casos 1, 2 y 6 pasaron (total 3 turnos)
         assert len(df_shifts) == 3, f"Esperados 3 turnos válidos, se obtuvieron {len(df_shifts)}"
 
         # Verificar 31 Oct
@@ -93,10 +89,10 @@ def run_tests():
         assert len(s_31) == 1, "Debería haber 1 turno el 31 Oct"
         assert s_31.iloc[0]["Supernumerary"] == "CARLOS PEREZ", "31 Oct debe ser CARLOS PEREZ"
 
-        # Verificar 07 Nov
+        # Verificar 07 Nov (derivado de los que en 31 Oct tenían Con Restricción)
         s_07 = df_shifts[df_shifts["Date"] == datetime.date(2026, 11, 7)]
-        assert len(s_07) == 1, "Debería haber 1 turno el 7 Nov"
-        assert s_07.iloc[0]["Supernumerary"] == "JUAN RODRIGUEZ", "7 Nov debe ser JUAN RODRIGUEZ"
+        assert len(s_07) == 1, "Debería haber 1 turno el 7 Nov (sábado contrario de 31 Oct)"
+        assert s_07.iloc[0]["Supernumerary"] == "ANA MARTINEZ", "7 Nov debe ser ANA MARTINEZ"
 
         # Verificar 14 Nov
         s_14 = df_shifts[df_shifts["Date"] == datetime.date(2026, 11, 14)]

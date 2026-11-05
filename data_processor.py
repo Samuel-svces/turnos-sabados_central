@@ -762,6 +762,7 @@ def _get_base_shifts_df(excel_path):
         col_fecha = None
         col_super = None
         col_obs = None
+        col_restr_consol = None
         for c in df_consol.columns:
             c_norm = normalize_name_no_accents(str(c)).upper().strip()
             if "FECHA" in c_norm and "CUBRIMIENTO" in c_norm:
@@ -776,6 +777,8 @@ def _get_base_shifts_df(excel_path):
                 col_super = c
             elif "OBSERVAC" in c_norm:
                 col_obs = c
+            if "RESTRIC" in c_norm:
+                col_restr_consol = c
 
         if not col_fecha or not col_super:
             errors.append(f"No se encontraron las columnas requeridas (FECHA CUBRIMIENTO y NOMBRE SUPER VALIDADO) en '{sheet_consol}'.")
@@ -817,33 +820,51 @@ def _get_base_shifts_df(excel_path):
             if not doc_norm or len(doc_norm) < 3 or doc_norm in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
                 continue
 
-            # Filtro 4: Cruce y regla de alternancia con SUPERNUMERARIO 2026 HISTORICO
-            if doc_norm not in super_restriction_map:
+            # Filtro 4: Obtener restricción del médico
+            doc_restr = ""
+            if col_restr_consol and pd.notna(row[col_restr_consol]):
+                doc_restr = normalize_name_no_accents(str(row[col_restr_consol])).strip().lower()
+
+            if not doc_restr and doc_norm in super_restriction_map:
+                doc_restr = super_restriction_map[doc_norm]
+
+            if not doc_restr:
                 continue
 
-            doc_restr = super_restriction_map[doc_norm]
-            delta_weeks = (d - base_date).days // 7
+            is_sin_restr = "sin restric" in doc_restr
+            is_con_restr = "con restric" in doc_restr or ("restric" in doc_restr and "sin" not in doc_restr)
 
+            if not is_sin_restr and not is_con_restr:
+                continue
+
+            # Determinación del sábado asignado:
+            # Los que tienen 'sin restriccion' van al sábado base (31 de octubre, 14 de noviembre...).
+            # Los que tienen 'con restriccion' van al sábado contrario (7 de noviembre para los del 31 de octubre).
+            delta_weeks = (d - base_date).days // 7
             if delta_weeks % 2 == 0:
-                # Secuencia del 31 de Octubre (pares): solo médicos 'sin restriccion'
-                if "sin restric" not in doc_restr:
-                    continue
+                # Secuencia base (31 Octubre, 14 Noviembre, 28 Noviembre...)
+                if is_sin_restr:
+                    target_date = d
+                else:
+                    target_date = d + datetime.timedelta(days=7)
             else:
-                # Sábado contrario (impares): solo médicos 'con restriccion'
-                if "con restric" not in doc_restr and not ("restric" in doc_restr and "sin" not in doc_restr):
-                    continue
+                # Sábado contrario (7 Noviembre, 21 Noviembre...)
+                if is_con_restr:
+                    target_date = d
+                else:
+                    target_date = d - datetime.timedelta(days=7)
 
             # Validado exitosamente -> Incorporar al cuadro
-            m_header = MONTH_NAMES_SP.get(d.month, 'EXTRA')
-            s_name = f"{m_header} {d.year}"
+            m_header = MONTH_NAMES_SP.get(target_date.month, 'EXTRA')
+            s_name = f"{m_header} {target_date.year}"
             obs_text = str(row[col_obs]).strip() if col_obs and pd.notna(row[col_obs]) else ""
 
             all_shifts.append({
                 'Sheet': s_name,
                 'Month_Header': m_header,
-                'Date': d,
-                'Year': d.year,
-                'Month': d.month,
+                'Date': target_date,
+                'Year': target_date.year,
+                'Month': target_date.month,
                 'Supernumerary': doc_norm,
                 'Excel_Row': int(idx + 2),
                 'Excel_Col': int(col_super_idx + 1),
