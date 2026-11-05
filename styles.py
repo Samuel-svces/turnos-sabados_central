@@ -71,14 +71,15 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    /* Panel blanco superior de navegación institucional */
+    /* Panel blanco superior de navegación institucional ultra-optimizado y compacto */
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0.6rem 1.5rem !important;
+        padding: 0.25rem 1.25rem !important;
         margin-top: -1rem !important;
-        margin-bottom: 1.1rem !important;
+        margin-bottom: 0.5rem !important;
         align-items: center !important;
+        min-height: unset !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     }
     
@@ -86,6 +87,19 @@ def apply_styles():
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"] {
+        gap: 0px !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p {
+        margin: 0px !important;
+        padding: 0px !important;
     }
     
     .top-nav-panel {
@@ -98,41 +112,42 @@ def apply_styles():
     .top-nav-left {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
     }
     
     .top-nav-logo {
-        height: 38px;
-        width: auto;
-        max-width: 170px;
-        object-fit: contain;
-        display: block;
+        height: 25px !important;
+        width: auto !important;
+        max-width: 140px !important;
+        object-fit: contain !important;
+        display: block !important;
     }
     
     .top-nav-divider {
         width: 1.5px;
-        height: 28px;
+        height: 18px;
         background-color: #cbd5e1;
     }
     
     .top-nav-title {
         font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #0a1128;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: #0a1128 !important;
         letter-spacing: -0.01em;
+        line-height: 1 !important;
     }
     
     /* Banner institucional degradado de Turnos Sábados */
     .premium-gradient-banner,
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
         background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
-        border-radius: 12px;
-        padding: 1.25rem 2rem;
+        border-radius: 10px;
+        padding: 0.9rem 1.6rem !important;
         display: flex;
         align-items: center;
-        margin-bottom: 1.0rem !important;
-        box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
+        margin-bottom: 0.75rem !important;
+        box-shadow: 0 8px 20px -4px rgba(10, 17, 40, 0.15);
     }
     
     /* Resetear margen, bordes y sombras de alertas y notificaciones y sus contenedores */
@@ -1386,6 +1401,14 @@ def apply_styles():
         margin-top: 0px !important;
     }
     
+    /* Ocultar contenedor del marcador de engranaje */
+    div[data-testid="stElementContainer"]:has(.admin-gear-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     /* Reemplazar emoji de engranaje por icono bi-gear de Bootstrap en el Popover */
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
         font-size: 0 !important; /* Oculta el emoji original */
@@ -1399,7 +1422,7 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before {
         content: "\\f3e5" !important; /* bi-gear */
         font-family: "bootstrap-icons" !important;
-        font-size: 1.45rem !important;
+        font-size: 1.15rem !important;
         color: #ffffff !important;
         visibility: visible !important;
         display: inline-block !important;
@@ -1407,23 +1430,23 @@ def apply_styles():
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
         background-color: #0f172a !important;
-        border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 10px !important;
-        box-shadow: 0 0 10px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 7px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
         padding: 0 !important; /* Quitar padding para centrado perfecto */
         transition: all 0.2s ease !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        height: 42px !important;
-        width: 42px !important;
-        min-height: 42px !important;
-        min-width: 42px !important;
+        height: 32px !important;
+        width: 32px !important;
+        min-height: 32px !important;
+        min-width: 32px !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
         background-color: #1e293b !important;
-        box-shadow: 0 0 16px rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.5) !important;
-        border-color: rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+        border-color: rgba(255, 255, 255, 0.5) !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
         color: #ffffff !important;
