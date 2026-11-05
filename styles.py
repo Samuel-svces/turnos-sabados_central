@@ -71,10 +71,64 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
+    /* Panel blanco superior de navegación institucional */
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0.6rem 1.5rem !important;
+        margin-top: -1rem !important;
+        margin-bottom: 1.1rem !important;
+        align-items: center !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    }
+    
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+    
+    .top-nav-panel {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .top-nav-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .top-nav-logo {
+        height: 38px;
+        width: auto;
+        max-width: 170px;
+        object-fit: contain;
+        display: block;
+    }
+    
+    .top-nav-divider {
+        width: 1.5px;
+        height: 28px;
+        background-color: #cbd5e1;
+    }
+    
+    .top-nav-title {
+        font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0a1128;
+        letter-spacing: -0.01em;
+    }
+    
+    /* Banner institucional degradado de Turnos Sábados */
+    .premium-gradient-banner,
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
         background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
         border-radius: 12px;
-        padding: 1.5rem 2rem;
+        padding: 1.25rem 2rem;
         display: flex;
         align-items: center;
         margin-bottom: 1.0rem !important;
