@@ -163,7 +163,7 @@ def apply_styles():
         padding: 0.95rem 1.8rem !important;
         display: flex;
         align-items: center;
-        margin-top: 82px !important; /* Espacio para el panel superior fixed de 68px */
+        margin-top: 50px !important; /* Espacio para que quede a la distancia adecuada del panel blanco */
         margin-left: 105px !important; /* Empieza a la mitad del logo */
         margin-right: 3rem !important; /* Termina en el engranaje */
         margin-bottom: 0.85rem !important;
