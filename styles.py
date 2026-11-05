@@ -256,7 +256,8 @@ def apply_styles():
         padding: 0.72rem 1.5rem !important;
         display: flex;
         align-items: center;
-        margin-top: 78px !important; /* Anclado limpiamente a solo 10px bajo la barra fija de 68px */
+        margin-top: 71px !important; /* Prácticamente pegado a la barra fija de 68px (a solo 3px de distancia) */
+        margin-left: 90px !important; /* Empieza a la mitad del logo */
         margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
         margin-bottom: 0.45rem !important;
         box-sizing: border-box !important;
