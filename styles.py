@@ -62,7 +62,6 @@ def apply_styles():
     div[data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
-        padding-top: 50% !important; /* Espacio para la barra superior fija de 68px + 4px de margen */
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
