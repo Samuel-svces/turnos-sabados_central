@@ -19,42 +19,60 @@ def apply_styles():
     }
     
     /* Hide the Streamlit top header (hamburger menu) to save space */
-    header[data-testid="stHeader"] {
+    header[data-testid="stHeader"],
+    [data-testid="stHeader"] {
         display: none !important;
         height: 0px !important;
+        visibility: hidden !important;
     }
     
+    /* Ocultar completamente la barra lateral (sidebar) y sus controles para que no desplace el contenido */
+    [data-testid="stSidebar"],
+    section[data-testid="stSidebar"],
+    div[data-testid="stSidebar"],
+    div[data-testid="stSidebarCollapsedControl"],
+    button[data-testid="baseButton-headerNoPadding"],
+    [data-testid="collapsedControl"] {
+        display: none !important;
+        width: 0px !important;
+        height: 0px !important;
+        min-width: 0px !important;
+        max-width: 0px !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        pointer-events: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     /* Contenedor principal estilizado como tarjeta unificada premium */
     div[data-testid="stAppViewBlockContainer"] {
         background-color: transparent !important;
         border: none !important;
         border-radius: 0px !important;
-        padding: 1.0rem 0px 2.0rem 0px !important;
+        padding: 0px !important;
         box-shadow: none !important;
-        margin-top: 0.5rem !important;
-        margin-bottom: 2rem !important;
+        margin: 0px !important;
     }
     
-    .block-container, 
-    div[data-testid="stMainBlockContainer"], 
-    div[data-testid="stAppViewContainer"],
-    div[data-testid="stAppViewBlockContainer"],
-    div[data-testid="stMain"],
+    .stApp,
     section.main,
-    .stAppViewContainer,
     .stMain,
+    div[data-testid="stMain"],
+    div[data-testid="stMainBlockContainer"],
     .block-container {
         padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
-        padding-left: 0px !important;
-        padding-right: 0px !important;
-        margin-top: -1rem !important;
+        padding-bottom: 2rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        margin-top: 0px !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
         max-width: 100% !important;
         width: 100% !important;
         background-color: transparent !important;
         background: transparent !important;
+        box-sizing: border-box !important;
     }
     
     h1, h2, h3 {
@@ -80,7 +98,7 @@ def apply_styles():
         width: 100vw !important;
         height: 68px !important;
         margin: 0 !important;
-        padding: 0 26px 0 20px !important;
+        padding: 0 2rem !important;
         background: #ffffff !important;
         border: none !important;
         border-bottom: 1px solid #e5e7eb !important;
@@ -177,9 +195,9 @@ def apply_styles():
         padding: 0.95rem 1.8rem !important;
         display: flex;
         align-items: center;
-        margin-top: 50px !important; /* Espacio para que quede a la distancia adecuada del panel blanco */
-        margin-left: 105px !important; /* Empieza a la mitad del logo */
-        margin-right: 3rem !important; /* Termina en el engranaje */
+        margin-top: 50px !important; /* Espacio adecuado bajo el panel blanco fixed de 68px */
+        margin-left: 90px !important; /* Empieza a la mitad del logo */
+        margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
         margin-bottom: 0.85rem !important;
         box-sizing: border-box !important;
         box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
@@ -1471,7 +1489,7 @@ def apply_styles():
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
         background-color: #ffffff !important; /* Fondo blanco */
-        border: 2px solid #000000 !important; /* Borde negro definido */
+        border: 2px solid #d9d9d9 !important; /* Borde negro definido */
         border-radius: 50% !important; /* Circular */
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
         padding: 0 !important;
