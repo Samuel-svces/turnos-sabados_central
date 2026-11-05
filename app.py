@@ -412,7 +412,7 @@ with tab_calendar:
 
     if not st.session_state.is_admin:
         # Fila de píldoras/botones de filtro dinámico
-        st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 0.15rem;'></div>", unsafe_allow_html=True)
         col_spacer_l, col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_spacer_r = st.columns([2.2, 1.2, 1.8, 1.8, 2.2, 2.2])
         with col_lbl_f:
             st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
@@ -461,8 +461,8 @@ with tab_calendar:
                 btn.style.setProperty('border-radius', '12px', 'important');
                 btn.style.setProperty('width', '100%', 'important');
                 btn.style.setProperty('display', 'block', 'important');
-                btn.style.setProperty('margin-bottom', '0.75rem', 'important');
-                btn.style.setProperty('padding', '0.6rem 0.6rem', 'important');
+                btn.style.setProperty('margin-bottom', '0.35rem', 'important');
+                btn.style.setProperty('padding', '0.45rem 0.6rem', 'important');
                 btn.style.setProperty('text-shadow', '0 1px 2px rgba(0, 0, 0, 0.15)', 'important');
                 const pHeader = btn.querySelector('p, span');
                 if (pHeader) {

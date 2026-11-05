@@ -75,6 +75,11 @@ def apply_styles():
         box-sizing: border-box !important;
     }
     
+    /* Compactar espaciado vertical entre secciones en el contenedor principal */
+    div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
+        gap: 0.45rem !important;
+    }
+    
     h1, h2, h3 {
         font-family: 'Outfit', sans-serif;
         font-weight: 700;
@@ -201,13 +206,13 @@ def apply_styles():
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
         background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
         border-radius: 12px;
-        padding: 0.95rem 1.8rem !important;
+        padding: 0.72rem 1.5rem !important;
         display: flex;
         align-items: center;
-        margin-top: 50px !important; /* Espacio adecuado bajo el panel blanco fixed de 68px */
+        margin-top: 14px !important; /* Subir panel bajo la barra fija de 68px */
         margin-left: 90px !important; /* Empieza a la mitad del logo */
         margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
-        margin-bottom: 0.85rem !important;
+        margin-bottom: 0.45rem !important;
         box-sizing: border-box !important;
         box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
     }
@@ -279,19 +284,19 @@ def apply_styles():
         background-color: rgba(255, 255, 255, 0.12);
         border: 1px solid rgba(255, 255, 255, 0.18);
         border-radius: 10px;
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        min-height: 44px;
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 14px;
+        margin-right: 12px;
         box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.08);
     }
     .premium-banner-icon i {
         color: #ffffff;
-        font-size: 1.35rem;
+        font-size: 1.2rem;
         line-height: 1;
     }
     .premium-banner-text {
@@ -301,36 +306,36 @@ def apply_styles():
     }
     .premium-banner-text h1 {
         color: #ffffff !important;
-        font-size: 1.65rem !important;
+        font-size: 1.45rem !important;
         margin: 0 !important;
         padding: 0 !important;
         font-weight: 700 !important;
         letter-spacing: -0.01em !important;
-        line-height: 1.2 !important;
+        line-height: 1.15 !important;
         -webkit-text-fill-color: #ffffff !important;
     }
     .premium-banner-text p {
         color: rgba(255, 255, 255, 0.8) !important;
-        margin: 3px 0 0 0 !important;
+        margin: 2px 0 0 0 !important;
         padding: 0 !important;
-        font-size: 0.82rem !important;
+        font-size: 0.78rem !important;
         font-weight: 400 !important;
         letter-spacing: 0.01em !important;
     }
     
-    /* Tarjeta informativa de solicitud de cambios */
+    /* Tarjeta informativa de solicitud de cambios - compacta */
     .info-notice-card {
         background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        padding: 12px 20px !important;
+        border-radius: 10px !important;
+        padding: 8px 18px !important;
         text-align: center !important;
-        color: #334155 !important;
-        font-size: 0.92rem !important;
-        line-height: 1.5 !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
-        margin-top: 0.25rem !important;
-        margin-bottom: 0.75rem !important;
+        color: #475569 !important;
+        font-size: 0.86rem !important;
+        line-height: 1.35 !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+        margin-top: 0.1rem !important;
+        margin-bottom: 0.35rem !important;
     }
     .info-notice-card a {
         color: #0284c7 !important;
@@ -736,21 +741,15 @@ def apply_styles():
         background-color: #ffffff !important;
         border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
-        
-        /* -------------------------------------------------------------------------
-           AJUSTA EL ESPACIADO AQUÍ SI DESEAS ACERCAR O ALEJAR LOS NOMBRES:
-           ------------------------------------------------------------------------- */
-        padding: 1rem 1.25rem 1.5rem 1.25rem !important;
-        margin-top: 0.5rem !important;
-        margin-bottom: 1.5rem !important;
-        /* ------------------------------------------------------------------------- */
-        
+        padding: 0.75rem 1rem 1rem 1rem !important;
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.75rem !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
     }
     
     /* ---- Calendar Grid: compactar elementos ---- */
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stVerticalBlock"] {
-        gap: 0.35rem !important;
+        gap: 0.25rem !important;
     }
     div[data-testid="stColumn"]:has(.saturday-col-marker) button {
         min-height: unset !important;
