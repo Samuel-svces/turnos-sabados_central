@@ -107,7 +107,7 @@ def apply_styles():
         padding: 0 2rem !important;
         background: #ffffff !important;
         border: none !important;
-        border-bottom: 1px solid #e5e7eb !important;
+        border-bottom: 1px solid #cbd5e1 !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         display: flex !important;
         flex-direction: row !important;
