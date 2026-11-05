@@ -5,12 +5,10 @@ import pandas as pd
 
 def get_allowed_doctors(target_date=None):
     """
-    Retorna el listado completo de médicos supernumerarios disponibles para asignación
-    o reemplazo. Carga todos los profesionales activos del directorio (SUPERNUMERARIO 2026 HISTORICO)
-    y cualquier médico registrado en el calendario de turnos.
-    Permite buscar y seleccionar cualquier médico sin bloquearlo por restricciones de fecha.
+    Retorna el listado de médicos supernumerarios disponibles para asignación o reemplazo.
+    Carga exclusivamente los supernumerarios activos que cumplan con la condición estricta:
+    Cédula llena (no vacía) y fecha de 01/10/2026 en adelante (sin incluir registros anteriores).
     """
-    df_s = st.session_state.get('shifts_df', pd.DataFrame())
     df_sup = st.session_state.get('super_df', pd.DataFrame())
     
     docs_set = set()
@@ -19,21 +17,19 @@ def get_allowed_doctors(target_date=None):
         "SIN SUPERNUMERARIO", "SIN AGENDA", "AGENDA EN VACACIONES", "ELIMINAR"
     }
 
-    # 1. Cargar el listado completo de supernumerarios del directorio
+    # Cargar exclusivamente los supernumerarios activos y validados del directorio
     if isinstance(df_sup, pd.DataFrame) and not df_sup.empty:
         col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
+        col_ced = 'Cédula' if 'Cédula' in df_sup.columns else ('CEDULA' if 'CEDULA' in df_sup.columns else None)
         if col_name:
-            for n in df_sup[col_name].dropna():
-                clean_n = dp.normalize_name_no_accents(str(n)).strip().upper()
+            for _, r in df_sup.iterrows():
+                # Verificar cédula obligatoria
+                ced_val = str(r.get(col_ced, '')).strip().replace('.0', '') if col_ced else ''
+                if not ced_val or ced_val.lower() in ('nan', 'none', 'null', '0', ''):
+                    continue
+                clean_n = dp.normalize_name_no_accents(str(r[col_name])).strip().upper()
                 if len(clean_n) > 2 and clean_n not in invalid_names and not clean_n.startswith("CONSOLIDADO"):
                     docs_set.add(clean_n)
-
-    # 2. Combinar con cualquier médico programado en el calendario de turnos
-    if isinstance(df_s, pd.DataFrame) and not df_s.empty and 'Supernumerary' in df_s.columns:
-        for n in df_s['Supernumerary'].dropna():
-            clean_n = dp.normalize_name_no_accents(str(n)).strip().upper()
-            if len(clean_n) > 2 and clean_n not in invalid_names and not clean_n.startswith("CONSOLIDADO"):
-                docs_set.add(clean_n)
 
     return sorted(list(docs_set))
 

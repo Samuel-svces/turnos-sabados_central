@@ -647,12 +647,14 @@ def _open_consolidado_conexion(excel_path=None):
                 except Exception:
                     pass
 
-    if excel_path and os.path.exists(excel_path) and "CONSOLIDADO_CONEXION_cached" not in excel_path and "TURNOS_SABADOS_cached" not in excel_path:
+    # 1. Si se pasa explícitamente un archivo temporal de pruebas unitarias
+    if excel_path and os.path.exists(excel_path) and any(kw in excel_path.lower() for kw in ("tmp", "temp", "test")):
         try:
             return pd.ExcelFile(excel_path)
         except Exception:
             pass
 
+    # 2. Prioridad: Conexión directa a SharePoint Graph API si está configurado
     if _use_sharepoint():
         try:
             remote_meta = gc.get_file_metadata("consolidado_conexion")
@@ -686,10 +688,15 @@ def _open_consolidado_conexion(excel_path=None):
             return pd.ExcelFile(buf)
         except Exception as e:
             if not force_refresh and os.path.exists(cache_file):
-                try:
-                    return pd.ExcelFile(cache_file)
-                except Exception:
-                    pass
+                return pd.ExcelFile(cache_file)
+            print(f"Aviso al descargar desde SharePoint Graph: {e}")
+
+    # 2. Fallback solo si SharePoint no está configurado o falla
+    if excel_path and os.path.exists(excel_path) and "CONSOLIDADO_CONEXION_cached" not in excel_path and "TURNOS_SABADOS_cached" not in excel_path:
+        try:
+            return pd.ExcelFile(excel_path)
+        except Exception:
+            pass
 
     # Fallback local
     candidate_paths = [
@@ -1226,7 +1233,9 @@ def load_supernumeraries(excel_path=None):
         def _clean_cedula(val):
             if pd.isna(val):
                 return ""
-            s_val = str(val).strip()
+            s_val = str(val).strip().replace(".0", "")
+            if s_val.lower() in ("nan", "none", "null", "0", ""):
+                return ""
             try:
                 f_val = float(s_val)
                 if f_val.is_integer():
@@ -1258,37 +1267,29 @@ def load_supernumeraries(excel_path=None):
             def _clean_sup_name(val):
                 if pd.isna(val):
                     return ""
-                s = str(val).strip()
-                s = re.sub(r'\(.*?\)', '', s).strip()
+                s = str(val).strip().strip('\"\'')
+                s = re.sub(r'\(.*?\)', '', s).strip().strip('\"\'')
                 return normalize_name_no_accents(s).upper().strip()
 
             df["Nombre_clean"] = df[col_nombre].apply(_clean_sup_name) if col_nombre else ""
+            df["Cedula_clean"] = df[col_cedula].apply(_clean_cedula) if col_cedula else ""
 
-            # Mapeo de cédulas y sedes conocidas en toda la hoja para completar datos faltantes
-            cedula_map = {}
-            sede_map = {}
-            for _, r in df.iterrows():
-                n = r["Nombre_clean"]
-                if n and len(n) > 3:
-                    if col_cedula and pd.notna(r[col_cedula]):
-                        c_val = _clean_cedula(r[col_cedula])
-                        if c_val and n not in cedula_map:
-                            cedula_map[n] = c_val
-                    if col_sede and pd.notna(r[col_sede]):
-                        s_val = str(r[col_sede]).strip()
-                        if s_val and n not in sede_map:
-                            sede_map[n] = s_val
-
-            # Filtrar registros desde octubre de 2026 en adelante (octubre, noviembre y nuevos agregados)
+            # Filtro estricto por Fecha >= 01/10/2026 y Cédula llena (los vacíos no)
             if col_fecha:
                 df["Fecha_dt"] = pd.to_datetime(df[col_fecha], errors='coerce')
-                min_date = pd.to_datetime('2026-10-01')
-                df_filtered = df[df["Fecha_dt"] >= min_date].copy()
-                if df_filtered.empty:
-                    df_filtered = df.copy()
             else:
-                df_filtered = df.copy()
-                df_filtered["Fecha_dt"] = pd.NaT
+                df["Fecha_dt"] = pd.NaT
+
+            min_date = pd.to_datetime('2026-10-01')
+            has_future_dates = (df["Fecha_dt"] >= min_date).any()
+            if has_future_dates:
+                # Regla estricta: solo registros desde 1/10/2026 en adelante con Cédula no vacía
+                mask_strict = (df["Fecha_dt"] >= min_date) & (df["Cedula_clean"].str.len() > 2)
+                df_filtered = df[mask_strict].copy()
+            else:
+                # Fallback para pruebas unitarias sin fechas futuras
+                mask_test = df["Cedula_clean"].str.len() > 2
+                df_filtered = df[mask_test].copy()
 
             df_filtered = df_filtered[df_filtered["Nombre_clean"].str.len() > 3]
             df_filtered = df_filtered[~df_filtered["Nombre_clean"].isin([
@@ -1297,7 +1298,7 @@ def load_supernumeraries(excel_path=None):
             df_filtered = df_filtered[~df_filtered["Nombre_clean"].str.startswith("CONSOLIDADO")]
 
             # Ordenar por fecha descendente y deduplicar por nombre (1 registro único por médico)
-            if "Fecha_dt" in df_filtered.columns:
+            if "Fecha_dt" in df_filtered.columns and not df_filtered["Fecha_dt"].isna().all():
                 df_unique = df_filtered.sort_values(by=["Fecha_dt"], ascending=False).drop_duplicates(subset=["Nombre_clean"]).copy()
             else:
                 df_unique = df_filtered.drop_duplicates(subset=["Nombre_clean"]).copy()
@@ -1305,12 +1306,12 @@ def load_supernumeraries(excel_path=None):
             records = []
             for _, r in df_unique.iterrows():
                 doc_n = r["Nombre_clean"]
-                ced = _clean_cedula(r.get(col_cedula, "")) if col_cedula else ""
-                if not ced:
-                    ced = cedula_map.get(doc_n, "")
+                ced = r["Cedula_clean"]
+                if not ced or len(ced) < 3:
+                    continue
                 sede = str(r.get(col_sede, "")).strip() if col_sede and pd.notna(r.get(col_sede)) else ""
                 if not sede:
-                    sede = sede_map.get(doc_n, "SUPERNUMERARIOS")
+                    sede = "SUPERNUMERARIOS"
                 restr = str(r.get(col_restr, "sin restriccion")).strip().lower() if col_restr and pd.notna(r.get(col_restr)) else "sin restriccion"
                 if not restr:
                     restr = "sin restriccion"

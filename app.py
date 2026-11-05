@@ -74,8 +74,11 @@ if 'excel_path' not in st.session_state:
     # En modo SharePoint no se usa ruta local para los archivos delta.
     # Se mantiene solo como referencia para compatibilidad con data_processor.
     import platform
-    if platform.system() == "Windows":
-        # Ejecución local en Windows: buscar el maestro en rutas conocidas
+    if gc.is_sharepoint_configured():
+        # Conexión directa al archivo de SharePoint vía Microsoft Graph API
+        st.session_state.excel_path = None
+    elif platform.system() == "Windows":
+        # Ejecución local como fallback solo si no hay credenciales SharePoint
         default_paths = [
             os.path.join(os.path.dirname(__file__), "CONSOLIDADO CONEXION.xlsx"),
             "CONSOLIDADO CONEXION.xlsx",
@@ -92,8 +95,7 @@ if 'excel_path' not in st.session_state:
                 st.session_state.excel_path = path
                 break
     else:
-        # Ejecución en Streamlit Cloud: se usan credenciales Azure via graph_client
-        st.session_state.excel_path = "TURNOS SABADOS.xlsx"  # placeholder (no se accede a disco)
+        st.session_state.excel_path = None
 
 # Function to load and clean data
 def load_app_data(reload_personal=False):
@@ -151,6 +153,79 @@ with col_gear:
                 if 'saturday_offset' in st.session_state:
                     del st.session_state.saturday_offset
                 st.rerun()
+
+            st.markdown("<div style='margin-top:0.8rem; margin-bottom:0.8rem; border-top:1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
+            if st.button("🔄 Sincronizar con SharePoint", use_container_width=True, key="btn_sync_direct_sp"):
+                st.session_state["force_refresh_personal"] = True
+                c_dir = os.path.join(os.path.dirname(__file__), ".cache")
+                if os.path.exists(c_dir):
+                    for f_name in os.listdir(c_dir):
+                        try:
+                            os.remove(os.path.join(c_dir, f_name))
+                        except Exception:
+                            pass
+                dp._open_consolidado_conexion.clear()
+                dp._get_base_shifts_df.clear()
+                dp._open_consolidado_personal.clear()
+                dp.load_supernumeraries.clear()
+                dp.load_modifications.clear()
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                load_app_data(reload_personal=True)
+                st.success("Datos resincronizados directamente con SharePoint.", icon=":material/check_circle:")
+                st.rerun()
+
+            with st.expander("🛠️ Purgar Modificaciones en SharePoint", expanded=False):
+                st.markdown("Vaciar las modificaciones acumuladas en la Lista de SharePoint (`MODIFICACIONES_SABADOS`).")
+                if gc.is_sharepoint_configured():
+                    try:
+                        current_items = gc.get_sharepoint_list_items("modificaciones_sabados")
+                        total_items = len(current_items)
+                    except Exception:
+                        current_items = []
+                        total_items = 0
+
+                    st.info(f"Modificaciones acumuladas: **{total_items}**")
+                    if total_items > 0:
+                        import json
+                        json_bytes = json.dumps(current_items, ensure_ascii=False, indent=2).encode('utf-8')
+                        timestamp_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                        st.download_button(
+                            label="📥 Descargar Respaldo JSON",
+                            data=json_bytes,
+                            file_name=f"sharepoint_modificaciones_backup_{timestamp_now}.json",
+                            mime="application/json",
+                            use_container_width=True
+                        )
+
+                    confirm_purge = st.checkbox("Confirmar purga completa", key="chk_confirm_purge_popover")
+                    if st.button("🧹 Purgar y Reiniciar", type="primary", disabled=(not confirm_purge or total_items == 0), use_container_width=True, key="btn_do_purge_popover"):
+                        with st.spinner("Purgando en SharePoint..."):
+                            item_ids = [str(it.get("_item_id", it.get("id"))) for it in current_items if it.get("_item_id", it.get("id"))]
+                            deleted_count = 0
+                            if item_ids:
+                                deleted_count = gc.delete_sharepoint_list_items_batch("modificaciones_sabados", item_ids)
+
+                            c_dir = os.path.join(os.path.dirname(__file__), ".cache")
+                            if os.path.exists(c_dir):
+                                for f_name in os.listdir(c_dir):
+                                    try:
+                                        os.remove(os.path.join(c_dir, f_name))
+                                    except Exception:
+                                        pass
+
+                            dp._open_consolidado_conexion.clear()
+                            dp._get_base_shifts_df.clear()
+                            dp._open_consolidado_personal.clear()
+                            dp.load_supernumeraries.clear()
+                            dp.load_modifications.clear()
+                            st.cache_data.clear()
+                            st.cache_resource.clear()
+                            load_app_data(reload_personal=True)
+                            st.success(f"{deleted_count} modificaciones eliminadas de SharePoint.", icon=":material/check_circle:")
+                            st.rerun()
+                else:
+                    st.warning("SharePoint no configurado.")
         else:
             admin_password = "C3ntr4l1234.*"
             try:
@@ -208,14 +283,8 @@ if not st.session_state.data_loaded or st.session_state.load_error:
 
 df_shifts = st.session_state.shifts_df
 df_super = st.session_state.super_df
-# Navigation Tabs
-# Navigation Tabs
-if st.session_state.is_admin:
-    tabs = st.tabs(["Calendario de Turnos", "Directorio y Sincronización"])
-    tab_calendar = tabs[0]
-    tab_admin = tabs[1]
-else:
-    tab_calendar = st.container()
+# Contenedor principal directo: solo Calendario de Turnos
+tab_calendar = st.container()
 
 # Unification layout: click-to-edit instead of sortables
 
@@ -841,181 +910,6 @@ with tab_calendar:
                             
                 st.markdown("</div>", unsafe_allow_html=True)
 
-
-# ----------------- TAB 3: ADMIN CONTROL PANEL -----------------
-if st.session_state.is_admin:
-    with tab_admin:
-        st.markdown("### Directorio de Personal y Sincronización")
-        
-        num_super = len(df_super) if not df_super.empty else 0
-        num_supernumerarios = (df_super['Cargo'].astype(str).str.upper().str.contains('SUPERNUMERARI').sum()) if not df_super.empty and 'Cargo' in df_super.columns else 0
-        
-        col_m1, col_m2, col_m3 = st.columns([1, 1, 1.2], vertical_alignment="bottom")
-        with col_m1:
-            st.metric("Total Activos BD", f"{num_super:,}".replace(",", ".") + " Profesionales")
-        with col_m2:
-            st.metric("Supernumerarios", f"{num_supernumerarios:,}".replace(",", ".") + " Médicos")
-        with col_m3:
-            if st.button("Sincronizar Directorio", type="primary", use_container_width=True, icon=":material/sync:"):
-                st.session_state["force_refresh_personal"] = True
-                c_dir = os.path.join(os.path.dirname(__file__), ".cache")
-                for c_file in [
-                    "CONSOLIDADO_CONEXION_cached.xlsx", "CONSOLIDADO_CONEXION_cached_meta.txt",
-                    "CONSOLIDADO_2026_cached.xlsx", "CONSOLIDADO_2026_cached_meta.txt", "temp_read_CONSOLIDADO 2026.xlsx",
-                    os.path.join(c_dir, "CONSOLIDADO_CONEXION_cached.xlsx"),
-                    os.path.join(c_dir, "CONSOLIDADO_CONEXION_cached_meta.txt"),
-                    os.path.join(c_dir, "CONSOLIDADO_2026_cached.xlsx"),
-                    os.path.join(c_dir, "CONSOLIDADO_2026_cached_meta.txt"),
-                    os.path.join(c_dir, "temp_read_CONSOLIDADO 2026.xlsx")
-                ]:
-                    if os.path.exists(c_file):
-                        try:
-                            os.remove(c_file)
-                        except Exception:
-                            pass
-                try:
-                    dp._open_consolidado_conexion.clear()
-                except Exception:
-                    pass
-                try:
-                    dp._get_base_shifts_df.clear()
-                except Exception:
-                    pass
-                try:
-                    dp._open_consolidado_personal.clear()
-                except Exception:
-                    pass
-                try:
-                    dp.load_supernumeraries.clear()
-                except Exception:
-                    pass
-                st.cache_data.clear()
-                st.cache_resource.clear()
-                load_app_data(reload_personal=True)
-                st.success("Directorio de personal y turnos resincronizados con éxito.", icon=":material/check_circle:")
-                st.rerun()
-        
-        st.markdown("<div style='margin-top: 1.2rem; margin-bottom: 0.8rem; border-top: 1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
-        
-        with st.expander("🛠️ Mantenimiento: Purgar Modificaciones Residuales de SharePoint", expanded=False):
-            st.markdown(
-                "Utilice esta opción para **vaciar las modificaciones acumuladas** (registros de adición, reemplazo y eliminación) "
-                "en la Lista de SharePoint (`MODIFICACIONES_SABADOS`). Esto dejará el calendario en limpio, reflejando exclusivamente "
-                "los turnos calculados por la nueva lógica del archivo maestro **CONSOLIDADO CONEXION**."
-            )
-
-            if gc.is_sharepoint_configured():
-                try:
-                    current_items = gc.get_sharepoint_list_items("modificaciones_sabados")
-                    total_items = len(current_items)
-                except Exception as e_chk:
-                    current_items = []
-                    total_items = 0
-                    st.caption(f"Nota de consulta: {e_chk}")
-
-                st.info(f"📊 Registros acumulados en la Lista de SharePoint: **{total_items}** elementos.")
-
-                if total_items > 0:
-                    import json
-                    json_bytes = json.dumps(current_items, ensure_ascii=False, indent=2).encode('utf-8')
-                    timestamp_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                    st.download_button(
-                        label="📥 Descargar Respaldo JSON Preventivo",
-                        data=json_bytes,
-                        file_name=f"sharepoint_modificaciones_backup_{timestamp_now}.json",
-                        mime="application/json",
-                        help="Descargue un respaldo antes de purgar para asegurar los datos.",
-                        use_container_width=True
-                    )
-
-                confirm_purge = st.checkbox(
-                    "Confirmo que deseo purgar todas las modificaciones de SharePoint para reiniciar el tablero en limpio.",
-                    key="chk_confirm_purge_sp"
-                )
-
-                if st.button("🧹 Purgar Modificaciones y Reiniciar Tablero", type="primary", disabled=(not confirm_purge or total_items == 0), use_container_width=True):
-                    with st.spinner("Purgando elementos en SharePoint vía Microsoft Graph API..."):
-                        item_ids = [str(it.get("_item_id", it.get("id"))) for it in current_items if it.get("_item_id", it.get("id"))]
-                        deleted_count = 0
-                        if item_ids:
-                            deleted_count = gc.delete_sharepoint_list_items_batch("modificaciones_sabados", item_ids)
-
-                        # Limpiar archivos de caché local
-                        c_dir = os.path.join(os.path.dirname(__file__), ".cache")
-                        if os.path.exists(c_dir):
-                            for f_name in os.listdir(c_dir):
-                                try:
-                                    os.remove(os.path.join(c_dir, f_name))
-                                except Exception:
-                                    pass
-
-                        # Invalidar cachés y recargar
-                        try:
-                            dp._open_consolidado_conexion.clear()
-                        except Exception:
-                            pass
-                        try:
-                            dp._get_base_shifts_df.clear()
-                        except Exception:
-                            pass
-                        try:
-                            dp._open_consolidado_personal.clear()
-                        except Exception:
-                            pass
-                        try:
-                            dp.load_supernumeraries.clear()
-                        except Exception:
-                            pass
-                        st.cache_data.clear()
-                        st.cache_resource.clear()
-                        load_app_data(reload_personal=True)
-                        st.success(f"Se han eliminado {deleted_count} modificaciones de SharePoint. El tablero se ha reiniciado.", icon=":material/check_circle:")
-                        st.rerun()
-            else:
-                st.warning("Credenciales de Azure AD / SharePoint no detectadas en esta sesión.")
-
-        st.markdown("<div style='margin-top: 1.2rem; margin-bottom: 0.8rem; border-top: 1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
-        st.markdown("#### Listado Activo de Personal")
-        
-        if not df_super.empty:
-            f_col1, f_col2, f_col3 = st.columns([2.5, 1.5, 1], vertical_alignment="bottom")
-            with f_col1:
-                search_super = st.text_input("Buscar por nombre o cédula:", placeholder="Escriba un nombre o cédula...", key="dir_search_super").strip().upper()
-            with f_col2:
-                all_cargos = ["Todos los cargos"] + sorted([c for c in df_super['Cargo'].dropna().unique().tolist() if c]) if 'Cargo' in df_super.columns else ["Todos los cargos"]
-                sel_cargo = st.selectbox("Filtrar por Cargo:", all_cargos, key="dir_sel_cargo")
-
-            df_show = df_super.copy()
-            if search_super:
-                col_name = 'Profesional' if 'Profesional' in df_show.columns else 'NOMBRES Y APELLIDOS'
-                col_ced  = 'Cédula' if 'Cédula' in df_show.columns else 'CEDULA'
-                q_norm = dp.normalize_name_no_accents(search_super)
-                q_compact = q_norm.replace(" ", "")
-                names_norm = df_show[col_name].fillna("").astype(str).apply(dp.normalize_name_no_accents)
-                ceds_clean = df_show[col_ced].fillna("").astype(str).str.strip()
-                mask_name = names_norm.str.contains(q_norm, na=False) | names_norm.apply(lambda x: q_compact in x.replace(" ", ""))
-                mask_ced  = ceds_clean.str.contains(q_norm, na=False)
-                df_show = df_show[mask_name | mask_ced]
-            
-            if sel_cargo and sel_cargo != "Todos los cargos" and 'Cargo' in df_show.columns:
-                df_show = df_show[df_show['Cargo'] == sel_cargo]
-            
-            with f_col3:
-                st.caption(f"Mostrando **{len(df_show)}** de **{len(df_super)}** registros")
-            
-            display_cols = [c for c in ['Cédula', 'Sede', 'Cargo', 'Profesional', 'Estado', 'Correo'] if c in df_show.columns]
-            if not display_cols:
-                display_cols = df_show.columns.tolist()
-            st.dataframe(
-                df_show[display_cols],
-                use_container_width=True,
-                hide_index=True,
-                height=520
-            )
-        else:
-            st.warning("No se encontró personal activo en la hoja BD PERSONAL de CONSOLIDADO 2026.", icon=":material/warning:")
-            if st.session_state.get('super_load_error'):
-                st.error(f"Detalle de la conexión: {st.session_state.super_load_error}", icon=":material/error:")
 
 # Footer
 st.markdown(
