@@ -119,16 +119,21 @@ def apply_styles():
         justify-content: center !important;
         padding-top: 0px !important;
         padding-bottom: 0px !important;
+        height: 100% !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:first-child,
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:first-child {
         flex: 1 1 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:last-child,
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:last-child,
-    div:has(.admin-gear-marker) {
+    div[data-testid="column"]:has(.admin-gear-marker),
+    div[data-testid="stColumn"]:has(.admin-gear-marker) {
         flex: 0 0 auto !important;
         width: auto !important;
         min-width: 50px !important;
@@ -140,6 +145,10 @@ def apply_styles():
 
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"] {
         gap: 0px !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stElementContainer"],
@@ -249,11 +258,12 @@ def apply_styles():
         justify-content: center;
     }
     
-    /* Alinear el botón de la tuerca a la derecha y con el texto (abajo) */
-    div[data-testid="stColumn"]:has(.admin-gear-marker) {
+    /* Alinear el botón de la tuerca verticalmente centrado y a la derecha */
+    div[data-testid="stColumn"]:has(.admin-gear-marker),
+    div[data-testid="column"]:has(.admin-gear-marker) {
         display: flex !important;
         justify-content: flex-end !important;
-        align-items: flex-end !important;
+        align-items: center !important;
     }
     
     /* Transparent container for title text inside banner */
@@ -1462,34 +1472,12 @@ def apply_styles():
         padding: 0 !important;
     }
 
-    /* Reemplazar emoji de engranaje por icono bi-gear de Bootstrap en el Popover */
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button p,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
-        font-size: 0 !important; /* Oculta el emoji original */
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 100% !important;
-        height: 100% !important;
-    }
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button p::before,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before {
-        content: "\\f3e5" !important; /* bi-gear */
-        font-family: "bootstrap-icons" !important;
-        font-size: 1.25rem !important;
-        color: #000000 !important; /* Icono en negro */
-        visibility: visible !important;
-        display: inline-block !important;
-        line-height: 1 !important;
-    }
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button,
+    /* Estilos del botón de engranaje administrativo en el Popover */
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
         background-color: #ffffff !important; /* Fondo blanco */
-        border: 2px solid #d9d9d9 !important; /* Borde negro definido */
+        border: 2px solid #d9d9d9 !important; /* Borde sutil definido */
         border-radius: 50% !important; /* Circular */
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
         padding: 0 !important;
@@ -1503,21 +1491,34 @@ def apply_styles():
         min-width: 38px !important;
         cursor: pointer !important;
     }
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button:hover,
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button:hover,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
         background-color: #f1f5f9 !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
-        border-color: #000000 !important;
+        border-color: #0284c7 !important;
     }
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button p,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p,
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
+        font-size: 1.25rem !important;
+        color: #3f3e3e !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        visibility: visible !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button:hover p,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p,
+    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p {
         color: #0284c7 !important;
     }
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button svg,
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button div[aria-hidden="true"],
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button svg,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg,
@@ -1528,8 +1529,8 @@ def apply_styles():
     }
     
     /* Centrar perfectamente todos los contenedores intermedios del popover de administración */
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button div,
-    :has(.admin-gear-marker) div[data-testid="stPopover"] button span,
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button div,
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button span,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,

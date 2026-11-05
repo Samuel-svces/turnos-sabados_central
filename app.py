@@ -42,10 +42,14 @@ st.components.v1.html(
                     [class^="viewerBadge_container"],
                     .viewerBadge_container,
                     [data-testid="viewerBadge"],
-                    [data-testid="stAppDeployButton"] {
+                    [data-testid="stAppDeployButton"],
+                    [data-testid="stSidebar"],
+                    section[data-testid="stSidebar"],
+                    [data-testid="collapsedControl"] {
                         display: none !important;
                         visibility: hidden !important;
                         opacity: 0 !important;
+                        width: 0px !important;
                     }
                 `;
                 parentHead.appendChild(style);
@@ -164,7 +168,7 @@ with col_nav_brand:
 
 with col_nav_gear:
     st.markdown("<div class='admin-gear-marker'></div>", unsafe_allow_html=True)
-    with st.popover("⚙️", help="Administración"):
+    with st.popover("⚙", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
         
         if st.session_state.is_admin:
