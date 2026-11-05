@@ -84,13 +84,11 @@ def apply_styles():
         margin: 0 !important;
         padding: 0 26px 0 20px !important;
         background: #ffffff !important;
-        border: none !important;
         border-bottom: 1px solid #e5e7eb !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
+        flex-direction: column !important;
+        justify-content: center !important;
         gap: 0 !important;
         box-sizing: border-box !important;
         z-index: 9999 !important;
