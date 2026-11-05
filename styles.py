@@ -72,9 +72,7 @@ def apply_styles():
         display: none;
     }
     /* Panel blanco superior con las características exactas solicitadas */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel),
-    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker),
-    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker) {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -84,18 +82,20 @@ def apply_styles():
         margin: 0 !important;
         padding: 0 26px 0 20px !important;
         background: #ffffff !important;
+        border: none !important;
         border-bottom: 1px solid #e5e7eb !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
         gap: 0 !important;
         box-sizing: border-box !important;
         z-index: 9999 !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"],
-    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) > div[data-testid="column"] {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"] {
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
@@ -103,17 +103,30 @@ def apply_styles():
         padding-bottom: 0px !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"],
-    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stVerticalBlock"] {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:first-child,
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:first-child {
+        flex: 1 1 auto !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:last-child,
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:last-child,
+    div:has(.admin-gear-marker) {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 50px !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        z-index: 10000 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"] {
         gap: 0px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stElementContainer"],
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p,
-    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stElementContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stMarkdownContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stMarkdownContainer"] p {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p {
         margin: 0px !important;
         padding: 0px !important;
     }
@@ -1432,6 +1445,8 @@ def apply_styles():
     }
 
     /* Reemplazar emoji de engranaje por icono bi-gear de Bootstrap en el Popover */
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button p,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
         font-size: 0 !important; /* Oculta el emoji original */
         margin: 0 !important;
@@ -1441,6 +1456,8 @@ def apply_styles():
         width: 100% !important;
         height: 100% !important;
     }
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button p::before,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p::before {
         content: "\\f3e5" !important; /* bi-gear */
         font-family: "bootstrap-icons" !important;
@@ -1450,28 +1467,42 @@ def apply_styles():
         display: inline-block !important;
         line-height: 1 !important;
     }
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
-        background-color: transparent !important; /* Sin fondo */
-        border: none !important; /* Sin borde exterior */
-        box-shadow: none !important;
+        background-color: #ffffff !important; /* Fondo blanco */
+        border: 2px solid #000000 !important; /* Borde negro definido */
+        border-radius: 50% !important; /* Circular */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
         padding: 0 !important;
         transition: all 0.2s ease !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        height: auto !important;
-        width: auto !important;
-        min-height: unset !important;
-        min-width: unset !important;
+        height: 38px !important;
+        width: 38px !important;
+        min-height: 38px !important;
+        min-width: 38px !important;
+        cursor: pointer !important;
     }
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button:hover,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
-        background-color: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
+        background-color: #f1f5f9 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
+        border-color: #000000 !important;
     }
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
         color: #0284c7 !important;
     }
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button svg,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg {
@@ -1479,6 +1510,10 @@ def apply_styles():
     }
     
     /* Centrar perfectamente todos los contenedores intermedios del popover de administración */
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button div,
+    :has(.admin-gear-marker) div[data-testid="stPopover"] button span,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
+    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span {
         display: flex !important;
