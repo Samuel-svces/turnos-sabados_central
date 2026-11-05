@@ -1202,6 +1202,8 @@ def load_supernumeraries(excel_path=None):
     """
     Carga el directorio de supernumerarios directamente de la hoja 'SUPERNUMERARIO 2026 HISTORICO'
     (o 'BD PERSONAL' si es archivo anterior) de CONSOLIDADO CONEXION.
+    Para 'SUPERNUMERARIO 2026 HISTORICO': extrae los médicos supernumerarios únicos
+    de octubre y noviembre de 2026 en adelante (Fecha >= 2026-10-01), incluyendo nuevos agregados.
     """
     try:
         xl = _open_consolidado_personal(excel_path)
@@ -1218,52 +1220,8 @@ def load_supernumeraries(excel_path=None):
             sheet_target = xl.sheet_names[0]
         df = pd.read_excel(xl, sheet_name=sheet_target)
         
-        # Mapeo y estandarización de columnas
-        col_map = {}
-        for c in df.columns:
-            c_str = str(c).strip().upper()
-            if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID", "CÉDULA", "CED"):
-                col_map[c] = "CEDULA"
-            elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES", "PROFESIONAL", "NOMBRE"):
-                col_map[c] = "NOMBRES Y APELLIDOS"
-            elif "RESTRIC" in c_str:
-                col_map[c] = "RESTRICCION"
-            elif c_str in ("CARGO", "CARGO DE TRABAJO"):
-                col_map[c] = "CARGO"
-            elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO", "SEDE/CECO"):
-                col_map[c] = "SEDE / CECO"
-            elif c_str in ("CORREO", "EMAIL", "CORREO ELECTRONICO", "CORREO ELECTRÓNICO"):
-                col_map[c] = "CORREO"
-            elif c_str in ("CELULAR", "TELEFONO", "MOVIL", "TELÉFONO"):
-                col_map[c] = "CELULAR"
-            elif c_str in ("STATUS", "ESTADO", "ESTADO OPERATIVO"):
-                col_map[c] = "STATUS"
-            elif c_str in ("OBSERVACIONES", "OBSERVACION", "NOTAS"):
-                col_map[c] = "OBSERVACIONES"
-
-        df = df.rename(columns=col_map)
-        
-        for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "RESTRICCION", "CARGO", "SEDE / CECO", "CORREO", "STATUS", "CELULAR", "OBSERVACIONES"]:
-            if req_col not in df.columns:
-                df[req_col] = ""
-
-        # Limpieza de textos y valores nulos
-        df["CARGO"] = df["CARGO"].fillna("").astype(str).str.strip()
-        df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip()
-        df["STATUS"] = df["STATUS"].replace("", "SI").fillna("SI").astype(str).str.strip()
-        df["CORREO"] = df["CORREO"].fillna("").astype(str).str.strip()
-        df["RESTRICCION"] = df["RESTRICCION"].fillna("").astype(str).str.strip().str.lower()
-        if not df["RESTRICCION"].any():
-            df["RESTRICCION"] = "sin restriccion"
-
-        # Cargar todos los profesionales ACTIVOS del consolidado
-        status_upper = df["STATUS"].astype(str).str.strip().str.upper()
-        is_active_status = (
-            status_upper.isin(["ACTIVO", "SI", "YES", "1", "TRUE", "S"]) |
-            (~status_upper.isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO", "0", "FALSE"]) & (status_upper != ""))
-        )
-        has_name = df["NOMBRES Y APELLIDOS"].fillna("").astype(str).str.strip().str.len() > 1
-        df_super = df[is_active_status & has_name].copy()
+        # Detectar si es la hoja estructurada histórica con fechas (SUPERNUMERARIO 2026 HISTORICO)
+        is_historico = any("FECHA" in str(c).strip().upper() for c in df.columns)
 
         def _clean_cedula(val):
             if pd.isna(val):
@@ -1277,22 +1235,168 @@ def load_supernumeraries(excel_path=None):
             except Exception:
                 return s_val.replace(".0", "").strip()
 
-        df_super["CEDULA"] = df_super["CEDULA"].apply(_clean_cedula)
-        df_super["NOMBRES Y APELLIDOS"] = (
-            df_super["NOMBRES Y APELLIDOS"]
-            .apply(normalize_name_no_accents)
-        )
-        df_super["CORREO"] = df_super["CORREO"].fillna("").astype(str).str.strip()
-        df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
+        if is_historico:
+            col_nombre = None
+            col_cedula = None
+            col_fecha = None
+            col_restr = None
+            col_sede = None
 
-        # Crear nombres de columna coincidentes para la interfaz
-        df_super["Cédula"] = df_super["CEDULA"]
-        df_super["Sede"] = df_super["SEDE / CECO"]
-        df_super["Cargo"] = df_super["CARGO"]
-        df_super["Profesional"] = df_super["NOMBRES Y APELLIDOS"]
-        df_super["Estado"] = df_super["STATUS"]
-        df_super["Correo"] = df_super["CORREO"]
-        df_super["Restriccion"] = df_super["RESTRICCION"]
+            for c in df.columns:
+                c_u = str(c).strip().upper()
+                if c_u in ("NOMBRE", "NOMBRES", "PROFESIONAL", "NOMBRES Y APELLIDOS") and not col_nombre:
+                    col_nombre = c
+                elif c_u in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID", "CÉDULA", "CED") and not col_cedula:
+                    col_cedula = c
+                elif "FECHA" in c_u and not col_fecha and "TRASLADO" not in c_u:
+                    col_fecha = c
+                elif "RESTRIC" in c_u and not col_restr:
+                    col_restr = c
+                elif c_u in ("CIS", "SEDE", "CECO", "ZONA") and not col_sede:
+                    col_sede = c
+
+            def _clean_sup_name(val):
+                if pd.isna(val):
+                    return ""
+                s = str(val).strip()
+                s = re.sub(r'\(.*?\)', '', s).strip()
+                return normalize_name_no_accents(s).upper().strip()
+
+            df["Nombre_clean"] = df[col_nombre].apply(_clean_sup_name) if col_nombre else ""
+
+            # Mapeo de cédulas y sedes conocidas en toda la hoja para completar datos faltantes
+            cedula_map = {}
+            sede_map = {}
+            for _, r in df.iterrows():
+                n = r["Nombre_clean"]
+                if n and len(n) > 3:
+                    if col_cedula and pd.notna(r[col_cedula]):
+                        c_val = _clean_cedula(r[col_cedula])
+                        if c_val and n not in cedula_map:
+                            cedula_map[n] = c_val
+                    if col_sede and pd.notna(r[col_sede]):
+                        s_val = str(r[col_sede]).strip()
+                        if s_val and n not in sede_map:
+                            sede_map[n] = s_val
+
+            # Filtrar registros desde octubre de 2026 en adelante (octubre, noviembre y nuevos agregados)
+            if col_fecha:
+                df["Fecha_dt"] = pd.to_datetime(df[col_fecha], errors='coerce')
+                min_date = pd.to_datetime('2026-10-01')
+                df_filtered = df[df["Fecha_dt"] >= min_date].copy()
+                if df_filtered.empty:
+                    df_filtered = df.copy()
+            else:
+                df_filtered = df.copy()
+                df_filtered["Fecha_dt"] = pd.NaT
+
+            df_filtered = df_filtered[df_filtered["Nombre_clean"].str.len() > 3]
+            df_filtered = df_filtered[~df_filtered["Nombre_clean"].isin([
+                "SIN SUPERNUMERARIO", "SIN AGENDA", "AGENDA EN VACACIONES", "ELIMINAR"
+            ])]
+            df_filtered = df_filtered[~df_filtered["Nombre_clean"].str.startswith("CONSOLIDADO")]
+
+            # Ordenar por fecha descendente y deduplicar por nombre (1 registro único por médico)
+            if "Fecha_dt" in df_filtered.columns:
+                df_unique = df_filtered.sort_values(by=["Fecha_dt"], ascending=False).drop_duplicates(subset=["Nombre_clean"]).copy()
+            else:
+                df_unique = df_filtered.drop_duplicates(subset=["Nombre_clean"]).copy()
+
+            records = []
+            for _, r in df_unique.iterrows():
+                doc_n = r["Nombre_clean"]
+                ced = _clean_cedula(r.get(col_cedula, "")) if col_cedula else ""
+                if not ced:
+                    ced = cedula_map.get(doc_n, "")
+                sede = str(r.get(col_sede, "")).strip() if col_sede and pd.notna(r.get(col_sede)) else ""
+                if not sede:
+                    sede = sede_map.get(doc_n, "SUPERNUMERARIOS")
+                restr = str(r.get(col_restr, "sin restriccion")).strip().lower() if col_restr and pd.notna(r.get(col_restr)) else "sin restriccion"
+                if not restr:
+                    restr = "sin restriccion"
+
+                records.append({
+                    "Cédula": ced,
+                    "Sede": sede,
+                    "Cargo": "MEDICO GENERAL SUPERNUMERARIO",
+                    "Profesional": doc_n,
+                    "Estado": "SI",
+                    "Correo": "",
+                    "Restriccion": restr,
+                    "CEDULA": ced,
+                    "NOMBRES Y APELLIDOS": doc_n,
+                    "CARGO": "MEDICO GENERAL SUPERNUMERARIO",
+                    "SEDE / CECO": sede,
+                    "STATUS": "SI",
+                    "CORREO": "",
+                    "CELULAR": "",
+                    "OBSERVACIONES": "",
+                    "RESTRICCION": restr
+                })
+
+            df_super = pd.DataFrame(records)
+
+        else:
+            # Modo tradicional para BD PERSONAL
+            col_map = {}
+            for c in df.columns:
+                c_str = str(c).strip().upper()
+                if c_str in ("CEDULA", "DOCUMENTO", "IDENTIFICACION", "ID", "CÉDULA", "CED"):
+                    col_map[c] = "CEDULA"
+                elif c_str in ("NOMBRES Y APELLIDOS", "NOMBRES_Y_APELLIDOS", "NOMBRE COMPLETO", "NOMBRES", "APELLIDOS Y NOMBRES", "PROFESIONAL", "NOMBRE"):
+                    col_map[c] = "NOMBRES Y APELLIDOS"
+                elif "RESTRIC" in c_str:
+                    col_map[c] = "RESTRICCION"
+                elif c_str in ("CARGO", "CARGO DE TRABAJO"):
+                    col_map[c] = "CARGO"
+                elif c_str in ("SEDE / CECO", "SEDE", "CECO", "SEDE_CECO", "SEDE/CECO"):
+                    col_map[c] = "SEDE / CECO"
+                elif c_str in ("CORREO", "EMAIL", "CORREO ELECTRONICO", "CORREO ELECTRÓNICO"):
+                    col_map[c] = "CORREO"
+                elif c_str in ("CELULAR", "TELEFONO", "MOVIL", "TELÉFONO"):
+                    col_map[c] = "CELULAR"
+                elif c_str in ("STATUS", "ESTADO", "ESTADO OPERATIVO"):
+                    col_map[c] = "STATUS"
+                elif c_str in ("OBSERVACIONES", "OBSERVACION", "NOTAS"):
+                    col_map[c] = "OBSERVACIONES"
+
+            df = df.rename(columns=col_map)
+            
+            for req_col in ["CEDULA", "NOMBRES Y APELLIDOS", "RESTRICCION", "CARGO", "SEDE / CECO", "CORREO", "STATUS", "CELULAR", "OBSERVACIONES"]:
+                if req_col not in df.columns:
+                    df[req_col] = ""
+
+            df["CARGO"] = df["CARGO"].fillna("").astype(str).str.strip()
+            df["SEDE / CECO"] = df["SEDE / CECO"].fillna("").astype(str).str.strip()
+            df["STATUS"] = df["STATUS"].replace("", "SI").fillna("SI").astype(str).str.strip()
+            df["CORREO"] = df["CORREO"].fillna("").astype(str).str.strip()
+            df["RESTRICCION"] = df["RESTRICCION"].fillna("").astype(str).str.strip().str.lower()
+            if not df["RESTRICCION"].any():
+                df["RESTRICCION"] = "sin restriccion"
+
+            status_upper = df["STATUS"].astype(str).str.strip().str.upper()
+            is_active_status = (
+                status_upper.isin(["ACTIVO", "SI", "YES", "1", "TRUE", "S"]) |
+                (~status_upper.isin(["INACTIVO", "NO", "RETIRADO", "EGRESADO", "BAJA", "DESACTIVADO", "0", "FALSE"]) & (status_upper != ""))
+            )
+            has_name = df["NOMBRES Y APELLIDOS"].fillna("").astype(str).str.strip().str.len() > 1
+            df_super = df[is_active_status & has_name].copy()
+
+            df_super["CEDULA"] = df_super["CEDULA"].apply(_clean_cedula)
+            df_super["NOMBRES Y APELLIDOS"] = (
+                df_super["NOMBRES Y APELLIDOS"]
+                .apply(normalize_name_no_accents)
+            )
+            df_super["CORREO"] = df_super["CORREO"].fillna("").astype(str).str.strip()
+            df_super["OBSERVACIONES"] = df_super["OBSERVACIONES"].fillna("").astype(str).str.strip()
+
+            df_super["Cédula"] = df_super["CEDULA"]
+            df_super["Sede"] = df_super["SEDE / CECO"]
+            df_super["Cargo"] = df_super["CARGO"]
+            df_super["Profesional"] = df_super["NOMBRES Y APELLIDOS"]
+            df_super["Estado"] = df_super["STATUS"]
+            df_super["Correo"] = df_super["CORREO"]
+            df_super["Restriccion"] = df_super["RESTRICCION"]
 
         # Combinar médicos agregados manualmente por contingencia desde PERSONAL_MANUAL
         try:

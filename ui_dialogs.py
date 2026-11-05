@@ -4,53 +4,36 @@ import data_processor as dp
 import pandas as pd
 
 def get_allowed_doctors(target_date=None):
+    """
+    Retorna el listado completo de médicos supernumerarios disponibles para asignación
+    o reemplazo. Carga todos los profesionales activos del directorio (SUPERNUMERARIO 2026 HISTORICO)
+    y cualquier médico registrado en el calendario de turnos.
+    Permite buscar y seleccionar cualquier médico sin bloquearlo por restricciones de fecha.
+    """
     df_s = st.session_state.get('shifts_df', pd.DataFrame())
     df_sup = st.session_state.get('super_df', pd.DataFrame())
     
     docs_set = set()
-    
-    # 1. Si se pasa target_date, filtrar dinámicamente según la regla de alternancia:
-    # Secuencia A (pares desde 31/10/2026: 31 oct, 14 nov, etc.) -> 'sin restriccion'
-    # Secuencia B (impares: 7 nov, 21 nov, etc.) -> 'con restriccion'
-    if target_date is not None and not df_sup.empty:
-        t_date = target_date
-        if isinstance(t_date, str):
-            try:
-                t_date = pd.to_datetime(t_date).date()
-            except Exception:
-                pass
-        elif isinstance(t_date, datetime.datetime):
-            t_date = t_date.date()
+    invalid_names = {
+        "VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD",
+        "SIN SUPERNUMERARIO", "SIN AGENDA", "AGENDA EN VACACIONES", "ELIMINAR"
+    }
 
-        base_date = datetime.date(2026, 10, 31)
-        delta_weeks = (t_date - base_date).days // 7
-        name_col = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
-        restr_col = 'Restriccion' if 'Restriccion' in df_sup.columns else ('RESTRICCION' if 'RESTRICCION' in df_sup.columns else None)
+    # 1. Cargar el listado completo de supernumerarios del directorio
+    if isinstance(df_sup, pd.DataFrame) and not df_sup.empty:
+        col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
+        if col_name:
+            for n in df_sup[col_name].dropna():
+                clean_n = dp.normalize_name_no_accents(str(n)).strip().upper()
+                if len(clean_n) > 2 and clean_n not in invalid_names and not clean_n.startswith("CONSOLIDADO"):
+                    docs_set.add(clean_n)
 
-        if name_col and restr_col:
-            for _, r in df_sup.iterrows():
-                doc_name = dp.normalize_name_no_accents(str(r[name_col])).strip()
-                restr_val = dp.normalize_name_no_accents(str(r.get(restr_col, ''))).strip().lower()
-                if delta_weeks % 2 == 0:
-                    # Sábado secuencia 31 Oct: sin restricción
-                    if "sin restric" in restr_val:
-                        docs_set.add(doc_name)
-                else:
-                    # Sábado contrario: con restricción
-                    if "con restric" in restr_val or ("restric" in restr_val and "sin" not in restr_val):
-                        docs_set.add(doc_name)
-
-    # 2. Si no hay target_date o no hubo resultados filtrados, cargar el conjunto completo
-    if not docs_set:
-        if not df_sup.empty:
-            col_name = 'Profesional' if 'Profesional' in df_sup.columns else ('NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_sup.columns else None)
-            if col_name:
-                sup_names = df_sup[col_name].dropna().apply(dp.normalize_name_no_accents).tolist()
-                docs_set.update([n for n in sup_names if len(n) > 2])
-
-        if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
-            s_names = df_s['Supernumerary'].dropna().apply(dp.normalize_name_no_accents).tolist()
-            docs_set.update([n for n in s_names if len(n) > 2 and n not in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]])
+    # 2. Combinar con cualquier médico programado en el calendario de turnos
+    if isinstance(df_s, pd.DataFrame) and not df_s.empty and 'Supernumerary' in df_s.columns:
+        for n in df_s['Supernumerary'].dropna():
+            clean_n = dp.normalize_name_no_accents(str(n)).strip().upper()
+            if len(clean_n) > 2 and clean_n not in invalid_names and not clean_n.startswith("CONSOLIDADO"):
+                docs_set.add(clean_n)
 
     return sorted(list(docs_set))
 

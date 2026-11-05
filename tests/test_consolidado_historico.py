@@ -104,8 +104,8 @@ def run_tests():
 
         print("  [OK] Validaciones de turnos correctas según reglas de alternancia y fechas.")
 
-        # 5. Probar carga de supernumerarios y filtrado dinámico en desplegables
-        print("\n[5/5] Probando carga de supernumerarios y filtrado dinámico por fecha...")
+        # 5. Probar carga de supernumerarios y disponibilidad en listado desplegable
+        print("\n[5/5] Probando carga de supernumerarios y disponibilidad en listado desplegable...")
         dp.load_supernumeraries.clear()
         df_super_loaded = dp.load_supernumeraries(temp_excel_path)
         assert len(df_super_loaded) == 4, f"Se esperaban 4 supernumerarios, se obtuvieron {len(df_super_loaded)}"
@@ -116,17 +116,17 @@ def run_tests():
         st.session_state["super_df"] = df_super_loaded
         st.session_state["shifts_df"] = df_shifts
 
-        # Para sábado 31 Oct (Secuencia A) -> Debe mostrar solo CARLOS PEREZ y MARIA GOMEZ
+        # Para sábado 31 Oct -> Todo el listado de supernumerarios debe estar disponible
         allowed_31 = ud.get_allowed_doctors(target_date=datetime.date(2026, 10, 31))
-        print(f"  -> Médicos permitidos para 31 Oct (Sin Restricción): {allowed_31}")
-        assert set(allowed_31) == {"CARLOS PEREZ", "MARIA GOMEZ"}, f"Filtro 31 Oct incorrecto: {allowed_31}"
+        print(f"  -> Médicos permitidos para 31 Oct: {allowed_31}")
+        assert set(allowed_31) == {"CARLOS PEREZ", "MARIA GOMEZ", "JUAN RODRIGUEZ", "ANA MARTINEZ"}, f"Filtro 31 Oct incorrecto: {allowed_31}"
 
-        # Para sábado 7 Nov (Secuencia B / Contrario) -> Debe mostrar solo JUAN RODRIGUEZ y ANA MARTINEZ
+        # Para sábado 7 Nov (Sábado contrario) -> Todo el listado de supernumerarios debe estar disponible
         allowed_07 = ud.get_allowed_doctors(target_date=datetime.date(2026, 11, 7))
-        print(f"  -> Médicos permitidos para 7 Nov (Con Restricción): {allowed_07}")
-        assert set(allowed_07) == {"JUAN RODRIGUEZ", "ANA MARTINEZ"}, f"Filtro 7 Nov incorrecto: {allowed_07}"
+        print(f"  -> Médicos permitidos para 7 Nov: {allowed_07}")
+        assert set(allowed_07) == {"CARLOS PEREZ", "MARIA GOMEZ", "JUAN RODRIGUEZ", "ANA MARTINEZ"}, f"Filtro 7 Nov incorrecto: {allowed_07}"
 
-        print("  [OK] Filtrado dinámico en menús desplegables validado con éxito.")
+        print("  [OK] Disponibilidad integral de supernumerarios en listados validada con éxito.")
 
         # 6. Probar load_data() integral con las modificaciones
         print("\n[6/6] Probando load_data() con sobreescritura delta...")
