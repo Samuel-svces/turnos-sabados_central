@@ -71,14 +71,14 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    /* Panel blanco superior de navegación institucional ultra-optimizado y compacto */
+    /* Panel blanco superior con borde gris completo */
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
         background-color: #ffffff !important;
-        border-bottom: 2px solid #94a3b8 !important; /* Borde gris en la parte inferior */
+        border: 1px solid #cbd5e1 !important; /* Borde gris completo alrededor del panel */
         padding: 0.5rem 2rem !important;
         margin-top: -1rem !important;
-        margin-bottom: 0.85rem !important;
-        align-items: center !important;
+        margin-bottom: 1.5rem !important; /* Espacio entre panel blanco y banner degradado */
+        align-items: flex-end !important; /* Alinear contenido abajo, no al medio */
         min-height: 54px !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
     }
@@ -86,7 +86,7 @@ def apply_styles():
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"] {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
+        justify-content: flex-end !important;
         padding-top: 0px !important;
         padding-bottom: 0px !important;
     }
@@ -116,9 +116,9 @@ def apply_styles():
     }
     
     .top-nav-logo {
-        height: 38px !important;
+        height: 32px !important;
         width: auto !important;
-        max-width: 180px !important;
+        max-width: 150px !important;
         object-fit: contain !important;
         display: block !important;
     }
@@ -131,7 +131,7 @@ def apply_styles():
     
     .top-nav-title {
         font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-        font-size: 1.55rem !important;
+        font-size: 1.35rem !important;
         font-weight: 700 !important;
         color: #0a1128 !important;
         letter-spacing: -0.01em;
@@ -146,19 +146,11 @@ def apply_styles():
         padding: 0.95rem 1.8rem !important;
         display: flex;
         align-items: center;
-        margin-left: 119px !important; /* Empieza en la mitad de la imagen del logo */
-        margin-right: 2rem !important;  /* Finaliza alineado con el engranaje */
+        margin-left: 105px !important; /* Empieza a la mitad del logo */
+        margin-right: 3rem !important; /* Termina en el engranaje */
         margin-bottom: 0.85rem !important;
         box-sizing: border-box !important;
         box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
-    }
-
-    @media (max-width: 768px) {
-        .premium-gradient-banner,
-        div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
-            margin-left: 0.5rem !important;
-            margin-right: 0.5rem !important;
-        }
     }
     
     /* Resetear margen, bordes y sombras de alertas y notificaciones y sus contenedores */
@@ -207,11 +199,11 @@ def apply_styles():
         justify-content: center;
     }
     
-    /* Alinear el botón de la tuerca a la derecha dentro de la columna */
+    /* Alinear el botón de la tuerca a la derecha y con el texto (abajo) */
     div[data-testid="stColumn"]:has(.admin-gear-marker) {
         display: flex !important;
         justify-content: flex-end !important;
-        align-items: center !important;
+        align-items: flex-end !important;
     }
     
     /* Transparent container for title text inside banner */
@@ -1420,18 +1412,6 @@ def apply_styles():
         padding: 0 !important;
     }
 
-    div[data-testid="stColumn"]:has(.admin-gear-marker) {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-end !important;
-    }
-
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] {
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center !important;
-    }
-
     /* Reemplazar emoji de engranaje por icono bi-gear de Bootstrap en el Popover */
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
         font-size: 0 !important; /* Oculta el emoji original */
@@ -1452,24 +1432,23 @@ def apply_styles():
         line-height: 1 !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
-        background-color: #ffffff !important; /* Fondo blanco */
-        border: 2px solid #000000 !important; /* Borde negro */
-        border-radius: 50% !important; /* Circular */
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-        padding: 0 !important; /* Quitar padding para centrado perfecto */
+        background-color: transparent !important; /* Sin fondo */
+        border: none !important; /* Sin borde exterior */
+        box-shadow: none !important;
+        padding: 0 !important;
         transition: all 0.2s ease !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        height: 38px !important;
-        width: 38px !important;
-        min-height: 38px !important;
-        min-width: 38px !important;
+        height: auto !important;
+        width: auto !important;
+        min-height: unset !important;
+        min-width: unset !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
-        background-color: #f1f5f9 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
-        border-color: #000000 !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
         color: #0284c7 !important;
