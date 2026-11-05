@@ -647,6 +647,12 @@ def _open_consolidado_conexion(excel_path=None):
                 except Exception:
                     pass
 
+    if excel_path and os.path.exists(excel_path) and "CONSOLIDADO_CONEXION_cached" not in excel_path and "TURNOS_SABADOS_cached" not in excel_path:
+        try:
+            return pd.ExcelFile(excel_path)
+        except Exception:
+            pass
+
     if _use_sharepoint():
         try:
             remote_meta = gc.get_file_metadata("consolidado_conexion")
@@ -739,6 +745,7 @@ def _get_base_shifts_df(excel_path):
         # Mapear columnas en SUPERNUMERARIO 2026 HISTORICO
         col_nombre_super = None
         col_restr_super = None
+        col_fecha_super = None
         for c in df_super_sheet.columns:
             c_norm = normalize_name_no_accents(str(c)).upper().strip()
             if c_norm in ("NOMBRE", "NOMBRES", "PROFESIONAL", "NOMBRES Y APELLIDOS", "NOMBRE SUPER"):
@@ -747,8 +754,16 @@ def _get_base_shifts_df(excel_path):
                 col_nombre_super = c
             if "RESTRIC" in c_norm:
                 col_restr_super = c
+            if "FECHA" in c_norm and not col_fecha_super:
+                col_fecha_super = c
 
-        super_restriction_map = {}
+        base_date = datetime.date(2026, 10, 31)
+        target_07 = base_date + datetime.timedelta(days=7)
+
+        # Mapa de restricciones del 31 de Octubre y general
+        super_restriction_map_31 = {}
+        super_restriction_map_general = {}
+
         for _, row_sup in df_super_sheet.iterrows():
             if col_nombre_super and pd.notna(row_sup[col_nombre_super]):
                 doc_n = normalize_name_no_accents(str(row_sup[col_nombre_super])).strip().upper()
@@ -756,7 +771,18 @@ def _get_base_shifts_df(excel_path):
                     restr_val = ""
                     if col_restr_super and pd.notna(row_sup[col_restr_super]):
                         restr_val = normalize_name_no_accents(str(row_sup[col_restr_super])).strip().lower()
-                    super_restriction_map[doc_n] = restr_val
+                    super_restriction_map_general[doc_n] = restr_val
+
+                    # Validar si esta fila corresponde a la fecha base (31 de octubre)
+                    if col_fecha_super and pd.notna(row_sup[col_fecha_super]):
+                        f_sup = parse_flat_date(row_sup[col_fecha_super])
+                        if not f_sup:
+                            try:
+                                f_sup = pd.to_datetime(row_sup[col_fecha_super], errors='coerce').date()
+                            except Exception:
+                                pass
+                        if f_sup == base_date:
+                            super_restriction_map_31[doc_n] = restr_val
 
         # Mapear columnas en CONSOLIDADO 2026 HISTORICO
         col_fecha = None
@@ -788,8 +814,9 @@ def _get_base_shifts_df(excel_path):
             ]), errors
 
         col_super_idx = list(df_consol.columns).index(col_super) if col_super in df_consol.columns else 0
-        base_date = datetime.date(2026, 10, 31)
+        seen_shifts = set()
 
+        # 1. Turnos base desde CONSOLIDADO 2026 HISTORICO (31 de Octubre y posteriores sin restriccion)
         for idx, row in df_consol.iterrows():
             raw_date = row[col_fecha]
             d = parse_flat_date(raw_date)
@@ -801,18 +828,9 @@ def _get_base_shifts_df(excel_path):
                 except Exception:
                     pass
 
-            if not d:
+            if not d or d < base_date or d.weekday() != 5:
                 continue
 
-            # Filtro 1: Solo desde el 31 de octubre de 2026 en adelante
-            if d < base_date:
-                continue
-
-            # Filtro 2: Solo sábados (weekday == 5)
-            if d.weekday() != 5:
-                continue
-
-            # Filtro 3: Validar nombre del supernumerario
             raw_doc = row[col_super]
             if pd.isna(raw_doc):
                 continue
@@ -820,51 +838,34 @@ def _get_base_shifts_df(excel_path):
             if not doc_norm or len(doc_norm) < 3 or doc_norm in ["VALENCIA", "MES:", "SABADOS", "TOTAL", "CANTIDAD"]:
                 continue
 
-            # Filtro 4: Obtener restricción del médico
+            # Obtener restricción del médico
             doc_restr = ""
             if col_restr_consol and pd.notna(row[col_restr_consol]):
                 doc_restr = normalize_name_no_accents(str(row[col_restr_consol])).strip().lower()
 
-            if not doc_restr and doc_norm in super_restriction_map:
-                doc_restr = super_restriction_map[doc_norm]
-
             if not doc_restr:
+                if d == base_date and doc_norm in super_restriction_map_31:
+                    doc_restr = super_restriction_map_31[doc_norm]
+                elif doc_norm in super_restriction_map_general:
+                    doc_restr = super_restriction_map_general[doc_norm]
+
+            if not doc_restr or "sin restric" not in doc_restr:
                 continue
 
-            is_sin_restr = "sin restric" in doc_restr
-            is_con_restr = "con restric" in doc_restr or ("restric" in doc_restr and "sin" not in doc_restr)
-
-            if not is_sin_restr and not is_con_restr:
+            if (d, doc_norm) in seen_shifts:
                 continue
+            seen_shifts.add((d, doc_norm))
 
-            # Determinación del sábado asignado:
-            # Los que tienen 'sin restriccion' van al sábado base (31 de octubre, 14 de noviembre...).
-            # Los que tienen 'con restriccion' van al sábado contrario (7 de noviembre para los del 31 de octubre).
-            delta_weeks = (d - base_date).days // 7
-            if delta_weeks % 2 == 0:
-                # Secuencia base (31 Octubre, 14 Noviembre, 28 Noviembre...)
-                if is_sin_restr:
-                    target_date = d
-                else:
-                    target_date = d + datetime.timedelta(days=7)
-            else:
-                # Sábado contrario (7 Noviembre, 21 Noviembre...)
-                if is_con_restr:
-                    target_date = d
-                else:
-                    target_date = d - datetime.timedelta(days=7)
-
-            # Validado exitosamente -> Incorporar al cuadro
-            m_header = MONTH_NAMES_SP.get(target_date.month, 'EXTRA')
-            s_name = f"{m_header} {target_date.year}"
+            m_header = MONTH_NAMES_SP.get(d.month, 'EXTRA')
+            s_name = f"{m_header} {d.year}"
             obs_text = str(row[col_obs]).strip() if col_obs and pd.notna(row[col_obs]) else ""
 
             all_shifts.append({
                 'Sheet': s_name,
                 'Month_Header': m_header,
-                'Date': target_date,
-                'Year': target_date.year,
-                'Month': target_date.month,
+                'Date': d,
+                'Year': d.year,
+                'Month': d.month,
                 'Supernumerary': doc_norm,
                 'Excel_Row': int(idx + 2),
                 'Excel_Col': int(col_super_idx + 1),
@@ -872,6 +873,46 @@ def _get_base_shifts_df(excel_path):
                 'Observation': obs_text,
                 'Classification': 'Secuencia Normal'
             })
+
+        # 2. Sábado contrario (7 de Noviembre): Médicos que el 31 de Octubre tienen 'Con Restriccion' en SUPERNUMERARIO
+        m_header_07 = MONTH_NAMES_SP.get(target_07.month, 'EXTRA')
+        s_name_07 = f"{m_header_07} {target_07.year}"
+
+        for idx, row_s in df_super_sheet.iterrows():
+            if not col_nombre_super or pd.isna(row_s[col_nombre_super]):
+                continue
+            doc_norm_s = normalize_name_no_accents(str(row_s[col_nombre_super])).strip().upper()
+            if not doc_norm_s or len(doc_norm_s) < 3:
+                continue
+
+            # Verificar si corresponde al 31 de Octubre (o fecha base)
+            f_sup = None
+            if col_fecha_super and pd.notna(row_s[col_fecha_super]):
+                f_sup = parse_flat_date(row_s[col_fecha_super])
+                if not f_sup:
+                    try:
+                        f_sup = pd.to_datetime(row_s[col_fecha_super], errors='coerce').date()
+                    except Exception:
+                        pass
+
+            if f_sup == base_date:
+                restr_val = normalize_name_no_accents(str(row_s[col_restr_super])).strip().lower() if col_restr_super and pd.notna(row_s[col_restr_super]) else ""
+                if "con restric" in restr_val or ("restric" in restr_val and "sin" not in restr_val):
+                    if (target_07, doc_norm_s) not in seen_shifts:
+                        seen_shifts.add((target_07, doc_norm_s))
+                        all_shifts.append({
+                            'Sheet': s_name_07,
+                            'Month_Header': m_header_07,
+                            'Date': target_07,
+                            'Year': target_07.year,
+                            'Month': target_07.month,
+                            'Supernumerary': doc_norm_s,
+                            'Excel_Row': int(idx + 2),
+                            'Excel_Col': 2,
+                            'Header_Row': 1,
+                            'Observation': '',
+                            'Classification': 'Secuencia Normal'
+                        })
 
     else:
         # Fallback a lectura de archivo tradicional por meses
