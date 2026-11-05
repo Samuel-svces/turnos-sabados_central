@@ -8,6 +8,7 @@ import re
 import data_processor as dp
 import styles
 import ui_dialogs
+import graph_client as gc
 
 # Set page config for Streamlit
 st.set_page_config(
@@ -872,14 +873,107 @@ if st.session_state.is_admin:
                             os.remove(c_file)
                         except Exception:
                             pass
-                dp._open_consolidado_personal.clear()
-                dp.load_supernumeraries.clear()
+                try:
+                    dp._open_consolidado_conexion.clear()
+                except Exception:
+                    pass
+                try:
+                    dp._get_base_shifts_df.clear()
+                except Exception:
+                    pass
+                try:
+                    dp._open_consolidado_personal.clear()
+                except Exception:
+                    pass
+                try:
+                    dp.load_supernumeraries.clear()
+                except Exception:
+                    pass
                 st.cache_data.clear()
                 st.cache_resource.clear()
                 load_app_data(reload_personal=True)
-                st.success("Directorio de personal resincronizado con éxito.", icon=":material/check_circle:")
+                st.success("Directorio de personal y turnos resincronizados con éxito.", icon=":material/check_circle:")
                 st.rerun()
         
+        st.markdown("<div style='margin-top: 1.2rem; margin-bottom: 0.8rem; border-top: 1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
+        
+        with st.expander("🛠️ Mantenimiento: Purgar Modificaciones Residuales de SharePoint", expanded=False):
+            st.markdown(
+                "Utilice esta opción para **vaciar las modificaciones acumuladas** (registros de adición, reemplazo y eliminación) "
+                "en la Lista de SharePoint (`MODIFICACIONES_SABADOS`). Esto dejará el calendario en limpio, reflejando exclusivamente "
+                "los turnos calculados por la nueva lógica del archivo maestro **CONSOLIDADO CONEXION**."
+            )
+
+            if gc.is_sharepoint_configured():
+                try:
+                    current_items = gc.get_sharepoint_list_items("modificaciones_sabados")
+                    total_items = len(current_items)
+                except Exception as e_chk:
+                    current_items = []
+                    total_items = 0
+                    st.caption(f"Nota de consulta: {e_chk}")
+
+                st.info(f"📊 Registros acumulados en la Lista de SharePoint: **{total_items}** elementos.")
+
+                if total_items > 0:
+                    import json
+                    json_bytes = json.dumps(current_items, ensure_ascii=False, indent=2).encode('utf-8')
+                    timestamp_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                    st.download_button(
+                        label="📥 Descargar Respaldo JSON Preventivo",
+                        data=json_bytes,
+                        file_name=f"sharepoint_modificaciones_backup_{timestamp_now}.json",
+                        mime="application/json",
+                        help="Descargue un respaldo antes de purgar para asegurar los datos.",
+                        use_container_width=True
+                    )
+
+                confirm_purge = st.checkbox(
+                    "Confirmo que deseo purgar todas las modificaciones de SharePoint para reiniciar el tablero en limpio.",
+                    key="chk_confirm_purge_sp"
+                )
+
+                if st.button("🧹 Purgar Modificaciones y Reiniciar Tablero", type="primary", disabled=(not confirm_purge or total_items == 0), use_container_width=True):
+                    with st.spinner("Purgando elementos en SharePoint vía Microsoft Graph API..."):
+                        item_ids = [str(it.get("_item_id", it.get("id"))) for it in current_items if it.get("_item_id", it.get("id"))]
+                        deleted_count = 0
+                        if item_ids:
+                            deleted_count = gc.delete_sharepoint_list_items_batch("modificaciones_sabados", item_ids)
+
+                        # Limpiar archivos de caché local
+                        c_dir = os.path.join(os.path.dirname(__file__), ".cache")
+                        if os.path.exists(c_dir):
+                            for f_name in os.listdir(c_dir):
+                                try:
+                                    os.remove(os.path.join(c_dir, f_name))
+                                except Exception:
+                                    pass
+
+                        # Invalidar cachés y recargar
+                        try:
+                            dp._open_consolidado_conexion.clear()
+                        except Exception:
+                            pass
+                        try:
+                            dp._get_base_shifts_df.clear()
+                        except Exception:
+                            pass
+                        try:
+                            dp._open_consolidado_personal.clear()
+                        except Exception:
+                            pass
+                        try:
+                            dp.load_supernumeraries.clear()
+                        except Exception:
+                            pass
+                        st.cache_data.clear()
+                        st.cache_resource.clear()
+                        load_app_data(reload_personal=True)
+                        st.success(f"Se han eliminado {deleted_count} modificaciones de SharePoint. El tablero se ha reiniciado.", icon=":material/check_circle:")
+                        st.rerun()
+            else:
+                st.warning("Credenciales de Azure AD / SharePoint no detectadas en esta sesión.")
+
         st.markdown("<div style='margin-top: 1.2rem; margin-bottom: 0.8rem; border-top: 1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
         st.markdown("#### Listado Activo de Personal")
         
