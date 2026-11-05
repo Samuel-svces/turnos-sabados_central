@@ -96,6 +96,7 @@ def apply_styles():
     }
     /* Panel blanco superior con las características exactas solicitadas */
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
+        border: 1px solid #e2e8f0 !important;
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -739,6 +740,7 @@ def apply_styles():
     /* Contenedor de columnas como una tarjeta interna premium (recuadro de la tabla de turnos) */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) {
         background-color: #ffffff !important;
+       
         border-radius: 12px !important;
         padding: 0.75rem 1rem 1rem 1rem !important;
         margin-top: 0.25rem !important;
