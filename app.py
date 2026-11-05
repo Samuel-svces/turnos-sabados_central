@@ -153,7 +153,7 @@ col_nav_brand, col_nav_gear = st.columns([11, 1])
 
 with col_nav_brand:
     st.markdown(f"""
-        <div class="top-nav-panel">
+        <div class="top-nav-panel app-topbar-marker">
             <div class="top-nav-left">
                 <img src="data:image/png;base64,{logo_b64}" alt="Unión para la salud y la vida S.A.S" class="top-nav-logo" />
                 <div class="top-nav-divider"></div>

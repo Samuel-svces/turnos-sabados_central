@@ -71,33 +71,51 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    /* Panel blanco superior con borde gris completo */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
-        background-color: #ffffff !important;
-        border: 1px solid #cbd5e1 !important; /* Borde gris completo alrededor del panel */
-        padding: 0.5rem 2rem !important;
-        margin-top: -1rem !important;
-        margin-bottom: 1.5rem !important; /* Espacio entre panel blanco y banner degradado */
-        align-items: flex-end !important; /* Alinear contenido abajo, no al medio */
-        min-height: 54px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    /* Panel blanco superior con las características exactas solicitadas */
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel),
+    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker),
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker) {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        height: 68px !important;
+        margin: 0 !important;
+        padding: 0 26px 0 20px !important;
+        background: #ffffff !important;
+        border: none !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 0 !important;
+        box-sizing: border-box !important;
+        z-index: 9999 !important;
     }
     
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"] {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) > div[data-testid="column"] {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-end !important;
+        justify-content: center !important;
         padding-top: 0px !important;
         padding-bottom: 0px !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"] {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"],
+    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stVerticalBlock"] {
         gap: 0px !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stElementContainer"],
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p {
+    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stMarkdownContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.app-topbar-marker) div[data-testid="stMarkdownContainer"] p {
         margin: 0px !important;
         padding: 0px !important;
     }
@@ -145,6 +163,7 @@ def apply_styles():
         padding: 0.95rem 1.8rem !important;
         display: flex;
         align-items: center;
+        margin-top: 82px !important; /* Espacio para el panel superior fixed de 68px */
         margin-left: 105px !important; /* Empieza a la mitad del logo */
         margin-right: 3rem !important; /* Termina en el engranaje */
         margin-bottom: 0.85rem !important;
