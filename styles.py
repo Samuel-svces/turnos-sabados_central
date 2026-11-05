@@ -75,12 +75,12 @@ def apply_styles():
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0.25rem 1.25rem !important;
+        padding: 0.35rem 1.5rem !important;
         margin-top: -1rem !important;
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
         align-items: center !important;
-        min-height: unset !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+        min-height: 46px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"] {
@@ -112,26 +112,26 @@ def apply_styles():
     .top-nav-left {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
     }
     
     .top-nav-logo {
-        height: 25px !important;
+        height: 28px !important;
         width: auto !important;
-        max-width: 140px !important;
+        max-width: 150px !important;
         object-fit: contain !important;
         display: block !important;
     }
     
     .top-nav-divider {
         width: 1.5px;
-        height: 18px;
+        height: 22px;
         background-color: #cbd5e1;
     }
     
     .top-nav-title {
         font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-        font-size: 1.05rem !important;
+        font-size: 1.15rem !important;
         font-weight: 700 !important;
         color: #0a1128 !important;
         letter-spacing: -0.01em;
@@ -1423,33 +1423,33 @@ def apply_styles():
         content: "\\f3e5" !important; /* bi-gear */
         font-family: "bootstrap-icons" !important;
         font-size: 1.15rem !important;
-        color: #ffffff !important;
+        color: #0f172a !important; /* Icono oscuro sobre botón blanco */
         visibility: visible !important;
         display: inline-block !important;
         line-height: 1 !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
-        background-color: #0f172a !important;
-        border: 1px solid rgba(255, 255, 255, 0.25) !important;
-        border-radius: 7px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important;
+        background-color: #ffffff !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 50% !important; /* Circular tal como el avatar de la imagen de referencia */
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
         padding: 0 !important; /* Quitar padding para centrado perfecto */
         transition: all 0.2s ease !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        height: 32px !important;
-        width: 32px !important;
-        min-height: 32px !important;
-        min-width: 32px !important;
+        height: 34px !important;
+        width: 34px !important;
+        min-height: 34px !important;
+        min-width: 34px !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
-        background-color: #1e293b !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
-        border-color: rgba(255, 255, 255, 0.5) !important;
+        background-color: #f1f5f9 !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+        border-color: #cbd5e1 !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p::before {
-        color: #ffffff !important;
+        color: #0284c7 !important;
     }
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
