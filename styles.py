@@ -739,7 +739,6 @@ def apply_styles():
     /* Contenedor de columnas como una tarjeta interna premium (recuadro de la tabla de turnos) */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) {
         background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
         padding: 0.75rem 1rem 1rem 1rem !important;
         margin-top: 0.25rem !important;
