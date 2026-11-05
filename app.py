@@ -19,51 +19,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-st.components.v1.html(
-    """
-    <script>
-        try {
-            window.parent.document.documentElement.lang = 'es';
-            window.parent.document.body.classList.add('notranslate');
-            const parentHead = window.parent.document.head;
-            if (!parentHead.querySelector('meta[name="google"][content="notranslate"]')) {
-                const meta = window.parent.document.createElement('meta');
-                meta.name = 'google';
-                meta.content = 'notranslate';
-                parentHead.appendChild(meta);
-            }
-            
-            // Ocultar el botón flotante de "Gestionar la aplicación" de Streamlit Cloud
-            if (!parentHead.querySelector('#hide-badge-style')) {
-                const style = window.parent.document.createElement('style');
-                style.id = 'hide-badge-style';
-                style.innerHTML = `
-                    div[class*="viewerBadge_container"], 
-                    [class^="viewerBadge_container"],
-                    .viewerBadge_container,
-                    [data-testid="viewerBadge"],
-                    [data-testid="stAppDeployButton"],
-                    [data-testid="stSidebar"],
-                    section[data-testid="stSidebar"],
-                    [data-testid="collapsedControl"] {
-                        display: none !important;
-                        visibility: hidden !important;
-                        opacity: 0 !important;
-                        width: 0px !important;
-                    }
-                `;
-                parentHead.appendChild(style);
-            }
-            
-        } catch (e) {
-            console.error("Parent override failed:", e);
-        }
-    </script>
-    """,
-    height=0,
-    width=0
-)
-
 # Apply custom premium styles
 styles.apply_styles()
 
@@ -948,4 +903,49 @@ st.markdown(
     </div>
     """, 
     unsafe_allow_html=True
+)
+
+st.components.v1.html(
+    """
+    <script>
+        try {
+            window.parent.document.documentElement.lang = 'es';
+            window.parent.document.body.classList.add('notranslate');
+            const parentHead = window.parent.document.head;
+            if (!parentHead.querySelector('meta[name="google"][content="notranslate"]')) {
+                const meta = window.parent.document.createElement('meta');
+                meta.name = 'google';
+                meta.content = 'notranslate';
+                parentHead.appendChild(meta);
+            }
+            
+            // Ocultar el botón flotante de "Gestionar la aplicación" de Streamlit Cloud
+            if (!parentHead.querySelector('#hide-badge-style')) {
+                const style = window.parent.document.createElement('style');
+                style.id = 'hide-badge-style';
+                style.innerHTML = `
+                    div[class*="viewerBadge_container"], 
+                    [class^="viewerBadge_container"],
+                    .viewerBadge_container,
+                    [data-testid="viewerBadge"],
+                    [data-testid="stAppDeployButton"],
+                    [data-testid="stSidebar"],
+                    section[data-testid="stSidebar"],
+                    [data-testid="collapsedControl"] {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        width: 0px !important;
+                    }
+                `;
+                parentHead.appendChild(style);
+            }
+            
+        } catch (e) {
+            console.error("Parent override failed:", e);
+        }
+    </script>
+    """,
+    height=0,
+    width=0
 )

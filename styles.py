@@ -60,8 +60,9 @@ def apply_styles():
     .stMain,
     div[data-testid="stMain"],
     div[data-testid="stMainBlockContainer"],
+    .stMainBlockContainer,
     .block-container {
-        padding-top: 0rem !important;
+        padding-top: 0px !important;
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
@@ -78,6 +79,52 @@ def apply_styles():
     /* Compactar espaciado vertical entre secciones en el contenedor principal */
     div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
         gap: 0.45rem !important;
+    }
+
+    /* Ocultar y colapsar completamente contenedores de iframes y scripts técnicos */
+    div[data-testid="stElementContainer"]:has(iframe),
+    div[data-testid="stCustomComponentV1"],
+    iframe.stIFrame,
+    iframe[title="st.iframe"] {
+        position: absolute !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        width: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        border: none !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Evitar que bloques técnicos markdown/style ocupen espacio en el flujo */
+    div[data-testid="stElementContainer"]:has(> div[data-testid="stMarkdownContainer"] > style:only-child),
+    div[data-testid="stElementContainer"]:has(> div[data-testid="stMarkdownContainer"] > link) {
+        position: absolute !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        width: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Contenedor del panel blanco superior fijado para que no ocupe espacio en el flujo */
+    div[data-testid="stElementContainer"]:has(.top-nav-panel) {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        overflow: visible !important;
     }
     
     h1, h2, h3 {
@@ -197,8 +244,8 @@ def apply_styles():
         font-weight: 600;
         color: #0f172a;
         letter-spacing: -0.2px;
-        white.space: nowrap;
-        -webkit-text-fill-color:#0f172a; 
+        white-space: nowrap;
+        -webkit-text-fill-color: #0f172a; 
     }
     
     /* Banner institucional degradado de Turnos Sábados recortado */
@@ -209,7 +256,7 @@ def apply_styles():
         padding: 0.72rem 1.5rem !important;
         display: flex;
         align-items: center;
-        margin-top: 14px !important; /* Subir panel bajo la barra fija de 68px */
+        margin-top: 78px !important; /* Anclado limpiamente a solo 10px bajo la barra fija de 68px */
         margin-left: 90px !important; /* Empieza a la mitad del logo */
         margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
         margin-bottom: 0.45rem !important;
@@ -1393,8 +1440,10 @@ def apply_styles():
     }
     
     /* Adjust Streamlit main container padding to pull page contents up */
-    [data-testid="stMainBlockContainer"] {
-        padding-top: 1.5rem !important;
+    [data-testid="stMainBlockContainer"],
+    .stMainBlockContainer,
+    .block-container {
+        padding-top: 0px !important;
         padding-bottom: 2rem !important;
     }
     
