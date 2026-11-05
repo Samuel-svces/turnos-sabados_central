@@ -116,11 +116,10 @@ def apply_styles():
     }
     
     .top-nav-logo {
-        height: 32px !important;
-        width: auto !important;
-        max-width: 150px !important;
-        object-fit: contain !important;
-        display: block !important;
+        height: 34px;
+        width: auto;
+        display: block;
+        object-fit: contain;
     }
     
     .top-nav-divider {
