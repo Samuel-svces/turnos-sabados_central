@@ -94,16 +94,24 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
+
+    /* Colapsar solo los contenedores técnicos previos a la barra para que quede pegada arriba */
+    div[data-testid="stElementContainer"]:has(.header-banner-marker),
+    div[data-testid="stElementContainer"]:has(.app-styles-marker) {
+        display: none !important;
+    }
+
     /* Panel blanco superior con las características exactas solicitadas */
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
-        border: 1px solid #e2e8f0 !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
+        position: relative !important;
         width: 100vw !important;
+        max-width: 100vw !important;
         height: 68px !important;
-        margin: 0 !important;
+        /* Al estar en el flujo normal, se centra contra la ventana para seguir de borde a borde */
+        margin-left: calc(50% - 50vw) !important;
+        margin-right: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
         padding: 0 2rem !important;
         background: #ffffff !important;
         border: none !important;
@@ -210,7 +218,7 @@ def apply_styles():
         padding: 0.72rem 1.5rem !important;
         display: flex;
         align-items: center;
-        margin-top: -25px !important; /* Pegado al panel blanco (la barra fija ya está encima) */
+        margin-top: -14px !important; /* Pegado al panel blanco, que ahora fluye con la página */
         margin-left: 9px !important; /* Empieza a la mitad del logo */
         margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
         margin-bottom: 0.45rem !important;
@@ -1397,7 +1405,7 @@ def apply_styles():
     [data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
-        padding-top: 72px !important; /* Espacio para la barra superior fija de 68px + 4px de margen */
+        padding-top: 0px !important; /* La barra superior ahora fluye con la página (ya no es fija) */
         padding-bottom: 2rem !important;
     }
     
@@ -1749,4 +1757,5 @@ def apply_styles():
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])
-    st.markdown(clean_css, unsafe_allow_html=True)
+    # Marcador propio para poder colapsar solo este contenedor técnico (y no otros <style>)
+    st.markdown(clean_css + '<div class="app-styles-marker"></div>', unsafe_allow_html=True)
