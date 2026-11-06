@@ -877,23 +877,32 @@ def apply_styles():
     /* Contenedor del Buscador (Estado por defecto con borde verde agua / menta suave) */
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"],
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]),
-    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stTextInput"] {
+    /* Contenedor del Buscador (Estado por defecto con borde verde agua / menta suave) */
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"],
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]),
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stTextInput"],
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stTextInput"] {
         margin: 0 !important;
         padding: 0 !important;
-        max-width: 260px !important;
+        width: 100% !important;
+        max-width: 340px !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"],
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"],
-    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] {
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"],
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-baseweb="input"] {
         background-color: #ffffff !important;
-        border-radius: 10px !important;
-        border: 1.5px solid #d1eceb !important;
+        background: #ffffff !important;
+        border-radius: 14px !important;
+        border: 1.5px solid #5ec2ba !important;
         box-shadow: none !important;
-        height: 32px !important;
-        min-height: 32px !important;
-        max-height: 32px !important;
-        max-width: 260px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 38px !important;
+        width: 100% !important;
+        max-width: 340px !important;
+        margin: 0 auto !important;
         transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         box-sizing: border-box !important;
     }
@@ -901,24 +910,27 @@ def apply_styles():
     /* Estado Hover del Buscador */
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"]:hover,
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"]:hover,
-    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"]:hover {
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"]:hover,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-baseweb="input"]:hover {
         border-color: #0f9a9b !important;
     }
     
     /* Estado Focus / Activo del Buscador (Borde verde agua intenso + resplandor suave) */
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within,
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"]:focus-within,
-    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"]:focus-within {
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"]:focus-within,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-baseweb="input"]:focus-within {
         border-color: #0f9a9b !important;
         box-shadow: 0 0 0 3px rgba(15, 154, 155, 0.18) !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"] > div,
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"] > div,
-    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] > div {
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] > div,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-baseweb="input"] > div {
         background-color: transparent !important;
         border: none !important;
-        border-radius: 10px !important;
+        border-radius: 14px !important;
         height: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -927,32 +939,34 @@ def apply_styles():
     /* Input interno con icono de lupa estilizado */
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] input,
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) input,
-    div[data-testid="column"]:has(.custom-search-marker) input {
+    div[data-testid="column"]:has(.custom-search-marker) input,
+    div[data-testid="stColumn"]:has(.custom-search-marker) input {
         height: 100% !important;
-        min-height: 28px !important;
-        max-height: 32px !important;
+        min-height: 34px !important;
+        max-height: 36px !important;
         box-sizing: border-box !important;
         margin: 0 !important;
         background-color: transparent !important;
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
-        border-radius: 10px !important;
-        padding-left: 28px !important;
-        padding-right: 10px !important;
+        border-radius: 14px !important;
+        padding-left: 36px !important;
+        padding-right: 12px !important;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230f9a9b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>') !important;
         background-repeat: no-repeat !important;
-        background-position: 8px center !important;
-        background-size: 14px 14px !important;
+        background-position: 11px center !important;
+        background-size: 16px 16px !important;
         font-family: 'Outfit', sans-serif !important;
-        font-size: 0.88rem !important;
+        font-size: 0.92rem !important;
         font-weight: 500 !important;
         color: #0f172a !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] input:focus,
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) input:focus,
-    div[data-testid="column"]:has(.custom-search-marker) input:focus {
+    div[data-testid="column"]:has(.custom-search-marker) input:focus,
+    div[data-testid="stColumn"]:has(.custom-search-marker) input:focus {
         border: none !important;
         outline: none !important;
         box-shadow: none !important;

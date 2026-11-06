@@ -172,6 +172,28 @@ def renderizar_buscador():
         inputBuscador.placeholder = "";
         inputBuscador.setAttribute("placeholder", "");
 
+        // Asegurar borde verde agua suave, fondo blanco y esquinas redondeadas
+        const baseInput = inputBuscador.closest('div[data-baseweb="input"], [data-baseweb="base-input"]') || inputBuscador.parentElement;
+        if (baseInput) {
+            baseInput.style.setProperty('background-color', '#ffffff', 'important');
+            baseInput.style.setProperty('background', '#ffffff', 'important');
+            baseInput.style.setProperty('border', '1.5px solid #5ec2ba', 'important');
+            baseInput.style.setProperty('border-radius', '14px', 'important');
+            baseInput.style.setProperty('box-shadow', 'none', 'important');
+            baseInput.style.setProperty('box-sizing', 'border-box', 'important');
+            baseInput.style.setProperty('max-width', '340px', 'important');
+            baseInput.style.setProperty('margin', '0 auto', 'important');
+        }
+
+        inputBuscador.style.setProperty('background-image', 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230f9a9b\' stroke-width=\'2.2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'11\' cy=\'11\' r=\'7\'></circle><line x1=\'21\' y1=\'21\' x2=\'16\' y2=\'16\'></line></svg>")', 'important');
+        inputBuscador.style.setProperty('background-repeat', 'no-repeat', 'important');
+        inputBuscador.style.setProperty('background-position', '11px center', 'important');
+        inputBuscador.style.setProperty('background-size', '16px 16px', 'important');
+        inputBuscador.style.setProperty('padding-left', '36px', 'important');
+        inputBuscador.style.setProperty('border', 'none', 'important');
+        inputBuscador.style.setProperty('outline', 'none', 'important');
+        inputBuscador.style.setProperty('border-radius', '14px', 'important');
+
         if (!inputBuscador.dataset.liveSearchBound) {
             inputBuscador.dataset.liveSearchBound = "true";
             
