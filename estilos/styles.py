@@ -151,7 +151,7 @@ def apply_styles():
     div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(.topbar-brand)) {
         margin: 0px !important;
         padding: 0px !important;
-        margin-bottom: 1.25rem !important;
+        margin-bottom: 0px !important;
         width: 100% !important;
         max-width: 100% !important;
     }
@@ -159,11 +159,11 @@ def apply_styles():
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0.95rem 1.75rem 0.95rem 1.25rem !important;
+        padding: 0.65rem 1.75rem 0.65rem 1.25rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin-top: 0.35rem !important;
+        margin-top: 0.2rem !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
         left: 0px !important;
@@ -171,7 +171,7 @@ def apply_styles():
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        min-height: 64px !important;
+        min-height: 52px !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"] {
@@ -284,8 +284,8 @@ def apply_styles():
         border: none !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
-        margin-top: 1.6rem !important;
-        margin-bottom: 0.85rem !important;
+        margin-top: 0.45rem !important;
+        margin-bottom: 0.65rem !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
