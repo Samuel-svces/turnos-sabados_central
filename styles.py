@@ -876,17 +876,20 @@ def apply_styles():
     div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stTextInput"] {
         margin: 0 !important;
         padding: 0 !important;
+        max-width: 260px !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"],
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"],
     div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] {
         background-color: #ffffff !important;
-        border-radius: 14px !important;
+        border-radius: 10px !important;
         border: 1.5px solid #d1eceb !important;
         box-shadow: none !important;
-        height: 38px !important;
-        min-height: 38px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        max-width: 260px !important;
         transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         box-sizing: border-box !important;
     }
@@ -911,7 +914,7 @@ def apply_styles():
     div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] > div {
         background-color: transparent !important;
         border: none !important;
-        border-radius: 14px !important;
+        border-radius: 10px !important;
         height: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -922,22 +925,23 @@ def apply_styles():
     div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) input,
     div[data-testid="column"]:has(.custom-search-marker) input {
         height: 100% !important;
-        min-height: 36px !important;
+        min-height: 28px !important;
+        max-height: 32px !important;
         box-sizing: border-box !important;
         margin: 0 !important;
         background-color: transparent !important;
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
-        border-radius: 14px !important;
-        padding-left: 36px !important;
-        padding-right: 12px !important;
+        border-radius: 10px !important;
+        padding-left: 28px !important;
+        padding-right: 10px !important;
         background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230f9a9b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>') !important;
         background-repeat: no-repeat !important;
-        background-position: 11px center !important;
-        background-size: 16px 16px !important;
+        background-position: 8px center !important;
+        background-size: 14px 14px !important;
         font-family: 'Outfit', sans-serif !important;
-        font-size: 0.95rem !important;
+        font-size: 0.88rem !important;
         font-weight: 500 !important;
         color: #0f172a !important;
     }
@@ -951,28 +955,35 @@ def apply_styles():
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) button {
-        height: 38px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        max-height: 32px !important;
+        width: 32px !important;
+        min-width: 32px !important;
+        max-width: 32px !important;
         box-sizing: border-box !important;
         margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 8px !important;
     }
     
     .search-label {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        height: 38px;
+        height: 32px;
         font-weight: 500;
         color: #7f8fa6;
-        font-size: 0.95rem;
+        font-size: 0.88rem;
         margin: 0 !important;
         padding: 0 !important;
-        line-height: 38px !important;
+        line-height: 32px !important;
     }
     
     .search-label p {
         margin: 0 !important;
         padding: 0 !important;
-        line-height: 38px !important;
+        line-height: 32px !important;
     }
 
     /* Estilos para los botones con fondo blanco por defecto y color en hover/active/focus */
@@ -989,10 +1000,10 @@ def apply_styles():
 
     /* 1. Botón de Buscar (Degradado Azul) */
     div[data-testid="stColumn"]:has(.search-btn-marker) button {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
         border: none !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 14px rgba(8, 102, 234, 0.35) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 3px 10px rgba(8, 102, 234, 0.3) !important;
         transition: all 0.2s ease !important;
     }
     div[data-testid="stColumn"]:has(.search-btn-marker) button p {
@@ -1000,22 +1011,22 @@ def apply_styles():
     }
     div[data-testid="stColumn"]:has(.search-btn-marker) button:hover,
     div[data-testid="stColumn"]:has(.search-btn-marker) button:focus {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
-        box-shadow: 0 6px 18px rgba(8, 102, 234, 0.5) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
+        box-shadow: 0 4px 14px rgba(8, 102, 234, 0.45) !important;
         transform: translateY(-1px) !important;
     }
     div[data-testid="stColumn"]:has(.search-btn-marker) button:active {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #0e7ae6 0%, #054eb8 100%) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #0e7ae6 0%, #054eb8 100%) !important;
         transform: translateY(0px) !important;
         box-shadow: 0 2px 8px rgba(8, 102, 234, 0.3) !important;
     }
     
     /* 2. Botón de Limpiar (Degradado Rojo) */
     div[data-testid="stColumn"]:has(.clear-btn-marker) button {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
         border: none !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 3px 10px rgba(220, 38, 38, 0.3) !important;
         transition: all 0.2s ease !important;
     }
     div[data-testid="stColumn"]:has(.clear-btn-marker) button p {
@@ -1023,22 +1034,22 @@ def apply_styles():
     }
     div[data-testid="stColumn"]:has(.clear-btn-marker) button:hover,
     div[data-testid="stColumn"]:has(.clear-btn-marker) button:focus {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #f87171 0%, #b91c1c 100%) !important;
-        box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #f87171 0%, #b91c1c 100%) !important;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.45) !important;
         transform: translateY(-1px) !important;
     }
     div[data-testid="stColumn"]:has(.clear-btn-marker) button:active {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #dc2626 0%, #991b1b 100%) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #dc2626 0%, #991b1b 100%) !important;
         transform: translateY(0px) !important;
         box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3) !important;
     }
     
     /* 3. Botón de Refrescar (Degradado Verde) */
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
         border: none !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 3px 10px rgba(21, 128, 61, 0.3) !important;
         transition: all 0.2s ease !important;
     }
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button p {
@@ -1046,12 +1057,12 @@ def apply_styles():
     }
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button:hover,
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button:focus {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #34d399 0%, #166534 100%) !important;
-        box-shadow: 0 6px 18px rgba(21, 128, 61, 0.5) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #34d399 0%, #166534 100%) !important;
+        box-shadow: 0 4px 14px rgba(21, 128, 61, 0.45) !important;
         transform: translateY(-1px) !important;
     }
     div[data-testid="stColumn"]:has(.refresh-btn-marker) button:active {
-        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') center / 1.25rem no-repeat, linear-gradient(180deg, #15803d 0%, #14532d 100%) !important;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ffffff"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>') center / 1rem no-repeat, linear-gradient(180deg, #15803d 0%, #14532d 100%) !important;
         transform: translateY(0px) !important;
         box-shadow: 0 2px 8px rgba(21, 128, 61, 0.3) !important;
     }
