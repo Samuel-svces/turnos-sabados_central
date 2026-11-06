@@ -107,23 +107,28 @@ if os.path.exists(logo_path):
     with open(logo_path, "rb") as f:
         logo_b64 = base64.b64encode(f.read()).decode("utf-8")
 
-# Panel blanco superior con Logo, Título "Conexión operativa" y Engranaje a la derecha
-col_nav_brand, col_nav_gear = st.columns([11, 1])
+# Barra superior fija: Logo + "Conexión operativa" a la izquierda, chip de usuario a la derecha
+NOMBRE_USUARIO_NAV = "Juan Jose Osorio Molina"
+
+topbar = st.container()
+topbar.markdown("<div class='app-topbar-marker'></div>", unsafe_allow_html=True)
+
+col_nav_brand, col_nav_user = topbar.columns([11, 1])
 
 with col_nav_brand:
     st.markdown(f"""
-        <div class="top-nav-panel">
-            <div class="top-nav-left">
-                <img src="data:image/png;base64,{logo_b64}" alt="Unión para la salud y la vida S.A.S" class="top-nav-logo" />
-                <div class="top-nav-divider"></div>
-                <span class="top-nav-title">Conexión operativa</span>
+        <div class="topbar-brand">
+            <img src="data:image/png;base64,{logo_b64}" alt="Unión para la salud y la vida S.A.S" class="topbar-logo" />
+            <span class="topbar-brand-divider"></span>
+            <div class="topbar-titles">
+                <span class="topbar-title">Conexión operativa</span>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-with col_nav_gear:
-    st.markdown("<div class='admin-gear-marker'></div>", unsafe_allow_html=True)
-    with st.popover("⚙", help="Administración"):
+with col_nav_user:
+    st.markdown("<div class='topbar-user-marker'></div>", unsafe_allow_html=True)
+    with st.popover(NOMBRE_USUARIO_NAV, help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
         
         if st.session_state.is_admin:

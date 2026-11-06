@@ -94,8 +94,8 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    /* Panel blanco superior con las características exactas solicitadas */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
+    /* Barra superior fija: bloque que contiene el marcador y la fila del topbar */
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -103,52 +103,47 @@ def apply_styles():
         width: 100vw !important;
         height: 68px !important;
         margin: 0 !important;
-        padding: 0 2rem !important;
+        padding: 0 26px 0 20px !important;
         background: #ffffff !important;
-        /* Recuadro negro que encierra logo + "Conexión operativa" + engranaje, de extremo a extremo */
-        border: 1px solid #000000 !important;
+        border-bottom: 1px solid #e5e7eb !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
+        flex-direction: column !important;
+        justify-content: center !important;
         gap: 0 !important;
         box-sizing: border-box !important;
         z-index: 9999 !important;
     }
     
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"] {
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stHorizontalBlock"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        gap: 0 !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+    }
+
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
-        padding-top: 0px !important;
-        padding-bottom: 0px !important;
+        padding: 0 !important;
         height: 100% !important;
+        min-width: 0 !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:first-child,
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:first-child {
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:first-child {
         flex: 1 1 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
+        align-items: flex-start !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:last-child,
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:last-child,
-    div[data-testid="column"]:has(.admin-gear-marker),
-    div[data-testid="stColumn"]:has(.admin-gear-marker) {
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:last-child {
         flex: 0 0 auto !important;
-        width: auto !important;
-        min-width: 50px !important;
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center !important;
+        align-items: flex-end !important;
         z-index: 10000 !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"] {
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stColumn"] div[data-testid="stVerticalBlock"] {
         gap: 0px !important;
         height: 100% !important;
         display: flex !important;
@@ -156,49 +151,64 @@ def apply_styles():
         justify-content: center !important;
     }
 
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stElementContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p {
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stElementContainer"],
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stMarkdownContainer"],
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stMarkdownContainer"] p {
         margin: 0px !important;
         padding: 0px !important;
     }
     
-    .top-nav-panel {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        height: 100%;
+    /* Marcadores invisibles de ancla (la barra se detecta por ellos) */
+    .app-topbar-marker,
+    .topbar-user-marker {
+        display: none !important;
     }
-    
-    .top-nav-left {
+
+    div[data-testid="stElementContainer"]:has(.app-topbar-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .topbar-brand {
         display: flex;
         align-items: center;
         gap: 18px;
         height: 100%;
-        min-width:0;
+        min-width: 0;
     }
-    
-    .top-nav-logo {
+
+    .topbar-logo {
         height: 34px;
         width: auto;
         display: block;
         object-fit: contain;
     }
-    
-    .top-nav-divider {
+
+    .topbar-brand-divider {
+        display: block;
         width: 2px;
         height: 36px;
         background-color: #94a3b8;
+        flex: 0 0 auto;
     }
-    
-    .top-nav-title {
+
+    .topbar-titles {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .topbar-title {
         font-family: 'Outfit', sans-serif;
         font-size: 21px;
         font-weight: 600;
         color: #0f172a;
         letter-spacing: -0.2px;
         white-space: nowrap;
-        -webkit-text-fill-color: #0f172a; 
+        -webkit-text-fill-color: #0f172a;
     }
     
     /* Banner institucional degradado de Turnos Sábados recortado */
@@ -263,9 +273,9 @@ def apply_styles():
         justify-content: center;
     }
     
-    /* Alinear el botón de la tuerca verticalmente centrado y a la derecha */
-    div[data-testid="stColumn"]:has(.admin-gear-marker),
-    div[data-testid="column"]:has(.admin-gear-marker) {
+    /* Alinear el chip de usuario a la derecha de la barra superior */
+    div[data-testid="stColumn"]:has(.topbar-user-marker),
+    div[data-testid="column"]:has(.topbar-user-marker) {
         display: flex !important;
         justify-content: flex-end !important;
         align-items: center !important;
@@ -1465,84 +1475,56 @@ def apply_styles():
         margin-top: 0px !important;
     }
     
-    /* Ocultar contenedor del marcador de engranaje */
-    div[data-testid="stElementContainer"]:has(.admin-gear-marker) {
+    /* Ocultar el contenedor del marcador del chip de usuario */
+    div[data-testid="stElementContainer"]:has(.topbar-user-marker) {
         display: none !important;
         height: 0px !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
-    /* Estilos del botón de engranaje administrativo en el Popover */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
-        background-color: #ffffff !important; /* Fondo blanco */
-        border: 2px solid #d9d9d9 !important; /* Borde sutil definido */
-        border-radius: 50% !important; /* Circular */
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
-        padding: 0 !important;
+    /* Chip de usuario (popover de administración) en la barra superior */
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button {
+        background-color: #ffffff !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 999px !important;
+        box-shadow: none !important;
+        padding: 0 10px 0 14px !important;
         transition: all 0.2s ease !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        gap: 4px !important;
         height: 38px !important;
-        width: 38px !important;
         min-height: 38px !important;
-        min-width: 38px !important;
         cursor: pointer !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button:hover,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
-        background-color: #f1f5f9 !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
-        border-color: #0284c7 !important;
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button:hover {
+        background-color: #f8fafc !important;
+        border-color: #cbd5e1 !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button p,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
-        font-size: 1.25rem !important;
-        color: #3f3e3e !important;
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button p {
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        color: #334155 !important;
         margin: 0 !important;
         padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+    }
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button:hover p {
+        color: #0f172a !important;
+    }
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button [data-testid="stIconMaterial"] {
+        color: #64748b !important;
+        font-size: 1.15rem !important;
         line-height: 1 !important;
-        visibility: visible !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button:hover p,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p {
-        color: #0284c7 !important;
-    }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button div[aria-hidden="true"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button svg,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg {
-        display: none !important; /* Oculta la flecha chevron por defecto */
-    }
-    
-    /* Centrar perfectamente todos los contenedores intermedios del popover de administración */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button div,
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button span,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
-    div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
-    div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button div,
+    div[data-testid="stVerticalBlock"]:has(> div.element-container .app-topbar-marker):has(> div[data-testid="stLayoutWrapper"] > div[data-testid="stHorizontalBlock"] .topbar-brand) div[data-testid="stPopover"] button span {
         margin: 0px !important;
         padding: 0px !important;
-        height: 100% !important;
-        width: 100% !important;
     }
     
     /* Añadir icono bi-arrow-clockwise al botón Refrescar */
