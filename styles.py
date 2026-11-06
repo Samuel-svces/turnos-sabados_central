@@ -62,7 +62,7 @@ def apply_styles():
     div[data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
@@ -91,25 +91,99 @@ def apply_styles():
         background: radial-gradient(circle at 10% 20%, rgba(90, 92, 106, 0.03) 0%, rgba(32, 45, 58, 0.05) 90%);
     }
     
-    /* Full width header banner */
-    .header-banner-marker {
-        display: none;
+    /* Ocultar marcador superior */
+    .header-banner-marker,
+    div[data-testid="stElementContainer"]:has(.app-topbar-marker),
+    div.element-container:has(.app-topbar-marker) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
     }
     
-    /* Banner institucional degradado de Turnos Sábados con engranaje integrado */
+    /* Topbar Institucional Superior (Fondo Blanco con borde inferior de extremo a extremo) */
+    div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
+        background-color: #ffffff !important;
+        border-bottom: 1px solid #000000 !important;
+        padding: 0.65rem 2rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-top: -0.5rem !important;
+        margin-left: -2rem !important;
+        margin-right: -2rem !important;
+        width: calc(100% + 4rem) !important;
+        box-sizing: border-box !important;
+    }
+    
+    div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"] {
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:first-of-type {
+        justify-content: flex-start !important;
+    }
+    
+    div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:last-of-type {
+        justify-content: flex-end !important;
+    }
+    
+    /* Identidad de Marca: Logo + Separador + Conexión operativa */
+    .topbar-brand {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        user-select: none !important;
+    }
+    
+    .topbar-logo {
+        height: 38px !important;
+        max-height: 42px !important;
+        width: auto !important;
+        object-fit: contain !important;
+        display: block !important;
+    }
+    
+    .topbar-brand-divider {
+        display: inline-block !important;
+        width: 1.5px !important;
+        height: 26px !important;
+        background-color: #000000 !important;
+        opacity: 0.45 !important;
+        margin: 0 0.85rem !important;
+    }
+    
+    .topbar-titles {
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .topbar-title {
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        color: #0a1128 !important;
+        letter-spacing: -0.2px !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Banner institucional degradado de Turnos Sábados */
     .premium-gradient-banner,
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
+    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent),
+    div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
         background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
-        border-radius: 12px;
+        border-radius: 12px !important;
         padding: 0.72rem 1.5rem !important;
-        display: flex;
-        align-items: center;
-        margin-top: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+        margin-top: 0.75rem !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
         margin-bottom: 0.75rem !important;
         box-sizing: border-box !important;
-        box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
+        box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15) !important;
+        width: 100% !important;
     }
     
     /* Resetear margen, bordes y sombras de alertas y notificaciones y sus contenedores */
@@ -1359,20 +1433,111 @@ def apply_styles():
         margin-top: 0px !important;
     }
     
-    /* Ocultar contenedor del marcador de engranaje */
-    div[data-testid="stElementContainer"]:has(.admin-gear-marker) {
+    /* Ocultar contenedores de marcadores */
+    div[data-testid="stElementContainer"]:has(.admin-gear-marker),
+    div[data-testid="stElementContainer"]:has(.topbar-user-marker) {
         display: none !important;
         height: 0px !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
-    /* Estilos del botón de engranaje administrativo en el Popover */
+    /* Botón de usuario en el topbar institucional (Píldora con avatar de iniciales JJ) */
+    div[data-testid="column"]:has(.topbar-user-marker),
+    div[data-testid="stColumn"]:has(.topbar-user-marker) {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"],
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] {
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"],
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"],
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button {
+        background-color: #ffffff !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 9999px !important;
+        padding: 0.35rem 0.9rem 0.35rem 0.45rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.55rem !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+        height: auto !important;
+        min-height: 38px !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover {
+        background-color: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    /* Avatar circular con las iniciales JJ */
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button::before,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button::before {
+        content: var(--usv-user-initials, "JJ") !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        color: #ffffff !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        flex-shrink: 0 !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button p,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button p {
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover p,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover p {
+        color: #0f172a !important;
+    }
+
+    /* Mantener visible y alineado el chevron expand_more a la derecha del texto */
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"] {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #64748b !important;
+        font-size: 1.15rem !important;
+    }
+
+    /* Estilos del botón de engranaje administrativo en el Popover (fallback) */
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
-        background-color: #ffffff !important; /* Fondo blanco */
-        border: 2px solid #d9d9d9 !important; /* Borde sutil definido */
-        border-radius: 50% !important; /* Circular */
+        background-color: #ffffff !important;
+        border: 2px solid #d9d9d9 !important;
+        border-radius: 50% !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
         padding: 0 !important;
         transition: all 0.2s ease !important;
@@ -1413,10 +1578,9 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg {
-        display: none !important; /* Oculta la flecha chevron por defecto */
+        display: none !important;
     }
     
-    /* Centrar perfectamente todos los contenedores intermedios del popover de administración */
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,

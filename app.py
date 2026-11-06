@@ -100,29 +100,48 @@ if 'last_action' not in st.session_state:
 
 st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
-# Banner institucional degradado con título y engranaje administrativo integrado
-col_banner_info, col_banner_gear = st.columns([11, 1])
+# ----------------- TOPBAR INSTITUCIONAL -----------------
+# Cargar imagen oficial de logo en base64 para renderizado instantáneo
+logo_b64 = ""
+logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo_union.png")
+if os.path.exists(logo_path):
+    import base64
+    with open(logo_path, "rb") as f_img:
+        logo_b64 = base64.b64encode(f_img.read()).decode("utf-8")
 
-with col_banner_info:
-    st.markdown("""
-        <div class="premium-banner-transparent">
-            <div class="premium-banner-icon">
-                <i class="bi bi-calendar3"></i>
-            </div>
-            <div class="premium-banner-text">
-                <h1>Turnos Sábados</h1>
-                <p>Secuencia sabados</p>
-            </div>
+# Marcador y variable de iniciales de usuario según especificación DOM
+st.markdown('<style>:root { --usv-user-initials: "JJ"; }</style><div class="app-topbar-marker"></div>', unsafe_allow_html=True)
+
+col_top_brand, col_top_user = st.columns([8, 4])
+
+with col_top_brand:
+    img_src = f"data:image/png;base64,{logo_b64}" if logo_b64 else ""
+    st.markdown(f"""
+        <div class="topbar-brand">
+            <img src="{img_src}" class="topbar-logo" alt="Unión para la Salud y la Vida S.A.S.">
+            <span class="topbar-brand-divider"></span>
+            <div class="topbar-titles"><span class="topbar-title">Conexión operativa</span></div>
         </div>
     """, unsafe_allow_html=True)
 
-with col_banner_gear:
-    st.markdown("<div class='admin-gear-marker'></div>", unsafe_allow_html=True)
-    with st.popover("⚙", help="Administración"):
-        st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
+with col_top_user:
+    st.markdown("<div class='topbar-user-marker'></div>", unsafe_allow_html=True)
+    with st.popover("Juan Jose  Osorio Molina"):
+        st.markdown("""
+            <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.5rem;">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">
+                    JJ
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">Juan Jose  Osorio Molina</div>
+                    <div style="font-size: 0.78rem; color: #64748b;">Conexión operativa • Administración</div>
+                </div>
+            </div>
+            <div style="margin: 0.5rem 0 0.8rem 0; border-top: 1px solid #e2e8f0;"></div>
+        """, unsafe_allow_html=True)
         
         if st.session_state.is_admin:
-            st.success("Sesión Iniciada (Admin)")
+            st.success("Sesión Iniciada (Admin)", icon=":material/verified_user:")
             if st.button("Cerrar Sesión", use_container_width=True, key="btn_popover_logout"):
                 st.session_state.is_admin = False
                 if 'saturday_offset' in st.session_state:
@@ -241,6 +260,19 @@ with col_banner_gear:
                     
             if st.session_state.pwd_error:
                 st.error(st.session_state.pwd_error)
+
+# Banner institucional degradado con título Turnos Sábados
+st.markdown("""
+    <div class="premium-gradient-banner">
+        <div class="premium-banner-icon">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div class="premium-banner-text">
+            <h1>Turnos Sábados</h1>
+            <p>Secuencia sabados</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 if not st.session_state.data_loaded or st.session_state.load_error:
     st.error(f"### Error al cargar datos")
