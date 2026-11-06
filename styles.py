@@ -138,11 +138,11 @@ def apply_styles():
     }
     
     .topbar-logo {
-        height: 38px !important;
-        max-height: 42px !important;
-        width: auto !important;
-        object-fit: contain !important;
-        display: block !important;
+        height: 34px;
+        width: auto;
+        display: block;
+        object-fit: contain;
+}
     }
     
     .topbar-brand-divider {
