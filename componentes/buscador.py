@@ -40,27 +40,26 @@ def renderizar_buscador():
         st.session_state["filter_class"] = "Todos"
 
     if not st.session_state.is_admin:
-        # Fila de píldoras/botones de filtro dinámico compactos
-        st.markdown("<div style='margin-top: 0.05rem; margin-bottom: 0px;'></div>", unsafe_allow_html=True)
-        col_spacer_l, col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_spacer_r = st.columns([2.6, 0.9, 1.1, 1.1, 1.4, 2.6])
+        # Fila de píldoras/botones de filtro dinámico compactos y juntos
+        col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3 = st.columns([1, 1, 1, 1])
         with col_lbl_f:
-            st.markdown("<div style='font-size: 0.8rem; color: #64748b; font-weight: 700; padding-top: 0.18rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
+            st.markdown("<div class='filter-row-marker filter-label-wrap'>Filtrar por:</div>", unsafe_allow_html=True)
         with col_btn_f1:
             st.markdown("<div class='filter-all-marker'></div>", unsafe_allow_html=True)
             f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
-            if st.button("Todos", key="btn_filtro_todos", use_container_width=True, type=f_style_all):
+            if st.button("Todos", key="btn_filtro_todos", use_container_width=False, type=f_style_all):
                 st.session_state["filter_class"] = "Todos"
                 st.rerun()
         with col_btn_f2:
             st.markdown("<div class='filter-normal-marker'></div>", unsafe_allow_html=True)
             f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
-            if st.button("Normal", key="btn_filtro_secuencia_normal", use_container_width=True, type=f_style_normal):
+            if st.button("Normal", key="btn_filtro_secuencia_normal", use_container_width=False, type=f_style_normal):
                 st.session_state["filter_class"] = "Secuencia Normal"
                 st.rerun()
         with col_btn_f3:
             st.markdown("<div class='filter-comp-marker'></div>", unsafe_allow_html=True)
             f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
-            if st.button("Compensación", key="btn_filtro_compensacion", use_container_width=True, type=f_style_comp):
+            if st.button("Compensación", key="btn_filtro_compensacion", use_container_width=False, type=f_style_comp):
                 st.session_state["filter_class"] = "Compensación"
                 st.rerun()
     else:
@@ -217,6 +216,46 @@ def renderizar_buscador():
         }
     }
 
+    function alinearFiltrosCentrados() {
+        const parentDoc = window.parent.document;
+        // Localizar el marcador dentro de la fila de filtros
+        const filterMarker = parentDoc.querySelector('.filter-all-marker, .filter-row-marker, .filter-normal-marker, .filter-comp-marker');
+        if (!filterMarker) return;
+
+        const filterRow = filterMarker.closest('[data-testid="stHorizontalBlock"], [data-testid="horizontalBlock"]');
+        if (!filterRow) return;
+
+        filterRow.style.setProperty('display', 'flex', 'important');
+        filterRow.style.setProperty('flex-direction', 'row', 'important');
+        filterRow.style.setProperty('justify-content', 'center', 'important');
+        filterRow.style.setProperty('align-items', 'center', 'important');
+        filterRow.style.setProperty('gap', '0.45rem', 'important');
+        filterRow.style.setProperty('margin', '0.15rem auto', 'important');
+        filterRow.style.setProperty('width', '100%', 'important');
+
+        const cols = filterRow.querySelectorAll(':scope > [data-testid="stColumn"], :scope > [data-testid="column"]');
+        cols.forEach(c => {
+            c.style.setProperty('flex', '0 0 auto', 'important');
+            c.style.setProperty('width', 'auto', 'important');
+            c.style.setProperty('min-width', 'unset', 'important');
+            c.style.setProperty('max-width', 'unset', 'important');
+            c.style.setProperty('padding', '0', 'important');
+            c.style.setProperty('margin', '0', 'important');
+
+            c.querySelectorAll('[data-testid="stElementContainer"], .stButton').forEach(el => {
+                el.style.setProperty('width', 'auto', 'important');
+                el.style.setProperty('min-width', 'unset', 'important');
+                el.style.setProperty('margin', '0', 'important');
+            });
+
+            c.querySelectorAll('button').forEach(btn => {
+                btn.style.setProperty('width', 'auto', 'important');
+                btn.style.setProperty('min-width', 'unset', 'important');
+                btn.style.setProperty('margin', '0', 'important');
+            });
+        });
+    }
+
     function styleButtons() {
         const parentDoc = window.parent.document;
         const colButtons = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
@@ -319,15 +358,18 @@ def renderizar_buscador():
             });
         });
 
-        // Asegurar que el input del buscador reactivo esté vinculado
+        // Asegurar que el input del buscador reactivo y los filtros estén vinculados
         vincularBuscadorReactivo();
+        alinearFiltrosCentrados();
     }
 
     styleButtons();
     vincularBuscadorReactivo();
+    alinearFiltrosCentrados();
     const observer = new MutationObserver(() => {
         styleButtons();
         vincularBuscadorReactivo();
+        alinearFiltrosCentrados();
     });
     observer.observe(window.parent.document.body, { childList: true, subtree: true });
     </script>

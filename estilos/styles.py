@@ -1140,7 +1140,7 @@ def apply_styles():
         box-shadow: 0 2px 8px rgba(21, 128, 61, 0.3) !important;
     }
 
-    /* Ocultar marcadores de botones de filtro */
+    /* Ocultar marcadores vacíos de botones de filtro */
     div[data-testid="stElementContainer"]:has(.filter-all-marker),
     div[data-testid="stElementContainer"]:has(.filter-normal-marker),
     div[data-testid="stElementContainer"]:has(.filter-comp-marker) {
@@ -1150,6 +1150,69 @@ def apply_styles():
         padding: 0px !important;
     }
 
+    /* Fila de Filtros Centrada y Unida (Juntalos y Centralos) */
+    div[data-testid="stHorizontalBlock"]:has(.filter-all-marker),
+    div[data-testid="stHorizontalBlock"]:has(.filter-row-marker),
+    div[data-testid="stHorizontalBlock"]:has(.filter-normal-marker),
+    div[data-testid="stHorizontalBlock"]:has(.filter-comp-marker) {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        margin: 0.2rem auto 0.2rem auto !important;
+        width: 100% !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.filter-all-marker) [data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-all-marker) [data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-row-marker) [data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-row-marker) [data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-normal-marker) [data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-normal-marker) [data-testid="column"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-comp-marker) [data-testid="stColumn"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-comp-marker) [data-testid="column"] {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.filter-all-marker) [data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-row-marker) [data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-normal-marker) [data-testid="stElementContainer"],
+    div[data-testid="stHorizontalBlock"]:has(.filter-comp-marker) [data-testid="stElementContainer"] {
+        width: auto !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.filter-all-marker) .stButton,
+    div[data-testid="stHorizontalBlock"]:has(.filter-row-marker) .stButton,
+    div[data-testid="stHorizontalBlock"]:has(.filter-normal-marker) .stButton,
+    div[data-testid="stHorizontalBlock"]:has(.filter-comp-marker) .stButton {
+        width: auto !important;
+        min-width: unset !important;
+        margin: 0 !important;
+    }
+
+    .filter-label-wrap {
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.82rem !important;
+        color: #64748b !important;
+        font-weight: 700 !important;
+        line-height: 28px !important;
+        height: 28px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-right: 0.25rem !important;
+        white-space: nowrap !important;
+        user-select: none !important;
+    }
+
     /* 5. Botón de Filtro Todos (Degradado Azul) - Tamaño Compacto */
     div[data-testid="stColumn"]:has(.filter-all-marker) button,
     div[data-testid="column"]:has(.filter-all-marker) button {
@@ -1157,10 +1220,12 @@ def apply_styles():
         min-height: 28px !important;
         max-height: 28px !important;
         line-height: 26px !important;
-        padding: 0 0.5rem !important;
+        padding: 0 0.85rem !important;
         border-radius: 8px !important;
-        max-width: 110px !important;
-        margin: 0 auto !important;
+        width: auto !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        margin: 0 !important;
         box-sizing: border-box !important;
     }
     div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="secondary"],
@@ -1221,10 +1286,12 @@ def apply_styles():
         min-height: 28px !important;
         max-height: 28px !important;
         line-height: 26px !important;
-        padding: 0 0.5rem !important;
+        padding: 0 0.85rem !important;
         border-radius: 8px !important;
-        max-width: 110px !important;
-        margin: 0 auto !important;
+        width: auto !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        margin: 0 !important;
         box-sizing: border-box !important;
     }
     div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="secondary"],
@@ -1285,10 +1352,12 @@ def apply_styles():
         min-height: 28px !important;
         max-height: 28px !important;
         line-height: 26px !important;
-        padding: 0 0.5rem !important;
+        padding: 0 0.85rem !important;
         border-radius: 8px !important;
-        max-width: 135px !important;
-        margin: 0 auto !important;
+        width: auto !important;
+        min-width: unset !important;
+        max-width: unset !important;
+        margin: 0 !important;
         box-sizing: border-box !important;
     }
     div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="secondary"],
