@@ -261,12 +261,13 @@ def apply_styles():
     }
     
     .topbar-title {
-        font-family: 'Outfit', sans-serif !important;
-        font-size: 1.15rem !important;
-        font-weight: 700 !important;
+        font-family: 'Outfit', sans-serif;
+        font-size: 21px;
+        font-weight: 600;
         color: #0f172a !important;
         letter-spacing: -0.2px !important;
         white-space: nowrap !important;
+        -webkit-text-fill-color: #0f172a;
     }
     
     /* Banner institucional degradado de Turnos Sábados recortado */
@@ -869,20 +870,84 @@ def apply_styles():
         padding: 0 !important;
     }
     
-    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] {
+    /* Contenedor del Buscador (Estado por defecto con borde verde agua / menta suave) */
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"],
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]),
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stTextInput"] {
         margin: 0 !important;
         padding: 0 !important;
     }
     
-    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] > div {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] input {
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"],
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"],
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] {
+        background-color: #ffffff !important;
+        border-radius: 14px !important;
+        border: 1.5px solid #d1eceb !important;
+        box-shadow: none !important;
         height: 38px !important;
+        min-height: 38px !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Estado Hover del Buscador */
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"]:hover,
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"]:hover,
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"]:hover {
+        border-color: #0f9a9b !important;
+    }
+    
+    /* Estado Focus / Activo del Buscador (Borde verde agua intenso + resplandor suave) */
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within,
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"]:focus-within,
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"]:focus-within {
+        border-color: #0f9a9b !important;
+        box-shadow: 0 0 0 3px rgba(15, 154, 155, 0.18) !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] div[data-baseweb="input"] > div,
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) div[data-baseweb="input"] > div,
+    div[data-testid="column"]:has(.custom-search-marker) div[data-baseweb="input"] > div {
+        background-color: transparent !important;
+        border: none !important;
+        border-radius: 14px !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Input interno con icono de lupa estilizado */
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] input,
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) input,
+    div[data-testid="column"]:has(.custom-search-marker) input {
+        height: 100% !important;
+        min-height: 36px !important;
         box-sizing: border-box !important;
         margin: 0 !important;
+        background-color: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        border-radius: 14px !important;
+        padding-left: 36px !important;
+        padding-right: 12px !important;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%230f9a9b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>') !important;
+        background-repeat: no-repeat !important;
+        background-position: 11px center !important;
+        background-size: 16px 16px !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        color: #0f172a !important;
+    }
+
+    div[data-testid="stHorizontalBlock"]:has(.search-label) div[data-testid="stTextInput"] input:focus,
+    div[data-testid="stTextInput"]:has(input[aria-label="Buscador"]) input:focus,
+    div[data-testid="column"]:has(.custom-search-marker) input:focus {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.search-label) button {
@@ -1271,22 +1336,7 @@ def apply_styles():
         color: #1e293b !important;
     }
     
-    .custom-search-marker + div[data-testid="stTextInput"] input {
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%232b8a8b"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: 12px center;
-        background-size: 18px;
-        padding-left: 38px !important;
-        border-radius: 12px !important;
-        border: 1px solid #d1e5e5 !important;
-        color: #2b8a8b !important;
-        font-weight: 500 !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-    .custom-search-marker + div[data-testid="stTextInput"] input:focus {
-        border-color: #2b8a8b !important;
-        box-shadow: 0 0 0 1px #2b8a8b !important;
-    }
+
 
 
     /* Arrow pointer below the tooltip */

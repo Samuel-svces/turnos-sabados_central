@@ -667,6 +667,7 @@ with tab_calendar:
     with col_lbl:
         st.markdown("<div class='search-label'>Buscar:</div>", unsafe_allow_html=True)
     with col_search:
+        st.markdown("<div class='custom-search-marker'></div>", unsafe_allow_html=True)
         search_query = st.text_input("Buscador", key="search_input", placeholder="", label_visibility="collapsed").strip().upper()
     
     with col_btn_search:
