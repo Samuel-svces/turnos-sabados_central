@@ -264,26 +264,27 @@ def renderizar_buscador():
             if (!text) return;
             if (text.includes('⚙️')) return;
             
-            // Encabezado de fecha
+            // Encabezado de fecha (Fondo #F0FBFB y Letra #17243D)
             if (/^\d/.test(text)) {
                 btn.classList.add('custom-header-btn');
-                btn.style.setProperty('background', 'linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%)', 'important');
-                btn.style.setProperty('background-color', '#0866ea', 'important');
-                btn.style.setProperty('color', '#ffffff', 'important');
-                btn.style.setProperty('border', 'none', 'important');
+                btn.style.setProperty('background', '#F0FBFB', 'important');
+                btn.style.setProperty('background-color', '#F0FBFB', 'important');
+                btn.style.setProperty('color', '#17243D', 'important');
+                btn.style.setProperty('border', '1.5px solid #ccebee', 'important');
                 btn.style.setProperty('border-radius', '8px', 'important');
-                btn.style.setProperty('box-shadow', '0 3px 10px rgba(8, 102, 234, 0.3)', 'important');
+                btn.style.setProperty('box-shadow', '0 2px 6px rgba(23, 36, 61, 0.06)', 'important');
                 btn.style.setProperty('font-weight', '700', 'important');
                 btn.style.setProperty('font-size', '0.88rem', 'important');
                 btn.style.setProperty('letter-spacing', '0.2px', 'important');
                 btn.style.setProperty('padding', '0.35rem 0.5rem', 'important');
                 btn.style.setProperty('margin-bottom', '0.35rem', 'important');
-                btn.style.setProperty('text-shadow', '0 1px 2px rgba(0, 0, 0, 0.15)', 'important');
-                const pHeader = btn.querySelector('p, span');
-                if (pHeader) {
-                    pHeader.style.setProperty('color', '#ffffff', 'important');
-                    pHeader.style.setProperty('font-weight', '700', 'important');
-                }
+                btn.style.setProperty('text-shadow', 'none', 'important');
+                const pHeaders = btn.querySelectorAll('p, span, div');
+                pHeaders.forEach(el => {
+                    el.style.setProperty('color', '#17243D', 'important');
+                    el.style.setProperty('font-weight', '700', 'important');
+                    el.style.setProperty('text-shadow', 'none', 'important');
+                });
                 return;
             }
 

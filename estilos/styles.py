@@ -151,6 +151,7 @@ def apply_styles():
     div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(.topbar-brand)) {
         margin: 0px !important;
         padding: 0px !important;
+        margin-bottom: 1.25rem !important;
         width: 100% !important;
         max-width: 100% !important;
     }
@@ -275,14 +276,15 @@ def apply_styles():
     }
     
     /* Banner institucional degradado de Turnos Sábados recortado */
-    div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
+    div[data-testid="stElementContainer"]:has(.premium-gradient-banner),
+    div[data-testid="stLayoutWrapper"]:has(.premium-gradient-banner) {
         background: transparent !important;
         box-shadow: none !important;
         border: none !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
-        margin-top: 0.75rem !important;
-        margin-bottom: 0.75rem !important;
+        margin-top: 1.6rem !important;
+        margin-bottom: 0.85rem !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
@@ -417,14 +419,14 @@ def apply_styles():
     .info-notice-card {
         background-color: #f0fbfb !important;
         border-radius: 10px !important;
-        padding: 8px 18px !important;
+        padding: 9px 20px !important;
         text-align: center !important;
         color: #475569 !important;
         font-size: 0.86rem !important;
         line-height: 1.35 !important;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-        margin-top: 0.1rem !important;
-        margin-bottom: 0.35rem !important;
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
         max-width: 60% !important;   
         margin-left: auto !important; 
         margin-right: auto !important;
@@ -574,13 +576,14 @@ def apply_styles():
     .sat-header {
         font-size: 0.95rem;
         font-weight: 700;
-        color: white;
-        background-color: #005eb8;
+        color: #17243D !important;
+        background-color: #F0FBFB !important;
+        border: 1.5px solid #ccebee !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.06) !important;
         padding: 0.6rem;
-        border-radius: 4px;
+        border-radius: 8px;
         margin-bottom: 0.75rem;
         text-align: center;
-        border: none;
     }
     
     .sat-header.holiday {
@@ -1449,14 +1452,14 @@ def apply_styles():
         color: #ffffff !important;
     }
     
-    /* 8. Botón de Encabezado de Fecha (Degradado Azul Eléctrico Vibrante) */
+    /* 8. Botón de Encabezado de Fecha (Fondo #F0FBFB y Letra #17243D) */
     button.custom-header-btn,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
-        background: linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
-        background-color: #0866ea !important;
-        color: #ffffff !important;
-        border: none !important;
-        box-shadow: 0 4px 14px rgba(8, 102, 234, 0.35) !important;
+        background: #F0FBFB !important;
+        background-color: #F0FBFB !important;
+        color: #17243D !important;
+        border: 1.5px solid #ccebee !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.06) !important;
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
         font-size: 0.92rem !important;
@@ -1469,31 +1472,34 @@ def apply_styles():
         min-height: unset !important;
         height: auto !important;
         transition: all 0.2s ease !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
+        text-shadow: none !important;
     }
     button.custom-header-btn:hover,
     button.custom-header-btn:focus,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:focus {
-        background: linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        box-shadow: 0 6px 18px rgba(8, 102, 234, 0.5) !important;
+        background: #e2f7f7 !important;
+        background-color: #e2f7f7 !important;
+        color: #17243D !important;
+        border: 1.5px solid #a8e3eb !important;
+        box-shadow: 0 4px 12px rgba(23, 36, 61, 0.1) !important;
         transform: translateY(-1px) !important;
     }
     button.custom-header-btn:active,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:active {
-        background: linear-gradient(180deg, #0e7ae6 0%, #054eb8 100%) !important;
+        background: #d5f2f2 !important;
+        background-color: #d5f2f2 !important;
         transform: translateY(0px) !important;
-        box-shadow: 0 2px 8px rgba(8, 102, 234, 0.3) !important;
+        box-shadow: 0 2px 4px rgba(23, 36, 61, 0.08) !important;
     }
     button.custom-header-btn p, 
     button.custom-header-btn span, 
     button.custom-header-btn *,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
-        color: #ffffff !important;
+        color: #17243D !important;
         background-color: transparent !important;
         font-weight: 700 !important;
+        text-shadow: none !important;
     }
 
     /* 9. Botones de Médico en Modo Editor (Admin) - Fondo Blanco */
