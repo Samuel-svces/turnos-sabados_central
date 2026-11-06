@@ -324,8 +324,7 @@ def apply_styles():
     
     /* Tarjeta informativa de solicitud de cambios - compacta */
     .info-notice-card {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+        background-color: #f0fbfb !important;
         border-radius: 10px !important;
         padding: 8px 18px !important;
         text-align: center !important;
