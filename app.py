@@ -7,6 +7,8 @@ import os
 import re
 import data_processor as dp
 import styles
+import importlib
+importlib.reload(styles)
 import ui_dialogs
 import graph_client as gc
 import base64
@@ -109,18 +111,127 @@ if os.path.exists(logo_path):
     with open(logo_path, "rb") as f_img:
         logo_b64 = base64.b64encode(f_img.read()).decode("utf-8")
 
-# Marcador y variable de iniciales de usuario según especificación DOM
-st.markdown('<style>:root { --usv-user-initials: "JJ"; }</style><div class="app-topbar-marker"></div>', unsafe_allow_html=True)
+# Inyección directa de estilos clave del Topbar para garantizar sincronización inmediata
+st.markdown("""
+<style>
+:root { --usv-user-initials: "JJ"; }
+.app-topbar-marker { display: none !important; }
+
+/* Contenedor Topbar */
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 0.45rem 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-top: -0.5rem !important;
+    margin-left: -2rem !important;
+    margin-right: -2rem !important;
+    width: calc(100% + 4rem) !important;
+    box-sizing: border-box !important;
+}
+
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"] {
+    display: flex !important;
+    align-items: center !important;
+}
+
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:first-of-type {
+    justify-content: flex-start !important;
+}
+
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:last-of-type {
+    justify-content: flex-end !important;
+}
+
+/* Botón de usuario en el topbar - transparente y sin bordes */
+div[data-testid="column"]:has(.topbar-user-marker) button,
+div[data-testid="stColumn"]:has(.topbar-user-marker) button {
+    background-color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    padding: 0.2rem 0.4rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    cursor: pointer !important;
+    height: auto !important;
+    min-height: 32px !important;
+}
+
+div[data-testid="column"]:has(.topbar-user-marker) button:hover,
+div[data-testid="stColumn"]:has(.topbar-user-marker) button:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Avatar circular con las iniciales JJ en tono menta/aqua suave */
+div[data-testid="column"]:has(.topbar-user-marker) button::before,
+div[data-testid="stColumn"]:has(.topbar-user-marker) button::before {
+    content: var(--usv-user-initials, "JJ") !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background-color: #e7f6f4 !important;
+    background: #e7f6f4 !important;
+    color: #0d9488 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    margin-right: 0.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+div[data-testid="column"]:has(.topbar-user-marker) button p,
+div[data-testid="stColumn"]:has(.topbar-user-marker) button p {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    margin: 0 !important;
+}
+
+/* Banner de Turnos Sábados - unificado de ancho completo */
+div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0px !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    width: 100% !important;
+}
+
+.premium-gradient-banner {
+    background: linear-gradient(90deg, #0a2039 0%, #133554 35%, #2a5d78 70%, #4e8b9e 100%) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 8px 20px -4px rgba(10, 32, 57, 0.25) !important;
+    width: 100% !important;
+}
+</style>
+<div class="app-topbar-marker"></div>
+""", unsafe_allow_html=True)
 
 col_top_brand, col_top_user = st.columns([8, 4])
 
 with col_top_brand:
     img_src = f"data:image/png;base64,{logo_b64}" if logo_b64 else ""
     st.markdown(f"""
-        <div class="topbar-brand">
-            <img src="{img_src}" class="topbar-logo" alt="Unión para la Salud y la Vida S.A.S.">
-            <span class="topbar-brand-divider"></span>
-            <div class="topbar-titles"><span class="topbar-title">Conexión operativa</span></div>
+        <div class="topbar-brand" style="display:flex; align-items:center; gap:0.5rem; user-select:none;">
+            <img src="{img_src}" class="topbar-logo" style="height:28px; max-height:30px; width:auto; object-fit:contain; display:block;" alt="Unión para la Salud y la Vida S.A.S.">
+            <span class="topbar-brand-divider" style="display:inline-block; width:1px; height:22px; background-color:#cbd5e1; margin:0 0.85rem;"></span>
+            <div class="topbar-titles"><span class="topbar-title" style="font-family:'Outfit', sans-serif; font-size:1.15rem; font-weight:700; color:#0f172a; white-space:nowrap; letter-spacing:-0.2px;">Conexión operativa</span></div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -129,7 +240,7 @@ with col_top_user:
     with st.popover("Juan Jose  Osorio Molina"):
         st.markdown("""
             <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.5rem;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background-color: #e7f6f4; color: #0d9488; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem;">
                     JJ
                 </div>
                 <div>

@@ -169,18 +169,23 @@ def apply_styles():
     }
     
     /* Banner institucional degradado de Turnos Sábados */
-    .premium-gradient-banner,
-    div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent),
     div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0px !important;
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+        width: 100% !important;
+    }
+
+    .premium-gradient-banner {
         background: linear-gradient(90deg, #0a2039 0%, #133554 35%, #2a5d78 70%, #4e8b9e 100%) !important;
         border-radius: 12px !important;
-        padding: 0.72rem 1.5rem !important;
+        padding: 0.75rem 1.5rem !important;
         display: flex !important;
         align-items: center !important;
-        margin-top: 0.75rem !important;
-        margin-left: 0px !important;
-        margin-right: 0px !important;
-        margin-bottom: 0.75rem !important;
+        margin: 0px !important;
         box-sizing: border-box !important;
         box-shadow: 0 8px 20px -4px rgba(10, 32, 57, 0.25) !important;
         width: 100% !important;
