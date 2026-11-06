@@ -8,17 +8,26 @@ echo.
 :: Asegurar que el directorio de trabajo sea la carpeta exacta del script
 cd /d "%~dp0"
 
-:: Check if the python launcher exists
-where py >nul 2>nul
+:: Check if the python launcher exists (py o python)
+set PYTHON_CMD=py
+py -0 >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] No se pudo encontrar el lanzador 'py' de Python.
-    echo Por favor, asegúrate de tener instalado Python en tu equipo.
-    pause
-    exit /b 1
+    where python >nul 2>nul
+    if %errorlevel% equ 0 (
+        set PYTHON_CMD=python
+    ) else (
+        where py >nul 2>nul
+        if %errorlevel% neq 0 (
+            echo [ERROR] No se pudo encontrar Python en el sistema.
+            echo Por favor, asegúrate de tener instalado Python en tu equipo.
+            pause
+            exit /b 1
+        )
+    )
 )
 
 echo [1/2] Verificando dependencias necesarias de Python...
-py -m pip install pandas openpyxl streamlit plotly streamlit-sortables msal requests --quiet
+%PYTHON_CMD% -m pip install pandas openpyxl streamlit plotly streamlit-sortables msal requests --quiet
 if %errorlevel% neq 0 (
     echo [WARNING] Hubo un problema instalando dependencias. 
     echo Intentando continuar con la ejecución...
@@ -34,7 +43,7 @@ echo Para cerrar la aplicación, cierra esta ventana negra.
 echo.
 
 :: Run Streamlit en puerto 8505 dedicado
-py -m streamlit run app.py --server.port 8505 --server.headless false
+%PYTHON_CMD% -m streamlit run app.py --server.port 8505 --server.headless false
 
 if %errorlevel% neq 0 (
     echo.

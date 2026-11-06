@@ -1,0 +1,468 @@
+"""
+graph_client.py
+---------------
+Capa de acceso a Microsoft Graph API para leer y escribir los archivos
+MODIFICACIONES_SABADOS.xlsx y MODIFICACIONES_PERSONAL.xlsx alojados en SharePoint/OneDrive.
+
+Funciones expuestas:
+  - download_excel(file_key)  → io.BytesIO  (listo para pd.read_excel / openpyxl.load_workbook)
+  - upload_excel(file_key, buffer)           (sube el BytesIO de vuelta a SharePoint)
+
+file_key: "modificaciones_sabados" | "modificaciones_personal"
+
+Credenciales leídas desde st.secrets (Streamlit Cloud) o variables de entorno (local).
+"""
+
+import io
+import os
+import requests
+import msal
+import streamlit as st
+import time
+import urllib.parse
+import base64
+
+
+# ---------------------------------------------------------------------------
+# Configuración — lee de st.secrets si existe, si no de variables de entorno
+# ---------------------------------------------------------------------------
+
+def _load_fallback_secrets() -> dict:
+    """Carga .streamlit/secrets.toml directamente si st.secrets no está disponible."""
+    try:
+        cur_dir = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            os.path.join(os.getcwd(), ".streamlit", "secrets.toml"),
+            os.path.join(cur_dir, ".streamlit", "secrets.toml"),
+            os.path.join(cur_dir, "..", ".streamlit", "secrets.toml"),
+        ]
+        for secrets_path in candidates:
+            if os.path.exists(secrets_path):
+                try:
+                    import tomllib
+                    with open(secrets_path, "rb") as f:
+                        return tomllib.load(f)
+                except ImportError:
+                    import toml
+                    return toml.load(secrets_path)
+    except Exception:
+        pass
+    return {}
+
+_cached_fallback_secrets = None
+
+def _cfg(key: str) -> str:
+    global _cached_fallback_secrets
+    try:
+        if hasattr(st, "secrets") and st.secrets:
+            if "azure" in st.secrets and key in st.secrets["azure"]:
+                val = st.secrets["azure"][key]
+                if val:
+                    return str(val).strip()
+            if key in st.secrets:
+                val = st.secrets[key]
+                if val:
+                    return str(val).strip()
+    except Exception:
+        pass
+
+    # Fallback 1: variables de entorno
+    env_key = "AZURE_" + key.upper()
+    env_val = os.environ.get(key) or os.environ.get(env_key)
+    if env_val:
+        return env_val.strip()
+
+    # Fallback 2: archivo secrets.toml directo
+    if _cached_fallback_secrets is None:
+        _cached_fallback_secrets = _load_fallback_secrets()
+    if _cached_fallback_secrets:
+        if "azure" in _cached_fallback_secrets and key in _cached_fallback_secrets["azure"]:
+            val = _cached_fallback_secrets["azure"][key]
+            if val:
+                return str(val).strip()
+        if key in _cached_fallback_secrets:
+            val = _cached_fallback_secrets[key]
+            if val:
+                return str(val).strip()
+
+    return ""
+
+
+def is_sharepoint_configured() -> bool:
+    """Retorna True si las credenciales de Azure AD (tenant_id, client_id, client_secret) están configuradas."""
+    try:
+        return bool(_cfg("tenant_id") and _cfg("client_id") and _cfg("client_secret"))
+    except Exception:
+        return False
+
+
+def _get_access_token() -> str:
+    """Obtiene un token de aplicación (client credentials flow)."""
+    tenant_id   = _cfg("tenant_id")
+    client_id   = _cfg("client_id")
+    client_secret = _cfg("client_secret")
+
+    if not tenant_id or not client_id or not client_secret:
+        raise RuntimeError("Credenciales de Azure AD (tenant_id, client_id, client_secret) no configuradas en st.secrets.")
+
+    authority = f"https://login.microsoftonline.com/{tenant_id}"
+    app = msal.ConfidentialClientApplication(
+        client_id,
+        authority=authority,
+        client_credential=client_secret,
+    )
+    result = app.acquire_token_for_client(
+        scopes=["https://graph.microsoft.com/.default"]
+    )
+    if "access_token" not in result:
+        raise RuntimeError(
+            f"No se pudo obtener token de Azure AD: {result.get('error_description', result)}"
+        )
+    return result["access_token"]
+
+
+def _clean_guid(val: str) -> str:
+    """Limpia y extrae un UUID / GUID válido eliminando prefijos/sufijos URL y corchetes."""
+    if not val:
+        return ""
+    unquoted = urllib.parse.unquote(str(val)).strip()
+    cleaned = unquoted.replace("{", "").replace("}", "").strip()
+    if cleaned.upper().startswith("7B"):
+        cleaned = cleaned[2:]
+    if cleaned.upper().endswith("7D"):
+        cleaned = cleaned[:-2]
+    return cleaned.strip("-").strip()
+
+
+def _file_urls(file_key: str, action: str = "content") -> list:
+    """
+    Construye las posibles URLs de Graph API para el archivo indicado.
+    action: "content" → descarga/sube el binario
+            "item"    → consulta metadatos del item
+    """
+    urls = []
+
+    site_domain = "unionsaludvida.sharepoint.com"
+    site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+    site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
+
+    if file_key in ("consolidado_conexion", "consolidado_historico", "consolidado_personal", "bd_personal", "turnos_sabados"):
+        # 1. Prioridad: GUID configurado en consolidado_conexion
+        raw_guid = _cfg("consolidado_conexion") or "7B4DC31EBF-4E2F-4399-BC10-D2B224AAA12B%7D"
+        guid = _clean_guid(raw_guid)
+
+        # Acceso por Drive ID y File ID si estuviesen presentes
+        drive_id = _cfg("drive_id_consolidado") or _cfg("drive_id_turnos")
+        file_id  = _cfg("file_id_consolidado") or _cfg("file_id_turnos")
+        if drive_id and file_id:
+            if action == "content":
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
+            else:
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
+
+        # Share tokens para enlaces de SharePoint con el GUID
+        if guid:
+            share_urls = [
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D",
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid.lower()}%7D",
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid.upper()}%7D",
+                f"https://unionsaludvida.sharepoint.com/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D",
+                f"https://unionsaludvida.sharepoint.com/:x:/r/sites/CENTRALDENOVEDADESCONSOLIDADOS/_layouts/15/Doc.aspx?sourcedoc=%7B{guid}%7D&action=default&mobileredirect=true"
+            ]
+            for surl in share_urls:
+                stoken = "u!" + base64.b64encode(surl.encode('utf-8')).decode('utf-8').rstrip('=').replace('/', '_').replace('+', '-')
+                if action == "content":
+                    urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem/content")
+                else:
+                    urls.append(f"https://graph.microsoft.com/v1.0/shares/{stoken}/driveItem")
+
+            # Endpoint directo de Graph por item id
+            if action == "content":
+                urls.append(f"{site_base}/drive/items/{guid}/content")
+            else:
+                urls.append(f"{site_base}/drive/items/{guid}")
+
+    site_domain = "unionsaludvida.sharepoint.com"
+    site_rel_path = "/sites/CENTRALDENOVEDADESCONSOLIDADOS"
+    site_base = f"https://graph.microsoft.com/v1.0/sites/{site_domain}:{site_rel_path}"
+
+    key_map = {
+        "turnos_sabados": (
+            "drive_id_turnos",  
+            "file_id_turnos", 
+            [
+                "TURNOS SABADOS.xlsx",
+                "CONSOLIDADOS/CONSOLIDADO 2026/TURNOS SABADOS.xlsx",
+                "Documentos compartidos/CONSOLIDADOS/CONSOLIDADO 2026/TURNOS SABADOS.xlsx"
+            ]
+        ),
+    }
+
+    if file_key in key_map:
+        drive_id_key, file_id_key, rel_paths = key_map[file_key]
+        drive_id = _cfg(drive_id_key)
+        file_id  = _cfg(file_id_key)
+        if drive_id and file_id:
+            if action == "content":
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}/content")
+            else:
+                urls.append(f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{file_id}")
+        
+        for cpath in rel_paths:
+            item_path = urllib.parse.quote(cpath, safe='/')
+            b_url = f"{site_base}:/drive/root:/{item_path}"
+            if action == "content":
+                urls.append(f"{b_url}:/content")
+            else:
+                urls.append(b_url)
+
+    if not urls:
+        raise ValueError(f"file_key inválido: {file_key}")
+    return urls
+
+
+def _file_url(file_key: str, action: str = "content") -> str:
+    return _file_urls(file_key, action)[0]
+
+
+# ---------------------------------------------------------------------------
+# API pública
+# ---------------------------------------------------------------------------
+
+def download_excel(file_key: str) -> io.BytesIO:
+    """
+    Descarga el Excel indicado desde SharePoint/OneDrive.
+    Devuelve un BytesIO listo para pasar a pd.read_excel() o openpyxl.load_workbook().
+    """
+    token = _get_access_token()
+    urls = _file_urls(file_key, "content")
+    last_err = None
+
+    for url in urls:
+        try:
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
+            if resp.status_code == 200:
+                return io.BytesIO(resp.content)
+            last_err = f"HTTP {resp.status_code} — {resp.text[:300]}"
+        except Exception as e:
+            last_err = str(e)
+
+    raise RuntimeError(
+        f"Error al descargar '{file_key}': {last_err}"
+    )
+
+
+def upload_excel(file_key: str, buffer: io.BytesIO, max_retries: int = 3) -> None:
+    """
+    Sube el BytesIO como el Excel indicado en SharePoint/OneDrive (sobreescribe el archivo).
+    Intenta varias veces si el archivo está bloqueado (HTTP 423).
+    """
+    token = _get_access_token()
+    url   = _file_url(file_key, "content")
+
+    buffer.seek(0)
+    content = buffer.read()
+
+    for attempt in range(1, max_retries + 1):
+        resp = requests.put(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            },
+            data=content,
+            timeout=60,
+        )
+        
+        if resp.status_code in (200, 201):
+            return  # Éxito
+            
+        if resp.status_code == 423:
+            if attempt < max_retries:
+                time.sleep(2)  # Espera 2 segundos antes de reintentar
+                continue
+            else:
+                raise RuntimeError(
+                    f"El archivo '{file_key}' está bloqueado temporalmente por otro usuario o aplicación (HTTP 423). "
+                    "Por favor, asegúrate de cerrarlo en Excel, SharePoint o OneDrive y vuelve a intentarlo."
+                )
+                
+        # Si no es éxito ni 423, rompe el ciclo lanzando la excepción
+        raise RuntimeError(
+            f"Error al subir '{file_key}': HTTP {resp.status_code} — {resp.text[:300]}"
+        )
+
+
+def get_file_metadata(file_key: str) -> dict:
+    """Obtiene los metadatos de un archivo en SharePoint/OneDrive."""
+    token = _get_access_token()
+    urls = _file_urls(file_key, "item")
+    last_err = None
+
+    for url in urls:
+        try:
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+            if resp.status_code == 200:
+                return resp.json()
+            last_err = f"HTTP {resp.status_code} — {resp.text[:300]}"
+        except Exception as e:
+            last_err = str(e)
+
+    raise RuntimeError(
+        f"Error al obtener metadatos de '{file_key}': {last_err}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# API para Listas de SharePoint (Microsoft Lists)
+# ---------------------------------------------------------------------------
+
+SHAREPOINT_SITE_ID = "unionsaludvida.sharepoint.com,3ae0a0e5-4854-4903-80cb-af549a6238f1,fbc28049-2c16-434d-a551-81d39bb06441"
+
+def _get_list_id(list_key: str = "modificaciones_sabados") -> str:
+    if list_key == "modificaciones_sabados":
+        return _cfg("list_id_mod_sab") or "9f243781-9542-410f-b918-d817eba70d31"
+    return _cfg(f"list_id_{list_key}") or ""
+
+
+def get_sharepoint_list_items(list_key: str = "modificaciones_sabados") -> list:
+    """
+    Obtiene todos los elementos de la lista de SharePoint indicada,
+    siguiendo la paginación (@odata.nextLink) hasta recuperar todos los registros.
+    """
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    if not list_id:
+        raise ValueError(f"No se ha configurado list_id para '{list_key}'.")
+
+    url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items?expand=fields&$top=5000"
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    all_items = []
+    while url:
+        resp = requests.get(url, headers=headers, timeout=30)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Error al consultar lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+        data = resp.json()
+        items = data.get("value", [])
+        for it in items:
+            fields = it.get("fields", {})
+            fields["_item_id"] = it.get("id")
+            all_items.append(fields)
+        url = data.get("@odata.nextLink")
+
+    return all_items
+
+
+def add_sharepoint_list_item(list_key: str = "modificaciones_sabados", fields: dict = None) -> dict:
+    """
+    Inserta un nuevo elemento en la lista de SharePoint.
+    """
+    if not fields:
+        return {}
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    payload = {"fields": fields}
+    resp = requests.post(url, headers=headers, json=payload, timeout=20)
+    if resp.status_code in (200, 201):
+        return resp.json()
+    raise RuntimeError(f"Error al insertar en lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+
+
+def add_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados", items: list = None) -> bool:
+    """
+    Inserta una lista de elementos en la lista de SharePoint mediante peticiones por lotes ($batch)
+    de hasta 20 elementos cada una.
+    """
+    if not items:
+        return True
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    import math
+    batch_size = 20
+    num_batches = math.ceil(len(items) / batch_size)
+
+    for b_idx in range(num_batches):
+        batch_slice = items[b_idx * batch_size : (b_idx + 1) * batch_size]
+        requests_payload = []
+        for i_idx, it_fields in enumerate(batch_slice):
+            requests_payload.append({
+                "id": str(i_idx + 1),
+                "method": "POST",
+                "url": f"/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items",
+                "headers": {"Content-Type": "application/json"},
+                "body": {"fields": it_fields}
+            })
+        batch_body = {"requests": requests_payload}
+        resp = requests.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
+        if resp.status_code != 200:
+            raise RuntimeError(f"Error en lote {b_idx + 1} de SharePoint List: HTTP {resp.status_code} — {resp.text[:300]}")
+
+    return True
+
+
+def delete_sharepoint_list_item(list_key: str = "modificaciones_sabados", item_id: str = "") -> bool:
+    """
+    Elimina un elemento específico de la lista de SharePoint por su ID.
+    """
+    if not item_id:
+        return False
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items/{item_id}"
+    headers = {"Authorization": f"Bearer {token}"}
+    resp = requests.delete(url, headers=headers, timeout=20)
+    if resp.status_code in (200, 204):
+        return True
+    raise RuntimeError(f"Error al eliminar item {item_id} de lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
+
+
+def delete_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados", item_ids: list = None) -> int:
+    """
+    Elimina una lista de elementos de SharePoint en lotes ($batch) de hasta 20 por petición.
+    Retorna la cantidad de elementos eliminados exitosamente.
+    """
+    if not item_ids:
+        return 0
+    token = _get_access_token()
+    list_id = _get_list_id(list_key)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    import math
+    batch_size = 20
+    num_batches = math.ceil(len(item_ids) / batch_size)
+    deleted_total = 0
+
+    for b_idx in range(num_batches):
+        batch_slice = item_ids[b_idx * batch_size : (b_idx + 1) * batch_size]
+        requests_payload = []
+        for i_idx, it_id in enumerate(batch_slice):
+            requests_payload.append({
+                "id": str(i_idx + 1),
+                "method": "DELETE",
+                "url": f"/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items/{it_id}"
+            })
+        batch_body = {"requests": requests_payload}
+        resp = requests.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
+        if resp.status_code == 200:
+            for r in resp.json().get("responses", []):
+                if r.get("status") in (200, 204):
+                    deleted_total += 1
+        else:
+            raise RuntimeError(f"Error en lote {b_idx + 1} de borrado: HTTP {resp.status_code} — {resp.text[:300]}")
+
+    return deleted_total
+
