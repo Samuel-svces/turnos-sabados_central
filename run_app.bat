@@ -8,21 +8,20 @@ echo.
 :: Asegurar que el directorio de trabajo sea la carpeta exacta del script
 cd /d "%~dp0"
 
-:: Check if the python launcher exists (py o python)
-set PYTHON_CMD=py
-py -0 >nul 2>nul
-if %errorlevel% neq 0 (
-    where python >nul 2>nul
+:: Check if python or py launcher works
+set PYTHON_CMD=
+python --version >nul 2>nul
+if %errorlevel% equ 0 (
+    set PYTHON_CMD=python
+) else (
+    py -c "import sys" >nul 2>nul
     if %errorlevel% equ 0 (
-        set PYTHON_CMD=python
+        set PYTHON_CMD=py
     ) else (
-        where py >nul 2>nul
-        if %errorlevel% neq 0 (
-            echo [ERROR] No se pudo encontrar Python en el sistema.
-            echo Por favor, asegúrate de tener instalado Python en tu equipo.
-            pause
-            exit /b 1
-        )
+        echo [ERROR] No se pudo encontrar Python en el sistema.
+        echo Por favor, asegúrate de tener instalado Python en tu equipo.
+        pause
+        exit /b 1
     )
 )
 

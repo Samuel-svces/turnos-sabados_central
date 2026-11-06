@@ -122,6 +122,42 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertNotIn('key="btn_clear"', contenido, "El botón manual de limpiar no fue eliminado.")
         self.assertNotIn('key="btn_refresh"', contenido, "El botón manual de recargar no fue eliminado.")
 
+    def test_08_estandarizacion_identificadores_botones(self):
+        """Verifica que los botones tengan nombres e identificadores estandarizados con prefijo btn_."""
+        archivos_interfaz = [
+            os.path.join(PROJECT_DIR, "app.py"),
+            os.path.join(PROJECT_DIR, "componentes", "cabecera.py"),
+            os.path.join(PROJECT_DIR, "componentes", "buscador.py"),
+            os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py"),
+            os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
+        ]
+        import re
+        patron_boton = re.compile(r'st\.button\([^)]*key=["\']([^"\']+)["\']')
+        
+        for ruta in archivos_interfaz:
+            with open(ruta, "r", encoding="utf-8") as f:
+                codigo = f.read()
+            coincidencias = patron_boton.findall(codigo)
+            for key in coincidencias:
+                self.assertTrue(key.startswith("btn_"), f"En {os.path.basename(ruta)}, la key de botón '{key}' no sigue la convención estándar 'btn_...'")
+
+    def test_09_buscador_reactivo_eventos_js(self):
+        """Verifica que componentes/buscador.py contenga el listener reactivo para el evento 'input'."""
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido = f.read()
+        self.assertIn("inputBuscador.addEventListener('input'", contenido, "Falta el listener reactivo 'input' en buscador.py")
+        self.assertIn("aplicarResaltadoEnVivo", contenido, "Falta la función de resaltado dinámico en buscador.py")
+        self.assertIn("search-highlight-active", contenido, "Falta la clase de marcado activo en buscador.py")
+
+    def test_10_funciones_procesador_datos(self):
+        """Verifica la funcionalidad de utilidades básicas en modulos/procesador_datos.py."""
+        from modulos import procesador_datos as dp
+        self.assertEqual(dp.normalize_name_no_accents("MARÍA JOSÉ"), "MARIA JOSE")
+        self.assertEqual(dp.normalize_name_no_accents("Álvaro Gómez"), "ALVARO GOMEZ")
+        self.assertIn(1, dp.MONTH_NAMES_SP)
+        self.assertEqual(dp.MONTH_NAMES_SP[1], "ENERO")
+
 
 if __name__ == "__main__":
     unittest.main()

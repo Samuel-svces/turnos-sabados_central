@@ -101,6 +101,13 @@ def renderizar_buscador():
                 item.style.removeProperty('background-color');
                 item.style.removeProperty('box-shadow');
                 item.style.removeProperty('opacity');
+
+                item.querySelectorAll('p, span, div').forEach(c => {
+                    c.style.removeProperty('text-decoration');
+                    c.style.removeProperty('text-decoration-color');
+                    c.style.removeProperty('text-decoration-thickness');
+                    c.style.removeProperty('text-underline-offset');
+                });
                 return;
             }
 
@@ -116,6 +123,13 @@ def renderizar_buscador():
                 item.style.setProperty('background-color', '#ecfdf5', 'important');
                 item.style.setProperty('box-shadow', '0 0 10px rgba(15, 154, 155, 0.35)', 'important');
                 item.style.setProperty('opacity', '1', 'important');
+
+                item.querySelectorAll('p, span, div').forEach(c => {
+                    c.style.setProperty('text-decoration', 'underline', 'important');
+                    c.style.setProperty('text-decoration-color', '#0f9a9b', 'important');
+                    c.style.setProperty('text-decoration-thickness', '3px', 'important');
+                    c.style.setProperty('text-underline-offset', '4px', 'important');
+                });
             } else {
                 // No coincide: atenuar sutilmente
                 item.classList.remove('search-highlight-active');
@@ -127,14 +141,31 @@ def renderizar_buscador():
                 item.style.removeProperty('background-color');
                 item.style.removeProperty('box-shadow');
                 item.style.setProperty('opacity', '0.28', 'important');
+
+                item.querySelectorAll('p, span, div').forEach(c => {
+                    c.style.removeProperty('text-decoration');
+                    c.style.removeProperty('text-decoration-color');
+                    c.style.removeProperty('text-decoration-thickness');
+                    c.style.removeProperty('text-underline-offset');
+                });
             }
         });
     }
 
     function vincularBuscadorReactivo() {
         const parentDoc = window.parent.document;
-        // Localizar el input del buscador
-        const inputBuscador = parentDoc.querySelector('div[data-testid="stTextInput"]:has(.custom-search-marker) input, div[data-testid="column"]:has(.custom-search-marker) input, input[aria-label="Buscador"]');
+        // Localizar el input del buscador de forma resiliente
+        const marker = parentDoc.querySelector('.custom-search-marker');
+        let inputBuscador = null;
+        if (marker) {
+            const col = marker.closest('[data-testid="stColumn"], [data-testid="column"], .stColumn');
+            if (col) {
+                inputBuscador = col.querySelector('input');
+            }
+        }
+        if (!inputBuscador) {
+            inputBuscador = parentDoc.querySelector('input[aria-label="Buscador"], div[data-testid="stTextInput"] input');
+        }
         if (!inputBuscador) return;
 
         if (!inputBuscador.dataset.liveSearchBound) {

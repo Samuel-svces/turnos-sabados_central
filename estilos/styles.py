@@ -1006,7 +1006,11 @@ def apply_styles():
         margin: 0 auto !important;
     }
 
-    .search-highlight-active {
+    .search-highlight-active,
+    .search-highlight-active *,
+    .search-highlight-active p,
+    .search-highlight-active span,
+    .search-highlight-active div {
         text-decoration: underline !important;
         text-decoration-color: #0f9a9b !important;
         text-decoration-thickness: 3px !important;
