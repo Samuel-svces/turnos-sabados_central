@@ -31,7 +31,7 @@ def renderizar_buscador():
         search_query = st.text_input(
             "Buscador", 
             key="input_busqueda_medico", 
-            placeholder="Buscar médico...", 
+            placeholder="", 
             label_visibility="collapsed"
         ).strip().upper()
 
