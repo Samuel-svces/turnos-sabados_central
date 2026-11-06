@@ -224,9 +224,50 @@ div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="column"
 
 div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:last-of-type,
 div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="column"]:last-of-type {
+    display: flex !important;
+    align-items: center !important;
     justify-content: flex-end !important;
     padding-right: 0px !important;
     margin-right: 0px !important;
+    margin-left: auto !important;
+}
+
+div[data-testid="column"]:has(.topbar-user-marker),
+div[data-testid="stColumn"]:has(.topbar-user-marker) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    height: 100% !important;
+}
+
+div[data-testid="column"]:has(.topbar-user-marker) > div[data-testid="stVerticalBlock"],
+div[data-testid="stColumn"]:has(.topbar-user-marker) > div[data-testid="stVerticalBlock"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 0px !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stElementContainer"]:has(div[data-testid="stPopover"]),
+div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stElementContainer"]:has(div[data-testid="stPopover"]) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+}
+
+div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"],
+div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .topbar-brand {
@@ -302,26 +343,29 @@ div[data-testid="stColumn"]:has(.topbar-user-marker) button:hover::before {
     color: #0284c7 !important;
 }
 
-/* Banner de Turnos Sábados - unificado de ancho completo */
+/* Banner de Turnos Sábados - recortado con márgenes */
 div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
     background: transparent !important;
     box-shadow: none !important;
     border: none !important;
-    padding: 0px !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
     margin-top: 0.75rem !important;
     margin-bottom: 0.75rem !important;
     width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 .premium-gradient-banner {
     background: linear-gradient(90deg, #0a2039 0%, #133554 35%, #2a5d78 70%, #4e8b9e 100%) !important;
     border-radius: 12px !important;
-    padding: 0.75rem 1.5rem !important;
+    padding: 0.55rem 1.25rem !important;
     display: flex !important;
     align-items: center !important;
     box-sizing: border-box !important;
-    box-shadow: 0 8px 20px -4px rgba(10, 32, 57, 0.25) !important;
+    box-shadow: 0 4px 14px rgba(10, 32, 57, 0.2) !important;
     width: 100% !important;
+    gap: 0.85rem !important;
 }
 </style>
 <div class="app-topbar-marker"></div>

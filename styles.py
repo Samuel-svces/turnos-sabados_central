@@ -182,9 +182,50 @@ def apply_styles():
     
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:last-of-type,
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="column"]:last-of-type {
+        display: flex !important;
+        align-items: center !important;
         justify-content: flex-end !important;
         padding-right: 0px !important;
         margin-right: 0px !important;
+        margin-left: auto !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker),
+    div[data-testid="stColumn"]:has(.topbar-user-marker) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        height: 100% !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) > div[data-testid="stVerticalBlock"],
+    div[data-testid="stColumn"]:has(.topbar-user-marker) > div[data-testid="stVerticalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 0px !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stElementContainer"]:has(div[data-testid="stPopover"]),
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stElementContainer"]:has(div[data-testid="stPopover"]) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"],
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     /* Identidad de Marca: Logo + Separador + Conexión operativa */
@@ -228,27 +269,30 @@ def apply_styles():
         white-space: nowrap !important;
     }
     
-    /* Banner institucional degradado de Turnos Sábados */
+    /* Banner institucional degradado de Turnos Sábados recortado */
     div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
         background: transparent !important;
         box-shadow: none !important;
         border: none !important;
-        padding: 0px !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
         margin-top: 0.75rem !important;
         margin-bottom: 0.75rem !important;
         width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .premium-gradient-banner {
         background: linear-gradient(90deg, #0a2039 0%, #133554 35%, #2a5d78 70%, #4e8b9e 100%) !important;
         border-radius: 12px !important;
-        padding: 0.75rem 1.5rem !important;
+        padding: 0.55rem 1.25rem !important;
         display: flex !important;
         align-items: center !important;
         margin: 0px !important;
         box-sizing: border-box !important;
-        box-shadow: 0 8px 20px -4px rgba(10, 32, 57, 0.25) !important;
+        box-shadow: 0 4px 14px rgba(10, 32, 57, 0.2) !important;
         width: 100% !important;
+        gap: 0.85rem !important;
     }
     
     /* Resetear margen, bordes y sombras de alertas y notificaciones y sus contenedores */
@@ -315,32 +359,34 @@ def apply_styles():
     }
 
     .premium-banner-icon {
-        background-color: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 10px;
-        width: 38px;
-        height: 38px;
-        min-width: 38px;
-        min-height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 12px;
-        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.08);
+        background-color: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        border-radius: 8px !important;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-right: 0px !important;
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.08) !important;
+        flex-shrink: 0 !important;
     }
     .premium-banner-icon i {
-        color: #ffffff;
-        font-size: 1.2rem;
-        line-height: 1;
+        color: #ffffff !important;
+        font-size: 1.15rem !important;
+        line-height: 1 !important;
     }
     .premium-banner-text {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
     }
     .premium-banner-text h1 {
         color: #ffffff !important;
-        font-size: 1.45rem !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 1.25rem !important;
         margin: 0 !important;
         padding: 0 !important;
         font-weight: 700 !important;
