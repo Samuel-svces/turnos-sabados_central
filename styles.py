@@ -210,7 +210,7 @@ def apply_styles():
         display: flex;
         align-items: center;
         margin-top: 15px !important; /* Pegado al panel blanco (la barra fija ya está encima) */
-        margin-left: 9px !important; /* Empieza a la mitad del logo */
+        margin-left: 19px !important; /* Empieza a la mitad del logo */
         margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
         margin-bottom: 0.45rem !important;
         box-sizing: border-box !important;
