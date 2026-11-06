@@ -84,30 +84,11 @@ os.makedirs(_CACHE_DIR, exist_ok=True)
 # Helpers de acceso a los archivos delta (SharePoint o local)
 # ---------------------------------------------------------------------------
 
-import threading
-
-_sharepoint_upload_lock = threading.Lock()
-
-def _async_upload_to_sharepoint(file_key: str, file_bytes: bytes):
-    """
-    Sube el archivo a SharePoint en segundo plano mediante un hilo demonio.
-    Esto permite que la interfaz de usuario responda inmediatamente sin esperar
-    la latencia de la petición HTTP a Microsoft Graph.
-    """
-    def _worker():
-        with _sharepoint_upload_lock:
-            try:
-                buf = io.BytesIO(file_bytes)
-                gc.upload_excel(file_key, buf)
-            except Exception as e:
-                print(f"Error en sincronización en segundo plano con SharePoint ({file_key}): {e}")
-
-    thread = threading.Thread(target=_worker, daemon=True)
-    thread.start()
-
-
 def _get_modifications_path(main_excel_path):
+    if not main_excel_path:
+        return None
     return os.path.join(os.path.dirname(main_excel_path), "MODIFICACIONES_SABADOS.xlsx")
+
 
 
 def _load_wb_delta(file_key: str, local_path: str, sheet_title: str, cols: list):
@@ -353,13 +334,18 @@ _SHEET_MANUAL_PERSONAL = 'PERSONAL_MANUAL'
 
 
 @st.cache_data(show_spinner=False)
-def load_manual_supernumeraries(excel_path):
+def load_manual_supernumeraries(excel_path=None):
     """
     Carga los médicos registrados manualmente por contingencia desde la pestaña 'PERSONAL_MANUAL'
-    del archivo delta MODIFICACIONES_SABADOS.xlsx.
+    del archivo delta MODIFICACIONES_SABADOS.xlsx si existe copia local en disco.
     """
+    if not excel_path:
+        return pd.DataFrame()
     local_path = _get_modifications_path(excel_path)
+    if not local_path or not os.path.exists(local_path):
+        return pd.DataFrame()
     df = _read_delta_df(_KEY_SABADOS, local_path, _SHEET_MANUAL_PERSONAL, _COLS_MANUAL_PERSONAL)
+
 
     if df.empty:
         return df
@@ -1210,7 +1196,7 @@ def _open_consolidado_personal(excel_path=None):
     return _open_consolidado_conexion(excel_path)
 
 
-@st.cache_data(ttl=15, show_spinner=False)
+@st.cache_data(ttl=1800, show_spinner=False)
 def load_supernumeraries(excel_path=None):
     """
     Carga el directorio de supernumerarios directamente de la hoja 'SUPERNUMERARIO 2026 HISTORICO'
@@ -1457,7 +1443,11 @@ def update_shift_cell(excel_path, sheet_name, row_idx, col_idx, new_name,
                       date_val=None, observation='', original_name=None,
                       clasificacion='Secuencia Normal'):
     if not date_val:
-        df_shifts, _ = load_data(excel_path)
+        df_shifts = None
+        if hasattr(st, "session_state") and "shifts_df" in st.session_state and isinstance(st.session_state.shifts_df, pd.DataFrame) and not st.session_state.shifts_df.empty:
+            df_shifts = st.session_state.shifts_df
+        else:
+            df_shifts, _ = load_data(excel_path)
         match = df_shifts[(df_shifts['Sheet'] == sheet_name) &
                           (df_shifts['Excel_Row'] == row_idx) &
                           (df_shifts['Excel_Col'] == col_idx)]
@@ -1471,7 +1461,11 @@ def update_shift_cell(excel_path, sheet_name, row_idx, col_idx, new_name,
         if original_name:
             orig_name = original_name
         else:
-            df_shifts, _ = load_data(excel_path)
+            df_shifts = None
+            if hasattr(st, "session_state") and "shifts_df" in st.session_state and isinstance(st.session_state.shifts_df, pd.DataFrame) and not st.session_state.shifts_df.empty:
+                df_shifts = st.session_state.shifts_df
+            else:
+                df_shifts, _ = load_data(excel_path)
             match = df_shifts[(df_shifts['Sheet'] == sheet_name) &
                               (df_shifts['Excel_Row'] == row_idx) &
                               (df_shifts['Excel_Col'] == col_idx)]

@@ -96,8 +96,25 @@ def is_sharepoint_configured() -> bool:
         return False
 
 
-def _get_access_token() -> str:
-    """Obtiene un token de aplicación (client credentials flow)."""
+# ---------------------------------------------------------------------------
+# Reutilización de Cliente MSAL y Sesión HTTP para máximo rendimiento
+# ---------------------------------------------------------------------------
+
+_msal_client_cache = {}
+_http_session = None
+
+def _get_session() -> requests.Session:
+    """Retorna una sesión HTTP con pool de conexiones y keep-alive para Graph API."""
+    global _http_session
+    if _http_session is None:
+        _http_session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=10, pool_maxsize=20, max_retries=2)
+        _http_session.mount("https://", adapter)
+    return _http_session
+
+
+def _get_msal_app() -> msal.ConfidentialClientApplication:
+    """Retorna una instancia reutilizable de ConfidentialClientApplication con caché en memoria."""
     tenant_id   = _cfg("tenant_id")
     client_id   = _cfg("client_id")
     client_secret = _cfg("client_secret")
@@ -105,12 +122,24 @@ def _get_access_token() -> str:
     if not tenant_id or not client_id or not client_secret:
         raise RuntimeError("Credenciales de Azure AD (tenant_id, client_id, client_secret) no configuradas en st.secrets.")
 
-    authority = f"https://login.microsoftonline.com/{tenant_id}"
-    app = msal.ConfidentialClientApplication(
-        client_id,
-        authority=authority,
-        client_credential=client_secret,
-    )
+    cache_key = (tenant_id, client_id, client_secret)
+    if cache_key not in _msal_client_cache:
+        authority = f"https://login.microsoftonline.com/{tenant_id}"
+        _msal_client_cache[cache_key] = msal.ConfidentialClientApplication(
+            client_id,
+            authority=authority,
+            client_credential=client_secret,
+        )
+    return _msal_client_cache[cache_key]
+
+
+def _get_access_token() -> str:
+    """
+    Obtiene un token de aplicación (client credentials flow).
+    Reutiliza el token almacenado en memoria hasta que expire (~60-90 min),
+    evitando peticiones HTTP innecesarias a login.microsoftonline.com.
+    """
+    app = _get_msal_app()
     result = app.acquire_token_for_client(
         scopes=["https://graph.microsoft.com/.default"]
     )
@@ -119,6 +148,7 @@ def _get_access_token() -> str:
             f"No se pudo obtener token de Azure AD: {result.get('error_description', result)}"
         )
     return result["access_token"]
+
 
 
 def _clean_guid(val: str) -> str:
@@ -236,11 +266,12 @@ def download_excel(file_key: str) -> io.BytesIO:
     """
     token = _get_access_token()
     urls = _file_urls(file_key, "content")
+    session = _get_session()
     last_err = None
 
     for url in urls:
         try:
-            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
+            resp = session.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
             if resp.status_code == 200:
                 return io.BytesIO(resp.content)
             last_err = f"HTTP {resp.status_code} — {resp.text[:300]}"
@@ -259,12 +290,13 @@ def upload_excel(file_key: str, buffer: io.BytesIO, max_retries: int = 3) -> Non
     """
     token = _get_access_token()
     url   = _file_url(file_key, "content")
+    session = _get_session()
 
     buffer.seek(0)
     content = buffer.read()
 
     for attempt in range(1, max_retries + 1):
-        resp = requests.put(
+        resp = session.put(
             url,
             headers={
                 "Authorization": f"Bearer {token}",
@@ -297,11 +329,12 @@ def get_file_metadata(file_key: str) -> dict:
     """Obtiene los metadatos de un archivo en SharePoint/OneDrive."""
     token = _get_access_token()
     urls = _file_urls(file_key, "item")
+    session = _get_session()
     last_err = None
 
     for url in urls:
         try:
-            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+            resp = session.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=15)
             if resp.status_code == 200:
                 return resp.json()
             last_err = f"HTTP {resp.status_code} — {resp.text[:300]}"
@@ -337,10 +370,11 @@ def get_sharepoint_list_items(list_key: str = "modificaciones_sabados") -> list:
 
     url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items?expand=fields&$top=5000"
     headers = {"Authorization": f"Bearer {token}"}
+    session = _get_session()
     
     all_items = []
     while url:
-        resp = requests.get(url, headers=headers, timeout=30)
+        resp = session.get(url, headers=headers, timeout=30)
         if resp.status_code != 200:
             raise RuntimeError(f"Error al consultar lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
         data = resp.json()
@@ -368,7 +402,8 @@ def add_sharepoint_list_item(list_key: str = "modificaciones_sabados", fields: d
         "Content-Type": "application/json"
     }
     payload = {"fields": fields}
-    resp = requests.post(url, headers=headers, json=payload, timeout=20)
+    session = _get_session()
+    resp = session.post(url, headers=headers, json=payload, timeout=20)
     if resp.status_code in (200, 201):
         return resp.json()
     raise RuntimeError(f"Error al insertar en lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
@@ -391,6 +426,7 @@ def add_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados", it
     import math
     batch_size = 20
     num_batches = math.ceil(len(items) / batch_size)
+    session = _get_session()
 
     for b_idx in range(num_batches):
         batch_slice = items[b_idx * batch_size : (b_idx + 1) * batch_size]
@@ -404,7 +440,7 @@ def add_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados", it
                 "body": {"fields": it_fields}
             })
         batch_body = {"requests": requests_payload}
-        resp = requests.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
+        resp = session.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
         if resp.status_code != 200:
             raise RuntimeError(f"Error en lote {b_idx + 1} de SharePoint List: HTTP {resp.status_code} — {resp.text[:300]}")
 
@@ -421,7 +457,8 @@ def delete_sharepoint_list_item(list_key: str = "modificaciones_sabados", item_i
     list_id = _get_list_id(list_key)
     url = f"https://graph.microsoft.com/v1.0/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items/{item_id}"
     headers = {"Authorization": f"Bearer {token}"}
-    resp = requests.delete(url, headers=headers, timeout=20)
+    session = _get_session()
+    resp = session.delete(url, headers=headers, timeout=20)
     if resp.status_code in (200, 204):
         return True
     raise RuntimeError(f"Error al eliminar item {item_id} de lista '{list_key}': HTTP {resp.status_code} — {resp.text[:300]}")
@@ -445,6 +482,7 @@ def delete_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados",
     batch_size = 20
     num_batches = math.ceil(len(item_ids) / batch_size)
     deleted_total = 0
+    session = _get_session()
 
     for b_idx in range(num_batches):
         batch_slice = item_ids[b_idx * batch_size : (b_idx + 1) * batch_size]
@@ -456,7 +494,7 @@ def delete_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados",
                 "url": f"/sites/{SHAREPOINT_SITE_ID}/lists/{list_id}/items/{it_id}"
             })
         batch_body = {"requests": requests_payload}
-        resp = requests.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
+        resp = session.post("https://graph.microsoft.com/v1.0/$batch", headers=headers, json=batch_body, timeout=30)
         if resp.status_code == 200:
             for r in resp.json().get("responses", []):
                 if r.get("status") in (200, 204):
@@ -465,4 +503,5 @@ def delete_sharepoint_list_items_batch(list_key: str = "modificaciones_sabados",
             raise RuntimeError(f"Error en lote {b_idx + 1} de borrado: HTTP {resp.status_code} — {resp.text[:300]}")
 
     return deleted_total
+
 

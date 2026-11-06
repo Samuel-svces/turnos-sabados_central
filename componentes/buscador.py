@@ -189,46 +189,6 @@ def renderizar_buscador():
         }
     }
 
-    function alinearFiltrosCentrados() {
-        const parentDoc = window.parent.document;
-        // Localizar el marcador dentro de la fila de filtros
-        const filterMarker = parentDoc.querySelector('.filter-all-marker, .filter-row-marker, .filter-normal-marker, .filter-comp-marker');
-        if (!filterMarker) return;
-
-        const filterRow = filterMarker.closest('[data-testid="stHorizontalBlock"], [data-testid="horizontalBlock"]');
-        if (!filterRow) return;
-
-        filterRow.style.setProperty('display', 'flex', 'important');
-        filterRow.style.setProperty('flex-direction', 'row', 'important');
-        filterRow.style.setProperty('justify-content', 'center', 'important');
-        filterRow.style.setProperty('align-items', 'center', 'important');
-        filterRow.style.setProperty('gap', '0.45rem', 'important');
-        filterRow.style.setProperty('margin', '0.15rem auto', 'important');
-        filterRow.style.setProperty('width', '100%', 'important');
-
-        const cols = filterRow.querySelectorAll(':scope > [data-testid="stColumn"], :scope > [data-testid="column"]');
-        cols.forEach(c => {
-            c.style.setProperty('flex', '0 0 auto', 'important');
-            c.style.setProperty('width', 'auto', 'important');
-            c.style.setProperty('min-width', 'unset', 'important');
-            c.style.setProperty('max-width', 'unset', 'important');
-            c.style.setProperty('padding', '0', 'important');
-            c.style.setProperty('margin', '0', 'important');
-
-            c.querySelectorAll('[data-testid="stElementContainer"], .stButton').forEach(el => {
-                el.style.setProperty('width', 'auto', 'important');
-                el.style.setProperty('min-width', 'unset', 'important');
-                el.style.setProperty('margin', '0', 'important');
-            });
-
-            c.querySelectorAll('button').forEach(btn => {
-                btn.style.setProperty('width', 'auto', 'important');
-                btn.style.setProperty('min-width', 'unset', 'important');
-                btn.style.setProperty('margin', '0', 'important');
-            });
-        });
-    }
-
     function styleButtons() {
         const parentDoc = window.parent.document;
         const colButtons = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
@@ -332,20 +292,24 @@ def renderizar_buscador():
             });
         });
 
-        // Asegurar que el input del buscador reactivo y los filtros estén vinculados
         vincularBuscadorReactivo();
-        alinearFiltrosCentrados();
     }
 
     styleButtons();
     vincularBuscadorReactivo();
-    alinearFiltrosCentrados();
+    let rAFPending = false;
     const observer = new MutationObserver(() => {
-        styleButtons();
-        vincularBuscadorReactivo();
-        alinearFiltrosCentrados();
+        if (!rAFPending) {
+            rAFPending = true;
+            window.requestAnimationFrame(() => {
+                styleButtons();
+                vincularBuscadorReactivo();
+                rAFPending = false;
+            });
+        }
     });
     observer.observe(window.parent.document.body, { childList: true, subtree: true });
+
     </script>
     """, height=0)
 
