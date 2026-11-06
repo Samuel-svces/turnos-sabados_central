@@ -163,11 +163,11 @@ div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(
 div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
     background-color: #ffffff !important;
     border-bottom: 1px solid #e2e8f0 !important;
-    padding: 0.45rem 2rem !important;
+    padding: 0.2rem 1.5rem 0.2rem 0.5rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    margin-top: 0px !important;
+    margin-top: -1.25rem !important;
     margin-left: -2rem !important;
     margin-right: -2rem !important;
     width: calc(100% + 4rem) !important;
@@ -179,12 +179,27 @@ div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColum
     align-items: center !important;
 }
 
-div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:first-of-type {
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:first-of-type,
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="column"]:first-of-type {
     justify-content: flex-start !important;
+    padding-left: 0px !important;
+    margin-left: 0px !important;
 }
 
-div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:last-of-type {
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"]:last-of-type,
+div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="column"]:last-of-type {
     justify-content: flex-end !important;
+    padding-right: 0px !important;
+    margin-right: 0px !important;
+}
+
+.topbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    user-select: none !important;
+    padding-left: 0px !important;
+    margin-left: 0px !important;
 }
 
 /* Botón de usuario en el topbar - transparente y sin bordes */
@@ -265,7 +280,7 @@ div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
 <div class="app-topbar-marker"></div>
 """, unsafe_allow_html=True)
 
-col_top_brand, col_top_user = st.columns([8, 4])
+col_top_brand, col_top_user = st.columns([1, 1])
 
 with col_top_brand:
     img_src = f"data:image/png;base64,{logo_b64}" if logo_b64 else ""
