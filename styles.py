@@ -65,7 +65,7 @@ def apply_styles():
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
-        margin-top: -5px !important;
+        margin-top: -12px !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
         max-width: 100% !important;
