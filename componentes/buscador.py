@@ -40,11 +40,11 @@ def renderizar_buscador():
         st.session_state["filter_class"] = "Todos"
 
     if not st.session_state.is_admin:
-        # Fila de píldoras/botones de filtro dinámico
-        st.markdown("<div style='margin-top: 0.15rem;'></div>", unsafe_allow_html=True)
-        col_spacer_l, col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_spacer_r = st.columns([2.2, 1.2, 1.8, 1.8, 2.2, 2.2])
+        # Fila de píldoras/botones de filtro dinámico compactos
+        st.markdown("<div style='margin-top: 0.05rem; margin-bottom: 0px;'></div>", unsafe_allow_html=True)
+        col_spacer_l, col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3, col_spacer_r = st.columns([2.6, 0.9, 1.1, 1.1, 1.4, 2.6])
         with col_lbl_f:
-            st.markdown("<div style='font-size: 0.95rem; color: #555; font-weight: bold; padding-top: 0.35rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size: 0.8rem; color: #64748b; font-weight: 700; padding-top: 0.18rem; text-align: right; font-family: Outfit;'>Filtrar por:</div>", unsafe_allow_html=True)
         with col_btn_f1:
             st.markdown("<div class='filter-all-marker'></div>", unsafe_allow_html=True)
             f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"

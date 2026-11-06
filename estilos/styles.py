@@ -543,7 +543,7 @@ def apply_styles():
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 1.25rem;
-        margin-top: 0.4rem; /* <--- EDITA ESTA MARGEN (Vista pública) para acercar/alejar los cuadros de los filtros */
+        margin-top: 0px !important;
     }
     
     /* ---- Saturday Column Card Styling ---- */
@@ -828,13 +828,22 @@ def apply_styles():
         padding: 0 !important;
     }
 
+    /* Ocultar por completo contenedores de iframes con height 0 para eliminar espacio vertical vacío */
+    div[data-testid="stElementContainer"]:has(iframe[height="0"]),
+    div[data-testid="stElementContainer"]:has(iframe[style*="height: 0px"]),
+    iframe[height="0"] {
+        display: none !important;
+        height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+    }
+
     /* Contenedor de columnas como una tarjeta interna premium (recuadro de la tabla de turnos) */
     div[data-testid="stVerticalBlock"]:has(.columns-card-marker) {
         background-color: #ffffff !important;
-       
         border-radius: 12px !important;
-        padding: 0.75rem 1rem 1rem 1rem !important;
-        margin-top: 0.25rem !important;
+        padding: 0.35rem 1rem 1rem 1rem !important;
+        margin-top: -0.65rem !important;
         margin-bottom: 0.75rem !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
     }
@@ -1141,151 +1150,193 @@ def apply_styles():
         padding: 0px !important;
     }
 
-    /* 5. Botón de Filtro Todos (Degradado Azul) */
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"],
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"] {
+    /* 5. Botón de Filtro Todos (Degradado Azul) - Tamaño Compacto */
+    div[data-testid="stColumn"]:has(.filter-all-marker) button,
+    div[data-testid="column"]:has(.filter-all-marker) button {
+        height: 28px !important;
+        min-height: 28px !important;
+        max-height: 28px !important;
+        line-height: 26px !important;
+        padding: 0 0.5rem !important;
+        border-radius: 8px !important;
+        max-width: 110px !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
+    }
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="secondary"],
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="secondary"] {
         background-color: #ffffff !important;
         background: #ffffff !important;
         border: 1.5px solid #1b8dfd !important;
-        border-radius: 12px !important;
         transition: all 0.2s ease !important;
     }
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"] p,
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"] p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="secondary"] p,
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="secondary"] p {
         color: #0866ea !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        line-height: 26px !important;
     }
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:hover,
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:hover {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="secondary"]:hover,
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="secondary"]:hover {
         background: linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
         border-color: #0866ea !important;
         box-shadow: 0 4px 14px rgba(8, 102, 234, 0.3) !important;
         transform: translateY(-1px) !important;
     }
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-secondary"]:hover p,
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-secondary"]:hover p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="secondary"]:hover p,
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="secondary"]:hover p {
         color: #ffffff !important;
     }
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"],
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"] {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="primary"],
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="primary"] {
         background: linear-gradient(180deg, #1b8dfd 0%, #0866ea 100%) !important;
         background-color: #0866ea !important;
         border: none !important;
-        border-radius: 12px !important;
         box-shadow: 0 4px 14px rgba(8, 102, 234, 0.35) !important;
         transition: all 0.2s ease !important;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
     }
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"] p,
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"] p {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="primary"] p,
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="primary"] p {
         color: #ffffff !important;
         margin: 0 !important;
         font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        line-height: 26px !important;
     }
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="stBaseButton-primary"]:hover,
-    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid="baseButton-primary"]:hover {
+    div[data-testid="stColumn"]:has(.filter-all-marker) button[data-testid*="primary"]:hover,
+    div[data-testid="column"]:has(.filter-all-marker) button[data-testid*="primary"]:hover {
         background: linear-gradient(180deg, #2896ff 0%, #075cd4 100%) !important;
         box-shadow: 0 6px 18px rgba(8, 102, 234, 0.5) !important;
         transform: translateY(-1px) !important;
     }
 
-    /* 6. Botón de Filtro Normal (Degradado Verde) */
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"],
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"] {
+    /* 6. Botón de Filtro Normal (Degradado Verde) - Tamaño Compacto */
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button,
+    div[data-testid="column"]:has(.filter-normal-marker) button {
+        height: 28px !important;
+        min-height: 28px !important;
+        max-height: 28px !important;
+        line-height: 26px !important;
+        padding: 0 0.5rem !important;
+        border-radius: 8px !important;
+        max-width: 110px !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
+    }
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="secondary"],
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="secondary"] {
         background-color: #ffffff !important;
         background: #ffffff !important;
         border: 1.5px solid #22c55e !important;
-        border-radius: 12px !important;
         transition: all 0.2s ease !important;
     }
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"] p,
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"] p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="secondary"] p,
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="secondary"] p {
         color: #15803d !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        line-height: 26px !important;
     }
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:hover,
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:hover {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="secondary"]:hover,
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="secondary"]:hover {
         background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
         border-color: #15803d !important;
         box-shadow: 0 4px 14px rgba(21, 128, 61, 0.3) !important;
         transform: translateY(-1px) !important;
     }
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-secondary"]:hover p,
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-secondary"]:hover p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="secondary"]:hover p,
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="secondary"]:hover p {
         color: #ffffff !important;
     }
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"],
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"] {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="primary"],
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="primary"] {
         background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
         background-color: #15803d !important;
         border: none !important;
-        border-radius: 12px !important;
         box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35) !important;
         transition: all 0.2s ease !important;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
     }
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"] p,
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"] p {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="primary"] p,
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="primary"] p {
         color: #ffffff !important;
         margin: 0 !important;
         font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        line-height: 26px !important;
     }
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="stBaseButton-primary"]:hover,
-    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid="baseButton-primary"]:hover {
+    div[data-testid="stColumn"]:has(.filter-normal-marker) button[data-testid*="primary"]:hover,
+    div[data-testid="column"]:has(.filter-normal-marker) button[data-testid*="primary"]:hover {
         background: linear-gradient(180deg, #34d399 0%, #166534 100%) !important;
         box-shadow: 0 6px 18px rgba(21, 128, 61, 0.5) !important;
         transform: translateY(-1px) !important;
     }
 
-    /* 7. Botón de Filtro Compensación (Degradado Amarillo/Ámbar) */
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"],
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"] {
+    /* 7. Botón de Filtro Compensación (Degradado Amarillo/Ámbar) - Tamaño Compacto */
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button,
+    div[data-testid="column"]:has(.filter-comp-marker) button {
+        height: 28px !important;
+        min-height: 28px !important;
+        max-height: 28px !important;
+        line-height: 26px !important;
+        padding: 0 0.5rem !important;
+        border-radius: 8px !important;
+        max-width: 135px !important;
+        margin: 0 auto !important;
+        box-sizing: border-box !important;
+    }
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="secondary"],
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="secondary"] {
         background-color: #ffffff !important;
         background: #ffffff !important;
         border: 1.5px solid #f59e0b !important;
-        border-radius: 12px !important;
         transition: all 0.2s ease !important;
     }
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"] p,
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"] p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="secondary"] p,
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="secondary"] p {
         color: #b45309 !important;
         transition: color 0.2s ease !important;
         margin: 0 !important;
         font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        line-height: 26px !important;
     }
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:hover,
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:hover {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="secondary"]:hover,
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="secondary"]:hover {
         background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%) !important;
         border-color: #d97706 !important;
         box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3) !important;
         transform: translateY(-1px) !important;
     }
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-secondary"]:hover p,
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-secondary"]:hover p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="secondary"]:hover p,
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="secondary"]:hover p {
         color: #ffffff !important;
     }
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"],
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"] {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="primary"],
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="primary"] {
         background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%) !important;
         background-color: #d97706 !important;
         border: none !important;
-        border-radius: 12px !important;
         box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35) !important;
         transition: all 0.2s ease !important;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
     }
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"] p,
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"] p {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="primary"] p,
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="primary"] p {
         color: #ffffff !important;
         margin: 0 !important;
         font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        line-height: 26px !important;
     }
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="stBaseButton-primary"]:hover,
-    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid="baseButton-primary"]:hover {
+    div[data-testid="stColumn"]:has(.filter-comp-marker) button[data-testid*="primary"]:hover,
+    div[data-testid="column"]:has(.filter-comp-marker) button[data-testid*="primary"]:hover {
         background: linear-gradient(180deg, #fcd34d 0%, #b45309 100%) !important;
         box-shadow: 0 6px 18px rgba(217, 119, 6, 0.5) !important;
         transform: translateY(-1px) !important;
