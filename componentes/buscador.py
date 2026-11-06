@@ -35,35 +35,8 @@ def renderizar_buscador():
             label_visibility="collapsed"
         ).strip().upper()
 
-    # Inicializar estado para el filtro de clasificación si no existe
-    if "filter_class" not in st.session_state:
-        st.session_state["filter_class"] = "Todos"
-
-    if not st.session_state.is_admin:
-        # Fila de píldoras/botones de filtro dinámico compactos y juntos
-        col_lbl_f, col_btn_f1, col_btn_f2, col_btn_f3 = st.columns([1, 1, 1, 1])
-        with col_lbl_f:
-            st.markdown("<div class='filter-row-marker filter-label-wrap'>Filtrar por:</div>", unsafe_allow_html=True)
-        with col_btn_f1:
-            st.markdown("<div class='filter-all-marker'></div>", unsafe_allow_html=True)
-            f_style_all = "primary" if st.session_state["filter_class"] == "Todos" else "secondary"
-            if st.button("Todos", key="btn_filtro_todos", use_container_width=False, type=f_style_all):
-                st.session_state["filter_class"] = "Todos"
-                st.rerun()
-        with col_btn_f2:
-            st.markdown("<div class='filter-normal-marker'></div>", unsafe_allow_html=True)
-            f_style_normal = "primary" if st.session_state["filter_class"] == "Secuencia Normal" else "secondary"
-            if st.button("Normal", key="btn_filtro_secuencia_normal", use_container_width=False, type=f_style_normal):
-                st.session_state["filter_class"] = "Secuencia Normal"
-                st.rerun()
-        with col_btn_f3:
-            st.markdown("<div class='filter-comp-marker'></div>", unsafe_allow_html=True)
-            f_style_comp = "primary" if st.session_state["filter_class"] == "Compensación" else "secondary"
-            if st.button("Compensación", key="btn_filtro_compensacion", use_container_width=False, type=f_style_comp):
-                st.session_state["filter_class"] = "Compensación"
-                st.rerun()
-    else:
-        st.session_state["filter_class"] = "Todos"
+    # Estado para el filtro de clasificación (por defecto Todos)
+    st.session_state["filter_class"] = "Todos"
 
     # Inyección de script reactivo en tiempo real para estilizar y subrayar con cada pulsación de tecla
     st.components.v1.html(r"""

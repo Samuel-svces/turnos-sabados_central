@@ -843,11 +843,12 @@ def apply_styles():
     }
 
     /* Contenedor de columnas como una tarjeta interna premium (recuadro de la tabla de turnos) */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker) {
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker),
+    div[data-testid="stLayoutWrapper"]:has(.columns-card-marker) {
         background-color: #ffffff !important;
         border-radius: 12px !important;
-        padding: 0.35rem 1rem 1rem 1rem !important;
-        margin-top: -0.65rem !important;
+        padding: 0.25rem 1rem 1rem 1rem !important;
+        margin-top: -1.25rem !important;
         margin-bottom: 0.75rem !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
     }
