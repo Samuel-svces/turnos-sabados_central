@@ -96,7 +96,6 @@ def apply_styles():
     }
     /* Panel blanco superior con las características exactas solicitadas */
     div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
-        border: 1px solid #e2e8f0 !important;
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -106,8 +105,8 @@ def apply_styles():
         margin: 0 !important;
         padding: 0 2rem !important;
         background: #ffffff !important;
-        border: none !important;
-        border-bottom: 1px solid #cbd5e1 !important;
+        /* Recuadro negro que encierra logo + "Conexión operativa" + engranaje, de extremo a extremo */
+        border: 1px solid #000000 !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         display: flex !important;
         flex-direction: row !important;
@@ -210,7 +209,7 @@ def apply_styles():
         padding: 0.72rem 1.5rem !important;
         display: flex;
         align-items: center;
-        margin-top: -25px !important; /* Pegado al panel blanco (la barra fija ya está encima) */
+        margin-top: 15px !important; /* Pegado al panel blanco (la barra fija ya está encima) */
         margin-left: 9px !important; /* Empieza a la mitad del logo */
         margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
         margin-bottom: 0.45rem !important;
