@@ -168,6 +168,10 @@ def renderizar_buscador():
         }
         if (!inputBuscador) return;
 
+        // Asegurar que el placeholder esté completamente vacío
+        inputBuscador.placeholder = "";
+        inputBuscador.setAttribute("placeholder", "");
+
         if (!inputBuscador.dataset.liveSearchBound) {
             inputBuscador.dataset.liveSearchBound = "true";
             

@@ -1006,6 +1006,15 @@ def apply_styles():
         margin: 0 auto !important;
     }
 
+    /* Ocultar cualquier texto placeholder en el buscador centrado */
+    div[data-testid="column"]:has(.custom-search-marker) input::placeholder,
+    div[data-testid="stColumn"]:has(.custom-search-marker) input::placeholder,
+    input[aria-label="Buscador"]::placeholder {
+        color: transparent !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
     .search-highlight-active,
     .search-highlight-active *,
     .search-highlight-active p,

@@ -27,7 +27,9 @@ st.set_page_config(
 )
 
 # 2. Inyección de Estilos Centralizados (100% en estilos/styles.py)
+import importlib
 from estilos import styles
+importlib.reload(styles)
 styles.apply_styles()
 
 # Marcador para inicializar el Topbar sin saltos de layout
@@ -36,6 +38,10 @@ st.markdown('<div class="app-topbar-marker"></div>', unsafe_allow_html=True)
 # 3. Servicios y Componentes Modulares
 from modulos import procesador_datos as dp
 from modulos import cliente_sharepoint as gc
+from componentes import cabecera, buscador, cuadricula_turnos
+importlib.reload(cabecera)
+importlib.reload(buscador)
+importlib.reload(cuadricula_turnos)
 from componentes.cabecera import renderizar_cabecera, renderizar_banner_titulo, renderizar_aviso_informativo
 from componentes.buscador import renderizar_buscador
 from componentes.cuadricula_turnos import renderizar_cuadricula
