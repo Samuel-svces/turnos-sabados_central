@@ -1591,6 +1591,10 @@ def apply_styles():
         min-width: auto !important;
         height: 34px !important;
         min-height: 34px !important;
+        margin-top: 5px !important;
+        margin-bottom: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
         transition: all 0.15s ease !important;
     }
 
