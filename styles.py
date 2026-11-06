@@ -125,7 +125,6 @@ def apply_styles():
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin-top: -1.25rem !important;
         margin-left: -2rem !important;
         margin-right: -2rem !important;
         width: calc(100% + 4rem) !important;
