@@ -100,8 +100,6 @@ if 'last_action' not in st.session_state:
 
 # ----------------- MAIN APP INTERFACE -----------------
 
-st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
-
 # ----------------- TOPBAR INSTITUCIONAL -----------------
 # Cargar imagen oficial de logo en base64 para renderizado instantáneo
 logo_b64 = ""
@@ -117,6 +115,50 @@ st.markdown("""
 :root { --usv-user-initials: "JJ"; }
 .app-topbar-marker { display: none !important; }
 
+/* Eliminar por completo el espacio superior del contenedor principal de Streamlit */
+header[data-testid="stHeader"],
+[data-testid="stHeader"] {
+    display: none !important;
+    height: 0px !important;
+    min-height: 0px !important;
+    max-height: 0px !important;
+    margin: 0px !important;
+    padding: 0px !important;
+    visibility: hidden !important;
+}
+
+.stApp,
+[data-testid="stAppViewContainer"],
+section.main,
+.stMain,
+div[data-testid="stMain"],
+div[data-testid="stMainBlockContainer"],
+.stMainBlockContainer,
+.block-container {
+    padding-top: 0px !important;
+    margin-top: 0px !important;
+}
+
+/* Ocultar elementos contenedores de estilo/marcadores para que no generen gap o margen */
+div[data-testid="stElementContainer"]:has(style),
+div[data-testid="stElementContainer"]:has(.app-topbar-marker),
+div[data-testid="stElementContainer"]:has(.header-banner-marker),
+div.element-container:has(style),
+div.element-container:has(.app-topbar-marker),
+div.element-container:has(.header-banner-marker) {
+    display: none !important;
+    height: 0px !important;
+    min-height: 0px !important;
+    margin: 0px !important;
+    padding: 0px !important;
+}
+
+div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(.topbar-brand)) {
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+    width: 100% !important;
+}
+
 /* Contenedor Topbar */
 div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
     background-color: #ffffff !important;
@@ -125,7 +167,7 @@ div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    margin-top: -0.5rem !important;
+    margin-top: 0px !important;
     margin-left: -2rem !important;
     margin-right: -2rem !important;
     width: calc(100% + 4rem) !important;

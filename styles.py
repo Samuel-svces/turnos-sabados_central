@@ -23,6 +23,10 @@ def apply_styles():
     [data-testid="stHeader"] {
         display: none !important;
         height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
         visibility: hidden !important;
     }
     
@@ -62,7 +66,7 @@ def apply_styles():
     div[data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
-        padding-top: 0.5rem !important;
+        padding-top: 0px !important;
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
@@ -91,17 +95,29 @@ def apply_styles():
         background: radial-gradient(circle at 10% 20%, rgba(90, 92, 106, 0.03) 0%, rgba(32, 45, 58, 0.05) 90%);
     }
     
-    /* Ocultar marcador superior */
+    /* Ocultar marcador superior y contenedores de estilo/marcadores */
     .header-banner-marker,
+    .app-topbar-marker,
+    div[data-testid="stElementContainer"]:has(style),
     div[data-testid="stElementContainer"]:has(.app-topbar-marker),
-    div.element-container:has(.app-topbar-marker) {
+    div[data-testid="stElementContainer"]:has(.header-banner-marker),
+    div.element-container:has(style),
+    div.element-container:has(.app-topbar-marker),
+    div.element-container:has(.header-banner-marker) {
         display: none !important;
         height: 0px !important;
+        min-height: 0px !important;
         margin: 0px !important;
         padding: 0px !important;
     }
     
     /* Topbar Institucional Superior (Fondo Blanco con borde inferior de extremo a extremo) */
+    div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(.topbar-brand)) {
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+        width: 100% !important;
+    }
+
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0 !important;
@@ -109,7 +125,7 @@ def apply_styles():
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin-top: -0.5rem !important;
+        margin-top: 0px !important;
         margin-left: -2rem !important;
         margin-right: -2rem !important;
         width: calc(100% + 4rem) !important;
@@ -1369,7 +1385,7 @@ def apply_styles():
     [data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0px !important;
         padding-bottom: 2rem !important;
     }
     
