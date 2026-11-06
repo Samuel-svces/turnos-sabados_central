@@ -106,7 +106,6 @@ def apply_styles():
         padding: 0 2rem !important;
         background: #ffffff !important;
         /* Recuadro negro que encierra logo + "Conexión operativa" + engranaje, de extremo a extremo */
-        border: 1px solid #000000 !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
         display: flex !important;
         flex-direction: row !important;
