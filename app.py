@@ -195,7 +195,7 @@ div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(
 /* Contenedor Topbar de esquina a esquina */
 div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
     background-color: #ffffff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 2px solid #F0FBFB !important;
     padding: 0.35rem 2rem 0.35rem 1rem !important;
     display: flex !important;
     align-items: center !important;
@@ -302,7 +302,7 @@ div[data-testid="stColumn"]:has(.topbar-user-marker) button {
     min-height: 34px !important;
     margin-top: 5px !important;
     margin-bottom: 0 !important;
-    margin-left: 0 !important;
+    margin-left: 12px !important;
     margin-right: 0 !important;
     transition: all 0.15s ease !important;
 }
@@ -431,15 +431,14 @@ with col_top_brand:
 
 with col_top_user:
     st.markdown("<div class='topbar-user-marker'></div>", unsafe_allow_html=True)
-    with st.popover("Conexión operativa", help="Perfil de Usuario • Administración"):
+    with st.popover("Conexión Operativa"):
         st.markdown("""
             <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.5rem;">
                 <div style="width: 34px; height: 34px; border-radius: 50%; background-color: #e7f6f4; color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
                     <i class="bi bi-person"></i>
                 </div>
                 <div>
-                    <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">Juan Jose  Osorio Molina</div>
-                    <div style="font-size: 0.78rem; color: #64748b;">Conexión operativa • Administración</div>
+                    <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">Administrador</div>
                 </div>
             </div>
             <div style="margin: 0.5rem 0 0.8rem 0; border-top: 1px solid #e2e8f0;"></div>
@@ -454,7 +453,7 @@ with col_top_user:
                 st.rerun()
 
             st.markdown("<div style='margin-top:0.8rem; margin-bottom:0.8rem; border-top:1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
-            if st.button("🔄 Sincronizar con SharePoint", use_container_width=True, key="btn_sync_direct_sp"):
+            if st.button("Sincronizar con SharePoint", use_container_width=True, key="btn_sync_direct_sp"):
                 st.session_state["force_refresh_personal"] = True
                 c_dir = os.path.join(os.path.dirname(__file__), ".cache")
                 if os.path.exists(c_dir):
@@ -550,7 +549,7 @@ with col_top_user:
                     st.session_state.admin_pwd_popover = ""
 
             pwd_input = st.text_input(
-                "Contraseña de Admin:", 
+                "Contraseña", 
                 type="password", 
                 key="admin_pwd_popover", 
                 on_change=on_pwd_enter

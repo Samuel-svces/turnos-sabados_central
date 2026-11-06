@@ -293,7 +293,12 @@ def apply_styles():
         box-shadow: 0 4px 14px rgba(10, 32, 57, 0.2) !important;
         width: 100% !important;
         gap: 0.85rem !important;
+        max-width: 95%;
     }
+
+    .premium-gradient-banner {
+    margin-left: 50px !important; 
+}
     
     /* Resetear margen, bordes y sombras de alertas y notificaciones y sus contenedores */
     div[data-testid="stElementContainer"]:has(div[data-testid="stAlert"]),
@@ -1591,7 +1596,7 @@ def apply_styles():
         min-width: auto !important;
         height: 34px !important;
         min-height: 34px !important;
-        margin-top: 5px !important;
+        margin-top: 20px !important;
         margin-bottom: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
