@@ -419,18 +419,21 @@ def apply_styles():
     /* Tarjeta informativa de solicitud de cambios - compacta */
     .info-notice-card {
         background-color: #f0fbfb !important;
+        border: 1px solid #ccebee !important;
         border-radius: 10px !important;
         padding: 9px 20px !important;
         text-align: center !important;
-        color: #475569 !important;
+        color: #334155 !important;
         font-size: 0.86rem !important;
         line-height: 1.35 !important;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-        margin-top: 0.75rem !important;
+        margin-top: 1rem !important;
         margin-bottom: 0.75rem !important;
-        max-width: 60% !important;   
+        max-width: 65% !important;   
         margin-left: auto !important; 
         margin-right: auto !important;
+        position: relative !important;
+        z-index: 1 !important;
     }
     .info-notice-card a {
         color: #0284c7 !important;
@@ -843,8 +846,8 @@ def apply_styles():
     }
 
     /* Contenedor de columnas como una tarjeta interna premium (recuadro de la tabla de turnos) */
-    div[data-testid="stVerticalBlock"]:has(.columns-card-marker),
-    div[data-testid="stLayoutWrapper"]:has(.columns-card-marker) {
+    div[data-testid="stVerticalBlock"]:has(.columns-card-marker):not(:has(.info-notice-card)):not(:has(.custom-search-marker)),
+    div[data-testid="stLayoutWrapper"]:has(.columns-card-marker):not(:has(.info-notice-card)):not(:has(.custom-search-marker)) {
         background-color: #ffffff !important;
         border-radius: 12px !important;
         padding: 0.25rem 1rem 1rem 1rem !important;

@@ -134,11 +134,12 @@ if not st.session_state.data_loaded or st.session_state.load_error:
 df_shifts = st.session_state.shifts_df
 df_super = st.session_state.super_df
 
+# Aviso informativo para usuarios en modo público (fuera de contenedores para evitar solapamientos)
+if not st.session_state.is_admin:
+    renderizar_aviso_informativo()
+
 # 8. Contenedor Principal
 with st.container():
-    # Aviso informativo para usuarios en modo público
-    if not st.session_state.is_admin:
-        renderizar_aviso_informativo()
     
     # Botón para deshacer último cambio (solo administradores)
     la = st.session_state.get('last_action')
