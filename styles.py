@@ -1580,23 +1580,23 @@ def apply_styles():
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
+        border-radius: 8px !important;
+        padding: 0.25rem 0.65rem !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0 !important;
-        transition: background-color 0.15s ease !important;
+        gap: 0.45rem !important;
         cursor: pointer !important;
-        width: 36px !important;
-        height: 36px !important;
-        min-height: 36px !important;
-        min-width: 36px !important;
+        width: auto !important;
+        min-width: auto !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        transition: all 0.15s ease !important;
     }
 
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover,
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover {
-        background-color: rgba(0, 0, 0, 0.06) !important;
+        background-color: rgba(0, 0, 0, 0.04) !important;
         border: none !important;
         box-shadow: none !important;
     }
@@ -1605,17 +1605,18 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:focus {
         border: none !important;
         box-shadow: none !important;
+        outline: none !important;
     }
 
-    /* Icono de persona bi-person */
+    /* Icono de persona bi-person antes del texto */
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button::before,
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button::before {
         content: "\\f4da" !important;
         font-family: 'bootstrap-icons' !important;
         font-style: normal !important;
         font-weight: normal !important;
-        font-size: 1.35rem !important;
-        color: #334155 !important;
+        font-size: 1.25rem !important;
+        color: #0284c7 !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -1631,17 +1632,48 @@ def apply_styles():
 
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover::before,
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover::before {
+        color: #0369a1 !important;
+    }
+
+    /* Texto Conexion operativa al lado del icono de persona */
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button p,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button p {
+        display: inline-flex !important;
+        align-items: center !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        color: #0f172a !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        white-space: nowrap !important;
+        transition: color 0.15s ease !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover p,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover p {
         color: #0284c7 !important;
     }
 
-    /* Ocultar texto y flecha chevron del botón de usuario */
-    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button p,
-    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button p,
+    /* Flecha chevron hacia abajo al lado del texto */
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"] {
-        display: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #64748b !important;
+        font-size: 1.15rem !important;
+        margin-left: 0.2rem !important;
+        line-height: 1 !important;
+        transition: color 0.15s ease !important;
+    }
+
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover div[aria-hidden="true"],
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover [data-testid="stIconMaterial"] {
+        color: #0284c7 !important;
     }
 
     /* Estilos del botón de engranaje administrativo en el Popover (fallback) */
