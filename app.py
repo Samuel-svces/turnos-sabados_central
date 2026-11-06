@@ -135,43 +135,54 @@ with st.container():
         renderizar_aviso_informativo()
     
     # Botón para deshacer último cambio (solo administradores)
-    if st.session_state.is_admin and st.session_state.last_action is not None:
+    la = st.session_state.get('last_action')
+    if st.session_state.is_admin and isinstance(la, dict):
         if st.button("Deshacer Último Movimiento", type="secondary", use_container_width=False, icon=":material/undo:", key="btn_deshacer_ultimo_cambio"):
-            la = st.session_state.last_action
             try:
-                if la['action'] in ['ELIMINAR', 'ELIMINAR_SIMPLE']:
-                    dp.add_shift_to_date(la['excel_path'], la['sheet'], la['date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
+                accion = str(la.get('action', ''))
+                excel_p = str(la.get('excel_path', ''))
+                hoja = str(la.get('sheet', ''))
+                fecha = la.get('date')
+                medico = str(la.get('doc', ''))
+                obs = str(la.get('obs', ''))
+                clasif = str(la.get('clasificacion', 'Secuencia Normal'))
+
+                if accion in ['ELIMINAR', 'ELIMINAR_SIMPLE']:
+                    dp.add_shift_to_date(excel_p, hoja, fecha, medico, obs, clasif)
                     st.success("Acción revertida: Médico re-agregado.")
-                elif la['action'] == 'ELIMINAR_LOTE':
+                elif accion == 'ELIMINAR_LOTE':
                     shifts_to_restore = []
                     for item in la.get('deleted_items', []):
-                        shifts_to_restore.append({
-                            'sheet': item['sheet'],
-                            'date': item['date'],
-                            'doc': item['doc'],
-                            'obs': item['obs'],
-                            'clasificacion': item['clasificacion']
-                        })
-                    dp.add_shifts_batch(la['excel_path'], shifts_to_restore)
-                    st.success(f"Acción revertida: {len(la.get('deleted_items', []))} asignaciones de turnos restauradas.")
-                elif la['action'] == 'AGREGAR':
-                    dp.delete_shift_cell(la['excel_path'], la['sheet'], 0, 0, la['date'], "", la['doc'], la.get('clasificacion', 'Secuencia Normal'))
+                        if isinstance(item, dict):
+                            shifts_to_restore.append({
+                                'sheet': item.get('sheet'),
+                                'date': item.get('date'),
+                                'doc': item.get('doc'),
+                                'obs': item.get('obs'),
+                                'clasificacion': item.get('clasificacion')
+                            })
+                    dp.add_shifts_batch(excel_p, shifts_to_restore)
+                    st.success(f"Acción revertida: {len(shifts_to_restore)} asignaciones de turnos restauradas.")
+                elif accion == 'AGREGAR':
+                    dp.delete_shift_cell(excel_p, hoja, 0, 0, fecha, "", medico, clasif)
                     st.success("Acción revertida: Médico eliminado del día.")
-                elif la['action'] == 'MOVE':
-                    dp.delete_shift_cell(la['excel_path'], la['sheet'], 0, 0, la['new_date'], "", la['doc'], la.get('clasificacion', 'Secuencia Normal'))
-                    dp.add_shift_to_date(la['excel_path'], la['sheet'], la['old_date'], la['doc'], la.get('obs', ''), la.get('clasificacion', 'Secuencia Normal'))
+                elif accion == 'MOVE':
+                    nueva_fecha = la.get('new_date')
+                    fecha_anterior = la.get('old_date')
+                    dp.delete_shift_cell(excel_p, hoja, 0, 0, nueva_fecha, "", medico, clasif)
+                    dp.add_shift_to_date(excel_p, hoja, fecha_anterior, medico, obs, clasif)
                     st.success("Acción revertida: Movimiento cancelado.")
-                elif la['action'] == 'REPLACE':
+                elif accion == 'REPLACE':
                     dp.update_shift_cell(
-                        excel_path=la['excel_path'],
-                        sheet_name=la['sheet'],
-                        row_idx=la['row'],
-                        col_idx=la['col'],
-                        new_name=la['old_doc'],
-                        date_val=la['date'],
-                        observation=la['old_obs'],
-                        original_name=la['new_doc'],
-                        clasificacion=la['old_clasif']
+                        excel_path=excel_p,
+                        sheet_name=hoja,
+                        row_idx=int(la.get('row', 0)),
+                        col_idx=int(la.get('col', 0)),
+                        new_name=str(la.get('old_doc', '')),
+                        date_val=fecha,
+                        observation=str(la.get('old_obs', '')),
+                        original_name=str(la.get('new_doc', '')),
+                        clasificacion=str(la.get('old_clasif', 'Secuencia Normal'))
                     )
                     st.success("Acción revertida: Reemplazo / edición cancelado.")
                 
