@@ -104,8 +104,8 @@ def apply_styles():
     /* Topbar Institucional Superior (Fondo Blanco con borde inferior de extremo a extremo) */
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
         background-color: #ffffff !important;
-        border-bottom: 1px solid #000000 !important;
-        padding: 0.65rem 2rem !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 0.45rem 2rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
@@ -138,19 +138,19 @@ def apply_styles():
     }
     
     .topbar-logo {
-        height: 34px;
-        width: auto;
-        display: block;
-        object-fit: contain;
-}
+        height: 28px !important;
+        max-height: 30px !important;
+        width: auto !important;
+        object-fit: contain !important;
+        display: block !important;
     }
     
     .topbar-brand-divider {
         display: inline-block !important;
-        width: 1.5px !important;
-        height: 26px !important;
-        background-color: #000000 !important;
-        opacity: 0.45 !important;
+        width: 1px !important;
+        height: 22px !important;
+        background-color: #e2e8f0 !important;
+        opacity: 1 !important;
         margin: 0 0.85rem !important;
     }
     
@@ -161,9 +161,9 @@ def apply_styles():
     
     .topbar-title {
         font-family: 'Outfit', sans-serif !important;
-        font-size: 1.25rem !important;
+        font-size: 1.15rem !important;
         font-weight: 700 !important;
-        color: #0a1128 !important;
+        color: #0f172a !important;
         letter-spacing: -0.2px !important;
         white-space: nowrap !important;
     }
@@ -172,7 +172,7 @@ def apply_styles():
     .premium-gradient-banner,
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent),
     div[data-testid="stElementContainer"]:has(.premium-gradient-banner) {
-        background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
+        background: linear-gradient(90deg, #0a2039 0%, #133554 35%, #2a5d78 70%, #4e8b9e 100%) !important;
         border-radius: 12px !important;
         padding: 0.72rem 1.5rem !important;
         display: flex !important;
@@ -182,7 +182,7 @@ def apply_styles():
         margin-right: 0px !important;
         margin-bottom: 0.75rem !important;
         box-sizing: border-box !important;
-        box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15) !important;
+        box-shadow: 0 8px 20px -4px rgba(10, 32, 57, 0.25) !important;
         width: 100% !important;
     }
     
@@ -1461,28 +1461,35 @@ def apply_styles():
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button,
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"],
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button {
-        background-color: #ffffff !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 9999px !important;
-        padding: 0.35rem 0.9rem 0.35rem 0.45rem !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+        padding: 0.2rem 0.4rem !important;
         display: inline-flex !important;
         align-items: center !important;
-        gap: 0.55rem !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-        transition: all 0.2s ease !important;
+        gap: 0.5rem !important;
+        transition: background-color 0.15s ease !important;
         cursor: pointer !important;
         height: auto !important;
-        min-height: 38px !important;
+        min-height: 32px !important;
     }
 
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover,
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:hover {
-        background-color: #f8fafc !important;
-        border-color: #94a3b8 !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+        background-color: rgba(0, 0, 0, 0.04) !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
-    /* Avatar circular con las iniciales JJ */
+    div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:focus,
+    div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button:focus {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Avatar circular con las iniciales JJ en tono menta/aqua suave */
     div[data-testid="column"]:has(.topbar-user-marker) div[data-testid="stPopover"] button::before,
     div[data-testid="stColumn"]:has(.topbar-user-marker) div[data-testid="stPopover"] button::before {
         content: var(--usv-user-initials, "JJ") !important;
@@ -1494,10 +1501,10 @@ def apply_styles():
         min-width: 28px !important;
         min-height: 28px !important;
         border-radius: 50% !important;
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-        color: #ffffff !important;
+        background-color: #e7f6f4 !important;
+        color: #0d9488 !important;
         font-family: 'Outfit', sans-serif !important;
-        font-size: 0.78rem !important;
+        font-size: 0.75rem !important;
         font-weight: 700 !important;
         letter-spacing: 0.5px !important;
         flex-shrink: 0 !important;
