@@ -20,7 +20,7 @@ if BASE_DIR not in sys.path:
 
 # 1. Configuración de página de Streamlit
 st.set_page_config(
-    page_title="Turnos Sábados - Conexión operativa",
+    page_title="Turnos Sábados - Unión para la Salud y la Vida S.A.S",
     page_icon="📅",
     layout="wide",
     initial_sidebar_state="collapsed"
