@@ -60,6 +60,7 @@ def apply_styles():
     }
     
     .stApp,
+    [data-testid="stAppViewContainer"],
     section.main,
     .stMain,
     div[data-testid="stMain"],
@@ -68,8 +69,8 @@ def apply_styles():
     .block-container {
         padding-top: 0px !important;
         padding-bottom: 2rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
         margin-top: 0px !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
@@ -80,9 +81,40 @@ def apply_styles():
         box-sizing: border-box !important;
     }
     
+    @media (min-width: 576px) {
+        .stApp,
+        [data-testid="stAppViewContainer"],
+        section.main,
+        .stMain,
+        div[data-testid="stMain"],
+        div[data-testid="stMainBlockContainer"],
+        .stMainBlockContainer,
+        .block-container {
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+            padding-top: 0px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    }
+    
     /* Compactar espaciado vertical entre secciones en el contenedor principal */
     div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] {
         gap: 0.45rem !important;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Margen lateral para el contenido de la aplicación debajo del topbar */
+    div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"]:not(:has(.topbar-brand)):not(:has(style)):not(:has(.app-topbar-marker)),
+    div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] > div[data-testid="stLayoutWrapper"]:not(:has(.topbar-brand)) {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+        box-sizing: border-box !important;
     }
     
     h1, h2, h3 {
@@ -111,23 +143,28 @@ def apply_styles():
         padding: 0px !important;
     }
     
-    /* Topbar Institucional Superior (Fondo Blanco con borde inferior de extremo a extremo) */
+    /* Topbar Institucional Superior (Fondo Blanco de esquina a esquina) */
     div[data-testid="stLayoutWrapper"]:has(div[data-testid="stHorizontalBlock"]:has(.topbar-brand)) {
-        margin-top: 0px !important;
-        padding-top: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
         width: 100% !important;
+        max-width: 100% !important;
     }
 
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0.2rem 1.5rem 0.2rem 0.5rem !important;
+        padding: 0.35rem 1.5rem 0.35rem 1rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin-left: -2rem !important;
-        margin-right: -2rem !important;
-        width: calc(100% + 4rem) !important;
+        margin-top: -1.25rem !important;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
+        left: 0px !important;
+        right: 0px !important;
+        width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
     }
     
@@ -1393,7 +1430,11 @@ def apply_styles():
     .stMainBlockContainer,
     .block-container {
         padding-top: 0px !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
         padding-bottom: 2rem !important;
+        max-width: 100% !important;
+        width: 100% !important;
     }
     
     /* Header styling in normal page flow */
