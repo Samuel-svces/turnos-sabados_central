@@ -238,57 +238,68 @@ div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="column"
     margin-left: 0px !important;
 }
 
-/* Botón de usuario en el topbar - transparente y sin bordes */
+/* Botón de usuario en el topbar - Icono de persona bi-person */
 div[data-testid="column"]:has(.topbar-user-marker) button,
 div[data-testid="stColumn"]:has(.topbar-user-marker) button {
     background-color: transparent !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    border-radius: 8px !important;
-    padding: 0.2rem 0.4rem !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
     display: inline-flex !important;
     align-items: center !important;
-    gap: 0.5rem !important;
+    justify-content: center !important;
     cursor: pointer !important;
-    height: auto !important;
-    min-height: 32px !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    min-width: 36px !important;
+    transition: background-color 0.15s ease !important;
 }
 
 div[data-testid="column"]:has(.topbar-user-marker) button:hover,
 div[data-testid="stColumn"]:has(.topbar-user-marker) button:hover {
-    background-color: rgba(0, 0, 0, 0.04) !important;
+    background-color: rgba(0, 0, 0, 0.06) !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-/* Avatar circular con las iniciales JJ en tono menta/aqua suave */
+/* Ocultar texto del nombre y flecha chevron */
+div[data-testid="column"]:has(.topbar-user-marker) button p,
+div[data-testid="stColumn"]:has(.topbar-user-marker) button p,
+div[data-testid="column"]:has(.topbar-user-marker) button div[aria-hidden="true"],
+div[data-testid="column"]:has(.topbar-user-marker) button [data-testid="stIconMaterial"],
+div[data-testid="stColumn"]:has(.topbar-user-marker) button div[aria-hidden="true"],
+div[data-testid="stColumn"]:has(.topbar-user-marker) button [data-testid="stIconMaterial"] {
+    display: none !important;
+}
+
+/* Icono de persona bi-person */
 div[data-testid="column"]:has(.topbar-user-marker) button::before,
 div[data-testid="stColumn"]:has(.topbar-user-marker) button::before {
-    content: var(--usv-user-initials, "JJ") !important;
+    content: "\\f4da" !important;
+    font-family: 'bootstrap-icons' !important;
+    font-style: normal !important;
+    font-weight: normal !important;
+    font-size: 1.35rem !important;
+    color: #334155 !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 50% !important;
-    background-color: #e7f6f4 !important;
-    background: #e7f6f4 !important;
-    color: #0d9488 !important;
-    font-family: 'Outfit', sans-serif !important;
-    font-size: 0.75rem !important;
-    font-weight: 700 !important;
-    margin-right: 0.5rem !important;
-    flex-shrink: 0 !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    transition: color 0.15s ease !important;
 }
 
-div[data-testid="column"]:has(.topbar-user-marker) button p,
-div[data-testid="stColumn"]:has(.topbar-user-marker) button p {
-    font-family: 'Outfit', sans-serif !important;
-    font-size: 0.88rem !important;
-    font-weight: 600 !important;
-    color: #1e293b !important;
-    margin: 0 !important;
+div[data-testid="column"]:has(.topbar-user-marker) button:hover::before,
+div[data-testid="stColumn"]:has(.topbar-user-marker) button:hover::before {
+    color: #0284c7 !important;
 }
 
 /* Banner de Turnos Sábados - unificado de ancho completo */
@@ -330,11 +341,11 @@ with col_top_brand:
 
 with col_top_user:
     st.markdown("<div class='topbar-user-marker'></div>", unsafe_allow_html=True)
-    with st.popover("Juan Jose  Osorio Molina"):
+    with st.popover("", help="Perfil de Usuario • Administración"):
         st.markdown("""
             <div style="display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.5rem;">
-                <div style="width: 34px; height: 34px; border-radius: 50%; background-color: #e7f6f4; color: #0d9488; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.88rem;">
-                    JJ
+                <div style="width: 34px; height: 34px; border-radius: 50%; background-color: #e7f6f4; color: #0d9488; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="bi bi-person"></i>
                 </div>
                 <div>
                     <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">Juan Jose  Osorio Molina</div>
