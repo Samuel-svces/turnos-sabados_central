@@ -62,10 +62,11 @@ def apply_styles():
     div[data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
+        padding-top: 1rem !important;
         padding-bottom: 2rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
-        margin-top: -12px !important;
+        margin-top: 0px !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
         max-width: 100% !important;
@@ -94,113 +95,8 @@ def apply_styles():
     .header-banner-marker {
         display: none;
     }
-    /* Panel blanco superior con las características exactas solicitadas */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100vw !important;
-        height: 68px !important;
-        margin: 0 !important;
-        padding: 0 2rem !important;
-        background: #ffffff !important;
-        /* Recuadro negro que encierra logo + "Conexión operativa" + engranaje, de extremo a extremo */
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        gap: 0 !important;
-        box-sizing: border-box !important;
-        z-index: 9999 !important;
-    }
     
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"] {
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        padding-top: 0px !important;
-        padding-bottom: 0px !important;
-        height: 100% !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:first-child,
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:first-child {
-        flex: 1 1 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="column"]:last-child,
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) > div[data-testid="stColumn"]:last-child,
-    div[data-testid="column"]:has(.admin-gear-marker),
-    div[data-testid="stColumn"]:has(.admin-gear-marker) {
-        flex: 0 0 auto !important;
-        width: auto !important;
-        min-width: 50px !important;
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center !important;
-        z-index: 10000 !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stVerticalBlock"] {
-        gap: 0px !important;
-        height: 100% !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-    }
-
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stElementContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stMarkdownContainer"] p {
-        margin: 0px !important;
-        padding: 0px !important;
-    }
-    
-    .top-nav-panel {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        height: 100%;
-    }
-    
-    .top-nav-left {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        height: 100%;
-        min-width:0;
-    }
-    
-    .top-nav-logo {
-        height: 34px;
-        width: auto;
-        display: block;
-        object-fit: contain;
-    }
-    
-    .top-nav-divider {
-        width: 2px;
-        height: 36px;
-        background-color: #94a3b8;
-    }
-    
-    .top-nav-title {
-        font-family: 'Outfit', sans-serif;
-        font-size: 21px;
-        font-weight: 600;
-        color: #0f172a;
-        letter-spacing: -0.2px;
-        white-space: nowrap;
-        -webkit-text-fill-color: #0f172a; 
-    }
-    
-    /* Banner institucional degradado de Turnos Sábados recortado */
+    /* Banner institucional degradado de Turnos Sábados con engranaje integrado */
     .premium-gradient-banner,
     div[data-testid="stHorizontalBlock"]:has(.premium-banner-transparent) {
         background: linear-gradient(90deg, #0a1128 0%, #102a43 35%, #334e68 70%, #bac7d5 100%) !important;
@@ -208,10 +104,10 @@ def apply_styles():
         padding: 0.72rem 1.5rem !important;
         display: flex;
         align-items: center;
-        margin-top: 15px !important; /* Pegado al panel blanco (la barra fija ya está encima) */
-        margin-left: 19px !important; /* Empieza a la mitad del logo */
-        margin-right: 0px !important; /* Finaliza alineado con el borde derecho y el engranaje */
-        margin-bottom: 0.45rem !important;
+        margin-top: 0px !important;
+        margin-left: 0px !important;
+        margin-right: 0px !important;
+        margin-bottom: 0.75rem !important;
         box-sizing: border-box !important;
         box-shadow: 0 10px 25px -5px rgba(10, 17, 40, 0.15), 0 8px 10px -6px rgba(10, 17, 40, 0.15);
     }
@@ -1390,11 +1286,11 @@ def apply_styles():
         font-weight: 700 !important;
     }
     
-    /* Adjust Streamlit main container padding to pull page contents up */
+    /* Adjust Streamlit main container padding */
     [data-testid="stMainBlockContainer"],
     .stMainBlockContainer,
     .block-container {
-        padding-top: 72px !important; /* Espacio para la barra superior fija de 68px + 4px de margen */
+        padding-top: 1rem !important;
         padding-bottom: 2rem !important;
     }
     
@@ -1472,7 +1368,6 @@ def apply_styles():
     }
 
     /* Estilos del botón de engranaje administrativo en el Popover */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button {
         background-color: #ffffff !important; /* Fondo blanco */
@@ -1490,14 +1385,12 @@ def apply_styles():
         min-width: 38px !important;
         cursor: pointer !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button:hover,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover {
         background-color: #f1f5f9 !important;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
         border-color: #0284c7 !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button p,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button p {
         font-size: 1.25rem !important;
@@ -1510,14 +1403,10 @@ def apply_styles():
         line-height: 1 !important;
         visibility: visible !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button:hover p,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button:hover p {
         color: #0284c7 !important;
     }
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button div[aria-hidden="true"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button svg,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div[aria-hidden="true"],
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button svg,
@@ -1528,8 +1417,6 @@ def apply_styles():
     }
     
     /* Centrar perfectamente todos los contenedores intermedios del popover de administración */
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button div,
-    div[data-testid="stHorizontalBlock"]:has(.top-nav-panel) div[data-testid="stPopover"] button span,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,
     div[data-testid="column"]:has(.admin-gear-marker) div[data-testid="stPopover"] button span,
     div[data-testid="stColumn"]:has(.admin-gear-marker) div[data-testid="stPopover"] button div,

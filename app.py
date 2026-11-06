@@ -100,28 +100,23 @@ if 'last_action' not in st.session_state:
 
 st.markdown("<div class='header-banner-marker'></div>", unsafe_allow_html=True)
 
-# Cargar imagen de la Unión para la Salud y la Vida en base64
-logo_path = os.path.join(os.path.dirname(__file__), "assets", "logo_union.png")
-logo_b64 = ""
-if os.path.exists(logo_path):
-    with open(logo_path, "rb") as f:
-        logo_b64 = base64.b64encode(f.read()).decode("utf-8")
+# Banner institucional degradado con título y engranaje administrativo integrado
+col_banner_info, col_banner_gear = st.columns([11, 1])
 
-# Panel blanco superior con Logo, Título "Conexión operativa" y Engranaje a la derecha
-col_nav_brand, col_nav_gear = st.columns([11, 1])
-
-with col_nav_brand:
-    st.markdown(f"""
-        <div class="top-nav-panel">
-            <div class="top-nav-left">
-                <img src="data:image/png;base64,{logo_b64}" alt="Unión para la salud y la vida S.A.S" class="top-nav-logo" />
-                <div class="top-nav-divider"></div>
-                <span class="top-nav-title">Conexión operativa</span>
+with col_banner_info:
+    st.markdown("""
+        <div class="premium-banner-transparent">
+            <div class="premium-banner-icon">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div class="premium-banner-text">
+                <h1>Turnos Sábados</h1>
+                <p>Secuencia sabados</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-with col_nav_gear:
+with col_banner_gear:
     st.markdown("<div class='admin-gear-marker'></div>", unsafe_allow_html=True)
     with st.popover("⚙", help="Administración"):
         st.markdown("#### <i class='bi bi-shield-lock-fill'></i> Acceso Administrador", unsafe_allow_html=True)
@@ -246,19 +241,6 @@ with col_nav_gear:
                     
             if st.session_state.pwd_error:
                 st.error(st.session_state.pwd_error)
-
-# Banner institucional degradado con título y subtítulo
-st.markdown("""
-    <div class="premium-gradient-banner">
-        <div class="premium-banner-icon">
-            <i class="bi bi-calendar3"></i>
-        </div>
-        <div class="premium-banner-text">
-            <h1>Turnos Sábados</h1>
-            <p>Secuencia sabados</p>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
 
 if not st.session_state.data_loaded or st.session_state.load_error:
     st.error(f"### Error al cargar datos")
