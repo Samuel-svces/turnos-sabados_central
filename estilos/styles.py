@@ -159,11 +159,11 @@ def apply_styles():
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) {
         background-color: #ffffff !important;
         border-bottom: 1px solid #e2e8f0 !important;
-        padding: 0.35rem 1.5rem 0.35rem 1rem !important;
+        padding: 0.95rem 1.75rem 0.95rem 1.25rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
-        margin-top: -1.25rem !important;
+        margin-top: 0.35rem !important;
         margin-left: 0px !important;
         margin-right: 0px !important;
         left: 0px !important;
@@ -171,6 +171,7 @@ def apply_styles():
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        min-height: 64px !important;
     }
     
     div[data-testid="stHorizontalBlock"]:has(.topbar-brand) div[data-testid="stColumn"] {
