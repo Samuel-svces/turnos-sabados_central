@@ -420,6 +420,9 @@ def apply_styles():
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
         margin-top: 0.1rem !important;
         margin-bottom: 0.35rem !important;
+        max-width: 60% !important;   
+        margin-left: auto !important; 
+        margin-right: auto !important;
     }
     .info-notice-card a {
         color: #0284c7 !important;
