@@ -2206,6 +2206,150 @@ def apply_styles():
         border-color: rgb(12, 75, 145) !important;
         color: #ffffff !important;
     }
+
+    /* ========================================================= */
+    /* FILTRO Y ORDEN TIPO EXCEL EN LAS COLUMNAS DE NOMBRES       */
+    /* ========================================================= */
+
+    /* Fila del encabezado: fecha + embudo, misma altura y sin margen extra */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stHorizontalBlock"]:has(.sat-header) {
+        align-items: stretch !important;
+        gap: 0.3rem !important;
+        margin-bottom: 0.7rem !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stHorizontalBlock"]:has(.sat-header) > div[data-testid="stColumn"] {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: stretch !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stHorizontalBlock"]:has(.sat-header) > div[data-testid="stColumn"] > div[data-testid="stElementContainer"] {
+        flex: 1 1 auto !important;
+        display: flex !important;
+        align-items: stretch !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) .sat-header {
+        min-height: 40px !important;
+        height: 100% !important;
+        margin-bottom: 0px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Botón del embudo (trigger del popover) */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] {
+        width: 100% !important;
+        margin: 0 !important;
+        display: flex !important;
+        height: 100% !important;
+    }
+
+    /* Solo el botón que abre el panel (hijo directo), no los botones internos */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 100% !important;
+        min-height: 40px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: #ffffff !important;
+        border: 1.5px solid #ccebee !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.06) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0 !important;
+        color: #17243D !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button:hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button:focus,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:focus {
+        background-color: #e2f7f7 !important;
+        border-color: #a8e3eb !important;
+        box-shadow: 0 4px 12px rgba(23, 36, 61, 0.1) !important;
+    }
+
+    /* Embudo tipo Excel dibujado como fondo (compatible con cualquier versión) */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"] {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f9a9b'><path d='M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z'/></svg>") !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: 17px 17px !important;
+    }
+
+    /* Ocultar el texto del botón conservándolo para lectores de pantalla */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button p,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"] p {
+        font-size: 0 !important;
+        line-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Sin flecha de despliegue: el encabezado muestra solo el embudo */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button svg,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button [data-testid="stIconMaterial"],
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"] svg,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[data-testid="stPopoverButton"] [data-testid="stIconMaterial"] {
+        display: none !important;
+    }
+
+    /* Indicador de filtro activo en la columna */
+    div[data-testid="stElementContainer"]:has(.col-filter-active),
+    div.element-container:has(.col-filter-active) {
+        display: none !important;
+        height: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stElementContainer"]:has(.col-filter-active) + div[data-testid="stElementContainer"] button {
+        background-color: #F0FBFB !important;
+        border-color: #0f9a9b !important;
+        box-shadow: 0 0 0 2px rgba(15, 154, 155, 0.15) !important;
+    }
+
+    /* Panel desplegable del filtro */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopoverBody"] {
+        min-width: 285px !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] {
+        padding: 0 !important;
+        margin-bottom: -0.25rem !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] p {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+        color: #17243D !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopoverBody"] button {
+        font-size: 0.76rem !important;
+        min-height: 32px !important;
+        padding: 0.15rem 0.5rem !important;
+    }
+
+    .filtro-separador {
+        height: 1px !important;
+        background: #e2e8f0 !important;
+        margin: 0.55rem 0 0.4rem 0 !important;
+    }
+
     </style>
     """)
     clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])

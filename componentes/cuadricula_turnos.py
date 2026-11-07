@@ -4,9 +4,9 @@ cuadricula_turnos.py
 Componente de interfaz para la renderización de la cuadrícula de sábados.
 Soporta:
   - Modo Administrador: Navegación de semanas, edición interactiva de turnos por modal,
-    ordenamiento alfabético, adición de médicos y duplicación de programación anterior.
+    filtrado y ordenamiento por columna, adición de médicos y duplicación de programación anterior.
   - Modo Público: Visualización limpia de sólo lectura, filtrado por clasificación,
-    indicadores de observación y tooltips detallados.
+    filtrado/orden por columna, indicadores de observación y tooltips detallados.
 """
 
 import streamlit as st
@@ -14,6 +14,194 @@ import pandas as pd
 import datetime
 from modulos import procesador_datos as dp
 from componentes import dialogos
+
+
+# ---------------------------------------------------------------------------
+# Filtro y orden por columna (estilo Excel)
+# ---------------------------------------------------------------------------
+ORDEN_ETIQUETAS = {"natural": "Natural", "asc": "A → Z", "desc": "Z → A"}
+ORDEN_VALORES = {v: k for k, v in ORDEN_ETIQUETAS.items()}
+
+
+def _init_estado_columnas():
+    """Inicializa el estado compartido de orden y filtro por sábado."""
+    if 'column_sorts' not in st.session_state:
+        st.session_state.column_sorts = {}
+    if 'column_filters' not in st.session_state:
+        st.session_state.column_filters = {}
+
+
+def _nombres_unicos(df_dia: pd.DataFrame) -> list:
+    """Nombres únicos y válidos de un sábado conservando el orden original."""
+    if df_dia is None or df_dia.empty or 'Supernumerary' not in df_dia.columns:
+        return []
+    return [n for n in dict.fromkeys(df_dia['Supernumerary'].tolist()) if isinstance(n, str) and n.strip()]
+
+
+def _seleccion_actual(sat_date, nombres: list) -> set:
+    """Nombres visibles según el filtro guardado (None = todos)."""
+    seleccion = st.session_state.column_filters.get(sat_date)
+    if seleccion is None:
+        return set(nombres)
+    return set(seleccion) & set(nombres)
+
+
+def _aplicar_filtro_orden(df_dia: pd.DataFrame, sat_date) -> pd.DataFrame:
+    """Aplica el filtro por nombre y el orden guardados para una columna."""
+    if df_dia is None or df_dia.empty:
+        return df_dia
+
+    nombres = _nombres_unicos(df_dia)
+    visibles = _seleccion_actual(sat_date, nombres)
+    if visibles != set(nombres):
+        df_dia = df_dia[df_dia['Supernumerary'].isin(visibles)]
+
+    orden = st.session_state.column_sorts.get(sat_date, "natural")
+    if orden == "asc":
+        df_dia = df_dia.assign(_orden=df_dia['Supernumerary'].map(dp.normalize_name_no_accents)).sort_values(by='_orden').drop(columns='_orden')
+    elif orden == "desc":
+        df_dia = df_dia.assign(_orden=df_dia['Supernumerary'].map(dp.normalize_name_no_accents)).sort_values(by='_orden', ascending=False).drop(columns='_orden')
+    return df_dia
+
+
+def _clave_checkbox(sat_date, prefijo: str, indice: int) -> str:
+    return f"filtro_chk_{sat_date}_{prefijo}_{indice}"
+
+
+def _cb_marcar_nombre(sat_date, nombre, nombres, chk_key):
+    activo = bool(st.session_state.get(chk_key, True))
+    actuales = set(_seleccion_actual(sat_date, nombres))
+    if activo:
+        actuales.add(nombre)
+    else:
+        actuales.discard(nombre)
+    st.session_state.column_filters[sat_date] = None if actuales >= set(nombres) else sorted(actuales)
+
+
+def _cb_marcar_todos(sat_date, nombres, prefijo, marcar):
+    for indice in range(len(nombres)):
+        st.session_state[_clave_checkbox(sat_date, prefijo, indice)] = bool(marcar)
+    st.session_state.column_filters[sat_date] = None if marcar else []
+
+
+def _cb_orden(sat_date, orden_key):
+    etiqueta = st.session_state.get(orden_key, "Natural")
+    st.session_state.column_sorts[sat_date] = ORDEN_VALORES.get(etiqueta, "natural")
+
+
+def _cb_limpiar(sat_date, nombres, prefijo, txt_key, orden_key):
+    st.session_state.column_filters[sat_date] = None
+    st.session_state.column_sorts[sat_date] = "natural"
+    st.session_state[txt_key] = ""
+    st.session_state[orden_key] = "Natural"
+    for indice in range(len(nombres)):
+        st.session_state[_clave_checkbox(sat_date, prefijo, indice)] = True
+
+
+def _render_panel_filtro(sat_date, nombres, prefijo):
+    """Panel con buscador, casillas y orden (equivalente al filtro de Excel)."""
+    txt_key = f"filtro_txt_{sat_date}_{prefijo}"
+    if txt_key not in st.session_state:
+        st.session_state[txt_key] = ""
+
+    consulta = st.text_input(
+        "Buscar nombre",
+        key=txt_key,
+        placeholder="Buscar nombre...",
+        label_visibility="collapsed",
+    )
+    consulta_norm = dp.normalize_name_no_accents(consulta or "").upper().strip()
+    filtrados = [n for n in nombres if consulta_norm in dp.normalize_name_no_accents(n).upper()]
+
+    col_todos, col_ninguno = st.columns(2, gap="small")
+    with col_todos:
+        st.button(
+            "Todos",
+            key=f"btn_filtro_todos_{sat_date}_{prefijo}",
+            use_container_width=True,
+            on_click=_cb_marcar_todos,
+            args=(sat_date, nombres, prefijo, True),
+        )
+    with col_ninguno:
+        st.button(
+            "Ninguno",
+            key=f"btn_filtro_ninguno_{sat_date}_{prefijo}",
+            use_container_width=True,
+            on_click=_cb_marcar_todos,
+            args=(sat_date, nombres, prefijo, False),
+        )
+
+    if not nombres:
+        st.caption("Sin médicos programados.")
+    elif not filtrados:
+        st.caption("Sin coincidencias.")
+    else:
+        visibles_guardados = _seleccion_actual(sat_date, nombres)
+        with st.container(height=200, border=False):
+            for nombre in filtrados:
+                indice = nombres.index(nombre)
+                chk_key = _clave_checkbox(sat_date, prefijo, indice)
+                if chk_key not in st.session_state:
+                    st.session_state[chk_key] = nombre in visibles_guardados
+                st.checkbox(
+                    nombre,
+                    key=chk_key,
+                    on_change=_cb_marcar_nombre,
+                    args=(sat_date, nombre, nombres, chk_key),
+                )
+
+    st.markdown("<div class='filtro-separador'></div>", unsafe_allow_html=True)
+
+    orden_key = f"filtro_orden_{sat_date}_{prefijo}"
+    if orden_key not in st.session_state:
+        st.session_state[orden_key] = ORDEN_ETIQUETAS.get(
+            st.session_state.column_sorts.get(sat_date, "natural"), "Natural"
+        )
+    st.radio(
+        "Ordenar",
+        ["A → Z", "Z → A", "Natural"],
+        key=orden_key,
+        horizontal=True,
+        on_change=_cb_orden,
+        args=(sat_date, orden_key),
+    )
+
+    st.button(
+        "Limpiar filtro",
+        key=f"btn_filtro_limpiar_{sat_date}_{prefijo}",
+        use_container_width=True,
+        on_click=_cb_limpiar,
+        args=(sat_date, nombres, prefijo, txt_key, orden_key),
+    )
+
+
+def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: bool, prefijo: str, nombres: list):
+    """Encabezado de fecha con el icono de filtrar/ordenar al estilo Excel."""
+    col_fecha, col_filtro = st.columns([0.82, 0.18], gap="small")
+
+    with col_fecha:
+        texto = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
+        etiqueta_medicos = "Médico" if total == 1 else "Médicos"
+        if visibles != total:
+            texto += f" ({visibles}/{total} {etiqueta_medicos})"
+        else:
+            texto += f" ({total} {etiqueta_medicos})"
+        if es_festivo:
+            texto += " (FESTIVO)"
+
+        orden = st.session_state.column_sorts.get(sat_date, "natural")
+        if orden == "asc":
+            texto += " ▲"
+        elif orden == "desc":
+            texto += " ▼"
+
+        st.markdown(f"<div class='sat-header'>{texto}</div>", unsafe_allow_html=True)
+
+    with col_filtro:
+        if st.session_state.column_filters.get(sat_date) is not None:
+            st.markdown("<div class='col-filter-active'></div>", unsafe_allow_html=True)
+        with st.popover("Filtrar", help="Filtrar y ordenar nombres"):
+            _render_panel_filtro(sat_date, nombres, prefijo)
 
 
 def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, search_query: str, cargar_datos_fn):
@@ -82,6 +270,8 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         </script>
         """, height=0)
         st.session_state["show_add_success_alert"] = False
+
+    _init_estado_columnas()
 
     today = datetime.date.today()
     days_to_sat = (5 - today.weekday()) % 7
@@ -170,24 +360,14 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                 num_doctors_all = len(date_shifts_all)
                 doc_counts = date_shifts_all['Supernumerary'].value_counts() if not date_shifts_all.empty else pd.Series()
                 
-                if 'column_sorts' not in st.session_state:
-                    st.session_state.column_sorts = {}
-                sort_type = st.session_state.column_sorts.get(sat_date, "natural")
+                nombres_dia = _nombres_unicos(date_shifts_all)
 
-                header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
-                header_text += f" ({num_doctors_all} Médicos)"
-                if is_holiday:
-                    header_text += " (FESTIVO)"
-                if sort_type == "asc":
-                    header_text += " 🔤"
-                    
-                st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
-                if st.button(header_text, key=f"btn_ordenar_admin_{sat_date}", use_container_width=True):
-                    st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
-                    st.rerun()
-                
-                # Lista de médicos como botones interactivos
-                date_shifts_loop = date_shifts_all.sort_values(by='Supernumerary') if sort_type == "asc" else date_shifts_all
+                # Lista de médicos filtrada y ordenada según el icono de la columna
+                date_shifts_loop = _aplicar_filtro_orden(date_shifts_all, sat_date)
+
+                _render_encabezado_columna(
+                    sat_date, num_doctors_all, len(date_shifts_loop), is_holiday, "admin", nombres_dia
+                )
                 for s_idx, s_row in date_shifts_loop.reset_index().iterrows():
                     name = s_row['Supernumerary']
                     shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
@@ -311,28 +491,14 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     if filter_val != "Todos":
                         date_shifts = date_shifts[date_shifts['Classification'].str.contains(filter_val, na=False, case=False)]
                     
-                    num_doctors_filtered = len(date_shifts)
-                    
-                    if 'column_sorts' not in st.session_state:
-                        st.session_state.column_sorts = {}
-                    sort_type = st.session_state.column_sorts.get(sat_date, "natural")
+                    nombres_dia = _nombres_unicos(date_shifts)
 
-                    header_text = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
-                    if filter_val != "Todos":
-                        header_text += f" ({num_doctors_filtered}/{num_doctors_all} Médicos)"
-                    else:
-                        header_text += f" ({num_doctors_all} Médicos)"
-                    if is_holiday:
-                        header_text += " (FESTIVO)"
-                    if sort_type == "asc":
-                        header_text += " 🔤"
-                        
-                    st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
-                    if st.button(header_text, key=f"btn_ordenar_pub_{sat_date}", use_container_width=True):
-                        st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
-                        st.rerun()
-                    
-                    date_shifts_loop = date_shifts.sort_values(by='Supernumerary') if sort_type == "asc" else date_shifts
+                    # Lista de médicos filtrada y ordenada según el icono de la columna
+                    date_shifts_loop = _aplicar_filtro_orden(date_shifts, sat_date)
+
+                    _render_encabezado_columna(
+                        sat_date, num_doctors_all, len(date_shifts_loop), is_holiday, "publico", nombres_dia
+                    )
                     for _, s_row in date_shifts_loop.reset_index().iterrows():
                         name = s_row['Supernumerary']
                         shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''

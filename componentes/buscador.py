@@ -57,6 +57,8 @@ def renderizar_buscador():
         const items = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button, .doc-name-badge');
 
         items.forEach(item => {
+            // Ignorar por completo los controles del filtro/orden (popover de columna)
+            if (item.closest('[data-testid="stPopover"]')) return;
             const rawText = (item.innerText || item.textContent || "").trim();
             // Omitir botones que son encabezados con fecha, agregar médico, o el popover admin
             if (!rawText || /^\d/.test(rawText) || rawText.includes("Agregar Médico") || rawText.includes("⚙️")) {
@@ -193,6 +195,8 @@ def renderizar_buscador():
         const parentDoc = window.parent.document;
         const colButtons = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
         colButtons.forEach(btn => {
+            // El botón del embudo y el panel del filtro tienen su propio estilo CSS
+            if (btn.closest('[data-testid="stPopover"]')) return;
             const text = (btn.innerText || "").trim();
             if (!text) return;
             if (text.includes('⚙️')) return;
