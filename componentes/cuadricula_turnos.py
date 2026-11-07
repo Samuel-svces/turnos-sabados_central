@@ -24,11 +24,13 @@ ORDEN_VALORES = {v: k for k, v in ORDEN_ETIQUETAS.items()}
 
 
 def _init_estado_columnas():
-    """Inicializa el estado compartido de orden y filtro por sábado."""
+    """Inicializa el estado compartido de orden, filtro y panel por sábado."""
     if 'column_sorts' not in st.session_state:
         st.session_state.column_sorts = {}
     if 'column_filters' not in st.session_state:
         st.session_state.column_filters = {}
+    if 'column_panels' not in st.session_state:
+        st.session_state.column_panels = {}
 
 
 def _nombres_unicos(df_dia: pd.DataFrame) -> list:
@@ -98,6 +100,13 @@ def _cb_limpiar(sat_date, nombres, prefijo, txt_key, orden_key):
         st.session_state[_clave_checkbox(sat_date, prefijo, indice)] = True
 
 
+def _cb_toggle_panel(sat_date):
+    """Abre o cierra el panel de filtro/orden de una columna."""
+    st.session_state.column_panels[sat_date] = not bool(
+        st.session_state.column_panels.get(sat_date, False)
+    )
+
+
 def _render_panel_filtro(sat_date, nombres, prefijo):
     """Panel con buscador, casillas y orden (equivalente al filtro de Excel)."""
     txt_key = f"filtro_txt_{sat_date}_{prefijo}"
@@ -107,7 +116,7 @@ def _render_panel_filtro(sat_date, nombres, prefijo):
     consulta = st.text_input(
         "Buscar nombre",
         key=txt_key,
-        placeholder="Buscar nombre...",
+        placeholder="Buscar nombre y pulsar Enter...",
         label_visibility="collapsed",
     )
     consulta_norm = dp.normalize_name_no_accents(consulta or "").upper().strip()
@@ -137,7 +146,8 @@ def _render_panel_filtro(sat_date, nombres, prefijo):
         st.caption("Sin coincidencias.")
     else:
         visibles_guardados = _seleccion_actual(sat_date, nombres)
-        with st.container(height=200, border=False):
+        alto_lista = min(200, max(38, 30 * len(filtrados)))
+        with st.container(height=alto_lista, border=False):
             for nombre in filtrados:
                 indice = nombres.index(nombre)
                 chk_key = _clave_checkbox(sat_date, prefijo, indice)
@@ -176,31 +186,40 @@ def _render_panel_filtro(sat_date, nombres, prefijo):
 
 
 def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: bool, prefijo: str, nombres: list):
-    """Encabezado de fecha con el icono de filtrar/ordenar al estilo Excel."""
-    col_fecha, col_filtro = st.columns([0.82, 0.18], gap="small")
+    """Encabezado de fecha con filtro/orden tipo Excel.
 
-    with col_fecha:
-        texto = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
-        etiqueta_medicos = "Médico" if total == 1 else "Médicos"
-        if visibles != total:
-            texto += f" ({visibles}/{total} {etiqueta_medicos})"
-        else:
-            texto += f" ({total} {etiqueta_medicos})"
-        if es_festivo:
-            texto += " (FESTIVO)"
+    Todo el encabezado y el embudo abren el mismo panel (inline, sin ventanas
+    flotantes) para que el clic siempre tenga un área grande y visible.
+    """
+    texto = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
+    etiqueta_medicos = "Médico" if total == 1 else "Médicos"
+    if visibles != total:
+        texto += f" ({visibles}/{total} {etiqueta_medicos})"
+    else:
+        texto += f" ({total} {etiqueta_medicos})"
+    if es_festivo:
+        texto += " (FESTIVO)"
 
-        orden = st.session_state.column_sorts.get(sat_date, "natural")
-        if orden == "asc":
-            texto += " ▲"
-        elif orden == "desc":
-            texto += " ▼"
+    orden = st.session_state.column_sorts.get(sat_date, "natural")
+    if orden == "asc":
+        texto += " ▲"
+    elif orden == "desc":
+        texto += " ▼"
 
-        st.markdown(f"<div class='sat-header'>{texto}</div>", unsafe_allow_html=True)
+    abierto = bool(st.session_state.column_panels.get(sat_date, False))
 
-    with col_filtro:
-        if st.session_state.column_filters.get(sat_date) is not None:
-            st.markdown("<div class='col-filter-active'></div>", unsafe_allow_html=True)
-        with st.popover("Filtrar", help="Filtrar y ordenar nombres"):
+    st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
+    st.button(
+        texto,
+        key=f"btn_filtro_col_{sat_date}_{prefijo}",
+        use_container_width=True,
+        on_click=_cb_toggle_panel,
+        args=(sat_date,),
+    )
+
+    if abierto:
+        with st.container(border=True):
+            st.markdown("<div class='filtro-panel-marker'></div>", unsafe_allow_html=True)
             _render_panel_filtro(sat_date, nombres, prefijo)
 
 

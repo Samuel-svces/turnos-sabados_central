@@ -49,6 +49,15 @@ def renderizar_buscador():
             .toUpperCase();
     }
 
+    // Controles del filtro/orden por columna: no se resaltan ni se estilizan como médicos
+    function esControlFiltro(el) {
+        if (!el || !el.closest) return false;
+        if (el.closest('[data-testid="stPopover"]')) return true;
+        if (el.closest('[data-testid="stVerticalBlockBorderWrapper"]')) return true;
+        const txt = (el.innerText || el.textContent || "").trim();
+        return txt === "Filtrar" || txt === "Todos" || txt === "Ninguno" || txt === "Limpiar filtro";
+    }
+
     function aplicarResaltadoEnVivo(termino) {
         const parentDoc = window.parent.document;
         const cleanTerm = normalizarTexto(termino);
@@ -57,8 +66,8 @@ def renderizar_buscador():
         const items = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button, .doc-name-badge');
 
         items.forEach(item => {
-            // Ignorar por completo los controles del filtro/orden (popover de columna)
-            if (item.closest('[data-testid="stPopover"]')) return;
+            // Ignorar por completo los controles del filtro/orden de columna
+            if (esControlFiltro(item)) return;
             const rawText = (item.innerText || item.textContent || "").trim();
             // Omitir botones que son encabezados con fecha, agregar médico, o el popover admin
             if (!rawText || /^\d/.test(rawText) || rawText.includes("Agregar Médico") || rawText.includes("⚙️")) {
@@ -196,7 +205,7 @@ def renderizar_buscador():
         const colButtons = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
         colButtons.forEach(btn => {
             // El botón del embudo y el panel del filtro tienen su propio estilo CSS
-            if (btn.closest('[data-testid="stPopover"]')) return;
+            if (esControlFiltro(btn)) return;
             const text = (btn.innerText || "").trim();
             if (!text) return;
             if (text.includes('⚙️')) return;
