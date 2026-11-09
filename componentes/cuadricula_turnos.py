@@ -208,7 +208,7 @@ def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: 
 
     abierto = bool(st.session_state.column_panels.get(sat_date, False))
 
-    st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='date-header-marker admin-filter-header-marker'></div>", unsafe_allow_html=True)
     st.button(
         texto,
         key=f"btn_filtro_col_{sat_date}_{prefijo}",
@@ -510,14 +510,28 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     if filter_val != "Todos":
                         date_shifts = date_shifts[date_shifts['Classification'].str.contains(filter_val, na=False, case=False)]
                     
-                    nombres_dia = _nombres_unicos(date_shifts)
+                    sort_type = st.session_state.column_sorts.get(sat_date, "natural")
 
-                    # Lista de médicos filtrada y ordenada según el icono de la columna
-                    date_shifts_loop = _aplicar_filtro_orden(date_shifts, sat_date)
+                    texto_header = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
+                    etiqueta_medicos = "Médico" if num_doctors_all == 1 else "Médicos"
+                    texto_header += f" ({num_doctors_all} {etiqueta_medicos})"
+                    if is_holiday:
+                        texto_header += " (FESTIVO)"
+                    if sort_type == "asc":
+                        texto_header += " 🔤"
 
-                    _render_encabezado_columna(
-                        sat_date, num_doctors_all, len(date_shifts_loop), is_holiday, "publico", nombres_dia
-                    )
+                    st.markdown("<div class='date-header-marker'></div>", unsafe_allow_html=True)
+                    if st.button(texto_header, key=f"btn_ordenar_pub_{sat_date}", use_container_width=True):
+                        st.session_state.column_sorts[sat_date] = "natural" if sort_type == "asc" else "asc"
+                        st.rerun()
+
+                    # Lista de médicos en modo usuario: ordenada de la A a la Z si sort_type es 'asc', o natural
+                    if sort_type == "asc":
+                        date_shifts_loop = date_shifts.assign(
+                            _orden=date_shifts['Supernumerary'].map(dp.normalize_name_no_accents)
+                        ).sort_values(by='_orden').drop(columns='_orden')
+                    else:
+                        date_shifts_loop = date_shifts
                     for _, s_row in date_shifts_loop.reset_index().iterrows():
                         name = s_row['Supernumerary']
                         shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''

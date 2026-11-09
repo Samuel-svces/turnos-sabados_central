@@ -2234,12 +2234,17 @@ def apply_styles():
 
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn p,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button p {
+        padding-right: 0px !important;
+    }
+
+    /* Embudo a la derecha del encabezado EXCLUSIVAMENTE en modo administrador */
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button.custom-header-btn p,
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button p {
         padding-right: 18px !important;
     }
 
-    /* Embudo a la derecha del encabezado, como en Excel */
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn::after,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button::after {
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button.custom-header-btn::after,
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button::after {
         content: "" !important;
         position: absolute !important;
         right: 9px !important;
