@@ -70,127 +70,114 @@ def _clave_checkbox(sat_date, prefijo: str, indice: int) -> str:
     return f"filtro_chk_{sat_date}_{prefijo}_{indice}"
 
 
-def _cb_marcar_nombre(sat_date, nombre, nombres, chk_key):
-    activo = bool(st.session_state.get(chk_key, True))
-    actuales = set(_seleccion_actual(sat_date, nombres))
-    if activo:
-        actuales.add(nombre)
-    else:
-        actuales.discard(nombre)
-    st.session_state.column_filters[sat_date] = None if actuales >= set(nombres) else sorted(actuales)
+def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
+    """Renderiza el menú emergente flotante con funciones idénticas a Microsoft Excel."""
+    # 1. Acciones superiores de ordenamiento estilo Excel
+    st.markdown("<div class='excel-menu-btn'>", unsafe_allow_html=True)
+    if st.button("Ordenar de A a la Z", key=f"btn_ord_asc_{sat_date}_{prefijo}", icon=":material/arrow_downward:", use_container_width=True):
+        st.session_state.column_sorts[sat_date] = "asc"
+        st.session_state[pop_key] = False
+        st.rerun()
 
+    if st.button("Ordenar de Z a la A", key=f"btn_ord_desc_{sat_date}_{prefijo}", icon=":material/arrow_upward:", use_container_width=True):
+        st.session_state.column_sorts[sat_date] = "desc"
+        st.session_state[pop_key] = False
+        st.rerun()
 
-def _cb_marcar_todos(sat_date, nombres, prefijo, marcar):
-    for indice in range(len(nombres)):
-        st.session_state[_clave_checkbox(sat_date, prefijo, indice)] = bool(marcar)
-    st.session_state.column_filters[sat_date] = None if marcar else []
+    orden_actual = st.session_state.column_sorts.get(sat_date, "natural")
+    filtro_actual = st.session_state.column_filters.get(sat_date)
+    tiene_filtro = (orden_actual != "natural") or (filtro_actual is not None)
 
+    etiqueta_borrar = f"Borrar filtro de '{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]}'"
+    if st.button(etiqueta_borrar, key=f"btn_borrar_filtro_{sat_date}_{prefijo}", icon=":material/filter_alt_off:", use_container_width=True, disabled=not tiene_filtro):
+        st.session_state.column_filters[sat_date] = None
+        st.session_state.column_sorts[sat_date] = "natural"
+        txt_key = f"filtro_txt_{sat_date}_{prefijo}"
+        if txt_key in st.session_state:
+            st.session_state[txt_key] = ""
+        for idx in range(len(nombres)):
+            st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True
+        st.session_state[pop_key] = False
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
-def _cb_orden(sat_date, orden_key):
-    etiqueta = st.session_state.get(orden_key, "Natural")
-    st.session_state.column_sorts[sat_date] = ORDEN_VALORES.get(etiqueta, "natural")
+    st.markdown("<hr class='excel-menu-divider' />", unsafe_allow_html=True)
 
-
-def _cb_limpiar(sat_date, nombres, prefijo, txt_key, orden_key):
-    st.session_state.column_filters[sat_date] = None
-    st.session_state.column_sorts[sat_date] = "natural"
-    st.session_state[txt_key] = ""
-    st.session_state[orden_key] = "Natural"
-    for indice in range(len(nombres)):
-        st.session_state[_clave_checkbox(sat_date, prefijo, indice)] = True
-
-
-def _cb_toggle_panel(sat_date):
-    """Abre o cierra el panel de filtro/orden de una columna."""
-    st.session_state.column_panels[sat_date] = not bool(
-        st.session_state.column_panels.get(sat_date, False)
-    )
-
-
-def _render_panel_filtro(sat_date, nombres, prefijo):
-    """Panel con buscador, casillas y orden (equivalente al filtro de Excel)."""
+    # 2. Buscador interactivo de texto
     txt_key = f"filtro_txt_{sat_date}_{prefijo}"
     if txt_key not in st.session_state:
         st.session_state[txt_key] = ""
 
     consulta = st.text_input(
-        "Buscar nombre",
+        "Buscar",
         key=txt_key,
-        placeholder="Buscar nombre y pulsar Enter...",
+        placeholder="Buscar...",
         label_visibility="collapsed",
     )
     consulta_norm = dp.normalize_name_no_accents(consulta or "").upper().strip()
     filtrados = [n for n in nombres if consulta_norm in dp.normalize_name_no_accents(n).upper()]
 
-    col_todos, col_ninguno = st.columns(2, gap="small")
-    with col_todos:
-        st.button(
-            "Todos",
-            key=f"btn_filtro_todos_{sat_date}_{prefijo}",
-            use_container_width=True,
-            on_click=_cb_marcar_todos,
-            args=(sat_date, nombres, prefijo, True),
-        )
-    with col_ninguno:
-        st.button(
-            "Ninguno",
-            key=f"btn_filtro_ninguno_{sat_date}_{prefijo}",
-            use_container_width=True,
-            on_click=_cb_marcar_todos,
-            args=(sat_date, nombres, prefijo, False),
-        )
+    # 3. Checkbox Seleccionar todo
+    visibles_guardados = _seleccion_actual(sat_date, nombres)
 
+    # Inicializar estado de checkboxes individuales si aún no existen
+    for idx, nombre in enumerate(nombres):
+        chk_key = _clave_checkbox(sat_date, prefijo, idx)
+        if chk_key not in st.session_state:
+            st.session_state[chk_key] = (nombre in visibles_guardados)
+
+    chk_all_key = f"filtro_chk_all_{sat_date}_{prefijo}"
+
+    def _cb_toggle_all():
+        nuevo_val = bool(st.session_state.get(chk_all_key, False))
+        for n in filtrados:
+            idx = nombres.index(n)
+            st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = nuevo_val
+
+    todos_marcados = all(st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False) for n in filtrados) if filtrados else False
+
+    st.checkbox(
+        "(Seleccionar todo)",
+        value=todos_marcados,
+        key=chk_all_key,
+        on_change=_cb_toggle_all,
+    )
+
+    # 4. Lista con scroll de casillas individuales
     if not nombres:
         st.caption("Sin médicos programados.")
     elif not filtrados:
         st.caption("Sin coincidencias.")
     else:
-        visibles_guardados = _seleccion_actual(sat_date, nombres)
-        alto_lista = min(200, max(38, 30 * len(filtrados)))
+        alto_lista = min(175, max(38, 28 * len(filtrados)))
         with st.container(height=alto_lista, border=False):
             for nombre in filtrados:
-                indice = nombres.index(nombre)
-                chk_key = _clave_checkbox(sat_date, prefijo, indice)
-                if chk_key not in st.session_state:
-                    st.session_state[chk_key] = nombre in visibles_guardados
-                st.checkbox(
-                    nombre,
-                    key=chk_key,
-                    on_change=_cb_marcar_nombre,
-                    args=(sat_date, nombre, nombres, chk_key),
-                )
+                idx = nombres.index(nombre)
+                chk_k = _clave_checkbox(sat_date, prefijo, idx)
+                st.checkbox(nombre, key=chk_k)
 
-    st.markdown("<div class='filtro-separador'></div>", unsafe_allow_html=True)
+    st.markdown("<hr class='excel-menu-divider' />", unsafe_allow_html=True)
 
-    orden_key = f"filtro_orden_{sat_date}_{prefijo}"
-    if orden_key not in st.session_state:
-        st.session_state[orden_key] = ORDEN_ETIQUETAS.get(
-            st.session_state.column_sorts.get(sat_date, "natural"), "Natural"
-        )
-    st.radio(
-        "Ordenar",
-        ["A → Z", "Z → A", "Natural"],
-        key=orden_key,
-        horizontal=True,
-        on_change=_cb_orden,
-        args=(sat_date, orden_key),
-    )
+    # 5. Botón Aplicar
+    st.markdown("<div class='excel-apply-btn'>", unsafe_allow_html=True)
+    if st.button("Aplicar", key=f"btn_aplicar_{sat_date}_{prefijo}", use_container_width=True):
+        marcados = []
+        for idx, nombre in enumerate(nombres):
+            if st.session_state.get(_clave_checkbox(sat_date, prefijo, idx), False):
+                marcados.append(nombre)
 
-    st.button(
-        "Limpiar filtro",
-        key=f"btn_filtro_limpiar_{sat_date}_{prefijo}",
-        use_container_width=True,
-        on_click=_cb_limpiar,
-        args=(sat_date, nombres, prefijo, txt_key, orden_key),
-    )
+        if set(marcados) >= set(nombres):
+            st.session_state.column_filters[sat_date] = None
+        else:
+            st.session_state.column_filters[sat_date] = marcados
+
+        st.session_state[pop_key] = False
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: bool, prefijo: str, nombres: list):
-    """Encabezado de fecha con filtro/orden tipo Excel.
-
-    Todo el encabezado y el embudo abren el mismo panel (inline, sin ventanas
-    flotantes) para que el clic siempre tenga un área grande y visible.
-    """
+    """Encabezado de fecha con menú flotante tipo Excel (solo en modo administrador)."""
     texto = f"{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]} {sat_date.year}"
     etiqueta_medicos = "Médico" if total == 1 else "Médicos"
     if visibles != total:
@@ -206,21 +193,11 @@ def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: 
     elif orden == "desc":
         texto += " ▼"
 
-    abierto = bool(st.session_state.column_panels.get(sat_date, False))
-
     st.markdown("<div class='date-header-marker admin-filter-header-marker'></div>", unsafe_allow_html=True)
-    st.button(
-        texto,
-        key=f"btn_filtro_col_{sat_date}_{prefijo}",
-        use_container_width=True,
-        on_click=_cb_toggle_panel,
-        args=(sat_date,),
-    )
+    pop_key = f"popover_filtro_{sat_date}_{prefijo}"
+    with st.popover(texto, use_container_width=True, key=pop_key):
+        _render_menu_excel(sat_date, nombres, prefijo, pop_key)
 
-    if abierto:
-        with st.container(border=True):
-            st.markdown("<div class='filtro-panel-marker'></div>", unsafe_allow_html=True)
-            _render_panel_filtro(sat_date, nombres, prefijo)
 
 
 def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, search_query: str, cargar_datos_fn):

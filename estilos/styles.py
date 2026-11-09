@@ -2211,25 +2211,53 @@ def apply_styles():
     /* FILTRO Y ORDEN TIPO EXCEL EN LAS COLUMNAS DE NOMBRES       */
     /* ========================================================= */
 
-    /* Marcador interno del panel: no debe ocupar espacio en la columna */
-    div[data-testid="stElementContainer"]:has(.filtro-panel-marker),
-    div.element-container:has(.filtro-panel-marker) {
-        display: none !important;
-        height: 0px !important;
-        min-height: 0px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
     /* El propio encabezado de fecha abre el panel (clic en toda la píldora) */
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
-        position: relative !important;
-        min-height: 40px !important;
+        background: #F0FBFB !important;
+        background-color: #F0FBFB !important;
+        color: #17243D !important;
+        border: 1.5px solid #ccebee !important;
+        border-radius: 10px !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        letter-spacing: 0.2px !important;
+        padding: 0.5rem 0.5rem !important;
+        margin-bottom: 0.2rem !important;
+        text-align: center !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
+        width: 100% !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        position: relative !important;
+        min-height: 40px !important;
         cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button *,
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
+        color: #17243D !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+    }
+
+    /* Ocultar chevron por defecto de stPopover en el encabezado de sábados */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button svg,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button [data-testid="stIconMaterial"] {
+        display: none !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button:hover,
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover {
+        background: #e2f7f7 !important;
+        background-color: #e2f7f7 !important;
+        border-color: #a3e0e5 !important;
+        box-shadow: 0 4px 12px rgba(23, 36, 61, 0.1) !important;
+        transform: translateY(-1px) !important;
     }
 
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn p,
@@ -2259,41 +2287,150 @@ def apply_styles():
         pointer-events: none !important;
     }
 
-    /* Panel inline del filtro (se despliega dentro de la misma columna) */
-    div[data-testid="stLayoutWrapper"]:has(> div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] .filtro-panel-marker),
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.filtro-panel-marker) {
+    /* Contenedor flotante del menú desplegable tipo Excel (stPopoverBody) */
+    div[data-testid="stPopoverBody"] {
+        padding: 0.65rem 0.7rem 0.55rem 0.7rem !important;
         background: #ffffff !important;
-        border: 1px solid #ccebee !important;
-        border-radius: 10px !important;
-        padding: 0.55rem 0.5rem 0.6rem 0.5rem !important;
-        margin: 0 0 0.6rem 0 !important;
-        box-shadow: 0 6px 16px rgba(23, 36, 61, 0.07) !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        min-width: 275px !important;
+        max-width: 320px !important;
+        box-sizing: border-box !important;
     }
 
-    div[data-testid="stLayoutWrapper"]:has(> div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] .filtro-panel-marker) div[data-testid="stCheckbox"],
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.filtro-panel-marker) div[data-testid="stCheckbox"] {
-        padding: 0 !important;
-        margin-bottom: -0.25rem !important;
-    }
-
-    div[data-testid="stLayoutWrapper"]:has(> div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] .filtro-panel-marker) div[data-testid="stCheckbox"] p,
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.filtro-panel-marker) div[data-testid="stCheckbox"] p {
-        font-size: 0.78rem !important;
+    /* Acciones superiores estilo Excel (A-Z, Z-A, Borrar filtro) */
+    .excel-menu-btn button {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #1e293b !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 0.83rem !important;
         font-weight: 500 !important;
-        color: #17243D !important;
-    }
-
-    div[data-testid="stLayoutWrapper"]:has(> div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] .filtro-panel-marker) button,
-    div[data-testid="stVerticalBlockBorderWrapper"]:has(.filtro-panel-marker) button {
-        font-size: 0.76rem !important;
+        padding: 0.35rem 0.5rem !important;
         min-height: 32px !important;
-        padding: 0.15rem 0.5rem !important;
+        border-radius: 5px !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: background 0.15s ease !important;
     }
 
-    .filtro-separador {
+    .excel-menu-btn button:hover:not(:disabled) {
+        background: #f1f5f9 !important;
+        background-color: #f1f5f9 !important;
+        color: #0f172a !important;
+    }
+
+    .excel-menu-btn button:disabled {
+        opacity: 0.45 !important;
+        cursor: not-allowed !important;
+    }
+
+    .excel-menu-btn button p,
+    .excel-menu-btn button span {
+        color: #1e293b !important;
+        font-size: 0.83rem !important;
+        font-weight: 500 !important;
+    }
+
+    .excel-menu-btn button:hover:not(:disabled) p,
+    .excel-menu-btn button:hover:not(:disabled) span {
+        color: #0f172a !important;
+    }
+
+    /* Separador horizontal */
+    .excel-menu-divider {
+        border: none !important;
+        border-top: 1px solid #e2e8f0 !important;
+        margin: 0.45rem 0 0.45rem 0 !important;
         height: 1px !important;
-        background: #e2e8f0 !important;
-        margin: 0.55rem 0 0.4rem 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Buscador interno del popover */
+    div[data-testid="stPopoverBody"] div[data-testid="stTextInput"] input {
+        font-size: 0.82rem !important;
+        padding: 0.3rem 0.6rem !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 5px !important;
+        background: #f8fafc !important;
+        color: #1e293b !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[data-testid="stTextInput"] input:focus {
+        border-color: #107c41 !important;
+        box-shadow: 0 0 0 2px rgba(16, 124, 65, 0.15) !important;
+        background: #ffffff !important;
+    }
+
+    /* Casillas de verificación del menú */
+    div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] {
+        padding: 0.1rem 0 !important;
+        margin: 0 !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] p {
+        font-size: 0.80rem !important;
+        font-weight: 500 !important;
+        color: #1e293b !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Scrollbar estilizada para la lista de médicos */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"]::-webkit-scrollbar {
+        width: 5px !important;
+    }
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"]::-webkit-scrollbar-thumb {
+        background: #cbd5e1 !important;
+        border-radius: 4px !important;
+    }
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"]::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8 !important;
+    }
+
+    /* Botón verde "Aplicar" estilo Excel */
+    .excel-apply-btn button {
+        background-color: #107c41 !important;
+        background: #107c41 !important;
+        color: #ffffff !important;
+        border: 1px solid #0d6535 !important;
+        border-radius: 6px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.84rem !important;
+        padding: 0.4rem 1rem !important;
+        min-height: 34px !important;
+        width: 100% !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        transition: background-color 0.15s ease, transform 0.1s ease !important;
+    }
+
+    .excel-apply-btn button p,
+    .excel-apply-btn button span {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 0.84rem !important;
+    }
+
+    .excel-apply-btn button:hover {
+        background-color: #0d6535 !important;
+        background: #0d6535 !important;
+        border-color: #094725 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .excel-apply-btn button:active {
+        background-color: #094725 !important;
+        background: #094725 !important;
+        transform: translateY(0px) !important;
     }
 
     </style>

@@ -53,9 +53,11 @@ def renderizar_buscador():
     function esControlFiltro(el) {
         if (!el || !el.closest) return false;
         if (el.closest('[data-testid="stPopover"]')) return true;
+        if (el.closest('[data-testid="stPopoverBody"]')) return true;
         if (el.closest('[data-testid="stVerticalBlockBorderWrapper"]')) return true;
+        if (el.closest('.excel-menu-btn') || el.closest('.excel-apply-btn')) return true;
         const txt = (el.innerText || el.textContent || "").trim();
-        return txt === "Filtrar" || txt === "Todos" || txt === "Ninguno" || txt === "Limpiar filtro";
+        return txt === "Filtrar" || txt === "Todos" || txt === "Ninguno" || txt === "Limpiar filtro" || txt === "Aplicar" || txt.startsWith("Ordenar") || txt.startsWith("Borrar filtro");
     }
 
     function aplicarResaltadoEnVivo(termino) {
