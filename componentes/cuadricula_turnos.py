@@ -136,8 +136,9 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
 
     todos_marcados = all(st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False) for n in filtrados) if filtrados else False
 
+    etiqueta_todo = "(Seleccionar todos los resultados)" if consulta_norm else "(Seleccionar todo)"
     st.checkbox(
-        "(Seleccionar todo)",
+        etiqueta_todo,
         value=todos_marcados,
         key=chk_all_key,
         on_change=_cb_toggle_all,
@@ -160,17 +161,35 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
 
     # 5. Botón Aplicar
     st.markdown("<div class='excel-apply-btn'>", unsafe_allow_html=True)
-    if st.button("Aplicar", key=f"btn_aplicar_{sat_date}_{prefijo}", use_container_width=True):
-        marcados = []
-        for idx, nombre in enumerate(nombres):
-            if st.session_state.get(_clave_checkbox(sat_date, prefijo, idx), False):
-                marcados.append(nombre)
+    if st.button("Aplicar", key=f"btn_aplicar_{sat_date}_{prefijo}", use_container_width=True, type="primary"):
+        if consulta_norm:
+            # Si hay una búsqueda activa, se filtran únicamente los médicos resultantes de la búsqueda que estén marcados
+            marcados = [
+                n for n in filtrados 
+                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+            ]
+        else:
+            marcados = [
+                n for n in nombres 
+                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+            ]
 
-        if set(marcados) >= set(nombres):
+        if not marcados:
+            st.session_state.column_filters[sat_date] = []
+            for idx, n in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = False
+        elif set(marcados) >= set(nombres):
             st.session_state.column_filters[sat_date] = None
+            for idx, n in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True
         else:
             st.session_state.column_filters[sat_date] = marcados
+            for idx, n in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = (n in marcados)
 
+        # Limpiar el texto de búsqueda para que la lista vuelva a su estado general
+        txt_key = f"filtro_txt_{sat_date}_{prefijo}"
+        st.session_state[txt_key] = ""
         st.session_state[pop_key] = False
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
@@ -195,7 +214,16 @@ def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: 
 
     st.markdown("<div class='date-header-marker admin-filter-header-marker'></div>", unsafe_allow_html=True)
     pop_key = f"popover_filtro_{sat_date}_{prefijo}"
-    with st.popover(texto, use_container_width=True, key=pop_key):
+
+    def _sync_draft_on_popover_open():
+        if st.session_state.get(pop_key):
+            visibles_reales = _seleccion_actual(sat_date, nombres)
+            for idx, nombre in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = (nombre in visibles_reales)
+            txt_key = f"filtro_txt_{sat_date}_{prefijo}"
+            st.session_state[txt_key] = ""
+
+    with st.popover(texto, use_container_width=True, key=pop_key, on_change=_sync_draft_on_popover_open):
         _render_menu_excel(sat_date, nombres, prefijo, pop_key)
 
 

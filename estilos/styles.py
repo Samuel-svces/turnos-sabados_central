@@ -2213,7 +2213,10 @@ def apply_styles():
 
     /* El propio encabezado de fecha abre el panel (clic en toda la píldora) */
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[aria-expanded="true"],
+    div[class*="st-key-popover_filtro"] button,
+    div[class*="st-key-popover_filtro"] button[aria-expanded="true"],
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
         background: #F0FBFB !important;
         background-color: #F0FBFB !important;
@@ -2224,7 +2227,7 @@ def apply_styles():
         font-weight: 700 !important;
         font-size: 0.82rem !important;
         letter-spacing: 0.2px !important;
-        padding: 0.5rem 0.5rem !important;
+        padding: 0.5rem 1.8rem 0.5rem 0.5rem !important;
         margin-bottom: 0.2rem !important;
         text-align: center !important;
         box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
@@ -2238,7 +2241,8 @@ def apply_styles():
         transition: all 0.2s ease !important;
     }
 
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button *,
+    div[class*="st-key-popover_filtro"] button *,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
         color: #17243D !important;
         font-family: 'Outfit', sans-serif !important;
@@ -2246,12 +2250,15 @@ def apply_styles():
     }
 
     /* Ocultar chevron por defecto de stPopover en el encabezado de sábados */
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button svg,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button [data-testid="stIconMaterial"] {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button svg,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-popover_filtro"] button svg,
+    div[class*="st-key-popover_filtro"] button [data-testid="stIconMaterial"] {
         display: none !important;
     }
 
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] > button:hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button:hover,
+    div[class*="st-key-popover_filtro"] button:hover,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover {
         background: #e2f7f7 !important;
         background-color: #e2f7f7 !important;
@@ -2266,11 +2273,7 @@ def apply_styles():
     }
 
     /* Embudo a la derecha del encabezado EXCLUSIVAMENTE en modo administrador */
-    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button.custom-header-btn p,
-    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button p {
-        padding-right: 18px !important;
-    }
-
+    div[class*="st-key-popover_filtro"] button::after,
     div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button.custom-header-btn::after,
     div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button::after {
         content: "" !important;
@@ -2300,6 +2303,8 @@ def apply_styles():
     }
 
     /* Acciones superiores estilo Excel (A-Z, Z-A, Borrar filtro) */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button,
     .excel-menu-btn button {
         background: transparent !important;
         background-color: transparent !important;
@@ -2321,17 +2326,25 @@ def apply_styles():
         transition: background 0.15s ease !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button:hover:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button:hover:not(:disabled),
     .excel-menu-btn button:hover:not(:disabled) {
         background: #f1f5f9 !important;
         background-color: #f1f5f9 !important;
         color: #0f172a !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button:disabled,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button:disabled,
     .excel-menu-btn button:disabled {
         opacity: 0.45 !important;
         cursor: not-allowed !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button span,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button span,
     .excel-menu-btn button p,
     .excel-menu-btn button span {
         color: #1e293b !important;
@@ -2339,6 +2352,10 @@ def apply_styles():
         font-weight: 500 !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button:hover:not(:disabled) p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button:hover:not(:disabled) span,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button:hover:not(:disabled) p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button:hover:not(:disabled) span,
     .excel-menu-btn button:hover:not(:disabled) p,
     .excel-menu-btn button:hover:not(:disabled) span {
         color: #0f172a !important;
@@ -2356,9 +2373,9 @@ def apply_styles():
     /* Buscador interno del popover */
     div[data-testid="stPopoverBody"] div[data-testid="stTextInput"] input {
         font-size: 0.82rem !important;
-        padding: 0.3rem 0.6rem !important;
+        padding: 0.35rem 0.6rem !important;
         border: 1px solid #cbd5e1 !important;
-        border-radius: 5px !important;
+        border-radius: 6px !important;
         background: #f8fafc !important;
         color: #1e293b !important;
     }
@@ -2395,6 +2412,10 @@ def apply_styles():
     }
 
     /* Botón verde "Aplicar" estilo Excel */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button,
+    div[data-testid="stPopoverBody"] button[kind="primary"],
+    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"],
+    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"],
     .excel-apply-btn button {
         background-color: #107c41 !important;
         background: #107c41 !important;
@@ -2404,13 +2425,19 @@ def apply_styles():
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 600 !important;
         font-size: 0.84rem !important;
-        padding: 0.4rem 1rem !important;
-        min-height: 34px !important;
+        padding: 0.45rem 1rem !important;
+        min-height: 35px !important;
         width: 100% !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
         transition: background-color 0.15s ease, transform 0.1s ease !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button span,
+    div[data-testid="stPopoverBody"] button[kind="primary"] p,
+    div[data-testid="stPopoverBody"] button[kind="primary"] span,
+    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"] p,
+    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"] p,
     .excel-apply-btn button p,
     .excel-apply-btn button span {
         color: #ffffff !important;
@@ -2418,6 +2445,10 @@ def apply_styles():
         font-size: 0.84rem !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover,
+    div[data-testid="stPopoverBody"] button[kind="primary"]:hover,
+    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"]:hover,
+    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"]:hover,
     .excel-apply-btn button:hover {
         background-color: #0d6535 !important;
         background: #0d6535 !important;
@@ -2427,6 +2458,10 @@ def apply_styles():
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
     }
 
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active,
+    div[data-testid="stPopoverBody"] button[kind="primary"]:active,
+    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"]:active,
+    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"]:active,
     .excel-apply-btn button:active {
         background-color: #094725 !important;
         background: #094725 !important;
