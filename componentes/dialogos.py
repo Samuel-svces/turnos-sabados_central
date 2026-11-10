@@ -906,6 +906,77 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
 
     accion_sel = st.radio("Acción a realizar:", opciones_accion, index=0)
 
+    st.components.v1.html("""
+    <script>
+    (function() {
+        const pDoc = window.parent.document;
+        if (!pDoc) return;
+
+        let gTip = pDoc.getElementById('custom-info-floating-tooltip');
+        if (!gTip) {
+            gTip = pDoc.createElement('div');
+            gTip.id = 'custom-info-floating-tooltip';
+            gTip.style.cssText = 'position:fixed;display:none;background-color:#17243D;color:#fff;padding:9px 14px;border-radius:9px;font-size:12px;font-family:system-ui,sans-serif;font-weight:500;line-height:1.45;max-width:300px;box-shadow:0 8px 24px rgba(23,36,61,0.45);z-index:9999999999;pointer-events:none;opacity:0;border:1px solid #2d436b;transition:opacity 0.15s ease;';
+            pDoc.body.appendChild(gTip);
+        }
+
+        const tips = {
+            "Cambio de turno": "Intercambio de turno de un medico supernumerario contraria a su secuencia actual",
+            "Compensación de turno": "pago de turno por permiso o por otros motivos",
+            "Cambia de secuencia": "cambio total de la secuencia que cuenta actualmente"
+        };
+
+        function bindTips() {
+            const labels = pDoc.querySelectorAll('div[data-testid="stRadio"] label, div[role="radiogroup"] label, label[data-baseweb="radio"]');
+            labels.forEach(lbl => {
+                const txt = (lbl.innerText || lbl.textContent || "").trim();
+                for (let [k, desc] of Object.entries(tips)) {
+                    if (txt.includes(k)) {
+                        lbl.title = desc;
+                        lbl.setAttribute('title', desc);
+                        lbl.querySelectorAll('*').forEach(el => el.setAttribute('title', desc));
+
+                        if (!lbl.dataset.tipAttached) {
+                            lbl.dataset.tipAttached = "true";
+                            lbl.style.cursor = "pointer";
+
+                            const repos = () => {
+                                const r = lbl.getBoundingClientRect();
+                                let l = r.right + 14;
+                                let t = r.top - 2;
+                                if (l + 300 > window.innerWidth) {
+                                    l = Math.max(16, r.left);
+                                    t = r.bottom + 8;
+                                }
+                                gTip.style.left = l + 'px';
+                                gTip.style.top = t + 'px';
+                            };
+
+                            lbl.addEventListener('mouseenter', () => {
+                                gTip.innerText = desc;
+                                gTip.style.display = 'block';
+                                gTip.style.opacity = '1';
+                                repos();
+                            });
+                            lbl.addEventListener('mousemove', repos);
+                            lbl.addEventListener('mouseleave', () => {
+                                gTip.style.opacity = '0';
+                                gTip.style.display = 'none';
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        bindTips();
+        setTimeout(bindTips, 60);
+        setTimeout(bindTips, 200);
+        setTimeout(bindTips, 600);
+    })();
+    </script>
+    """, height=0)
+
     df_s = st.session_state.get('shifts_df', pd.DataFrame())
     excel_path = st.session_state.get('excel_path', '')
 
