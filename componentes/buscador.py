@@ -8,11 +8,74 @@ un subrayado y resaltado dinámico en tiempo real letra por letra sin requerir E
 
 import streamlit as st
 import datetime
+from modulos import procesador_datos as dp
 
 
-def renderizar_buscador():
+def _ejecutar_deshacer(cargar_datos_fn=None):
+    """Revierte la última acción realizada por el administrador."""
+    la = st.session_state.get('last_action')
+    if not (isinstance(la, dict) and bool(la)):
+        return
+    try:
+        accion = str(la.get('action', ''))
+        excel_p = str(la.get('excel_path', ''))
+        hoja = str(la.get('sheet', ''))
+        fecha = la.get('date')
+        medico = str(la.get('doc', ''))
+        obs = str(la.get('obs', ''))
+        clasif = str(la.get('clasificacion', 'Secuencia Normal'))
+
+        if accion in ['ELIMINAR', 'ELIMINAR_SIMPLE']:
+            dp.add_shift_to_date(excel_p, hoja, fecha, medico, obs, clasif)
+            st.success("Acción revertida: Médico re-agregado.")
+        elif accion == 'ELIMINAR_LOTE':
+            shifts_to_restore = []
+            for item in la.get('deleted_items', []):
+                if isinstance(item, dict):
+                    shifts_to_restore.append({
+                        'sheet': item.get('sheet'),
+                        'date': item.get('date'),
+                        'doc': item.get('doc'),
+                        'obs': item.get('obs'),
+                        'clasificacion': item.get('clasificacion')
+                    })
+            dp.add_shifts_batch(excel_p, shifts_to_restore)
+            st.success(f"Acción revertida: {len(shifts_to_restore)} asignaciones de turnos restauradas.")
+        elif accion == 'AGREGAR':
+            dp.delete_shift_cell(excel_p, hoja, 0, 0, fecha, "", medico, clasif)
+            st.success("Acción revertida: Médico eliminado del día.")
+        elif accion == 'MOVE':
+            nueva_fecha = la.get('new_date')
+            fecha_anterior = la.get('old_date')
+            dp.delete_shift_cell(excel_p, hoja, 0, 0, nueva_fecha, "", medico, clasif)
+            dp.add_shift_to_date(excel_p, hoja, fecha_anterior, medico, obs, clasif)
+            st.success("Acción revertida: Movimiento cancelado.")
+        elif accion == 'REPLACE':
+            dp.update_shift_cell(
+                excel_path=excel_p,
+                sheet_name=hoja,
+                row_idx=int(la.get('row', 0)),
+                col_idx=int(la.get('col', 0)),
+                new_name=str(la.get('old_doc', '')),
+                date_val=fecha,
+                observation=str(la.get('old_obs', '')),
+                original_name=str(la.get('new_doc', '')),
+                clasificacion=str(la.get('old_clasif', 'Secuencia Normal'))
+            )
+            st.success("Acción revertida: Reemplazo / edición cancelado.")
+
+        st.session_state.last_action = None
+        if callable(cargar_datos_fn):
+            cargar_datos_fn()
+        st.rerun()
+    except Exception as e:
+        st.error(f"No se pudo deshacer: {e}")
+
+
+def renderizar_buscador(cargar_datos_fn=None):
     """
     Renderiza el buscador reactivo centrado y los filtros dinámicos por clasificación.
+    En modo administrador con última acción, ubica el botón estético de deshacer al lado de la barra de búsqueda.
     Retorna:
         search_query (str): Término de búsqueda en mayúsculas (si se completó con Enter o estado previo).
         filtro_clasificacion (str): Filtro activo ('Todos', 'Secuencia Normal', 'Compensación').
@@ -24,16 +87,32 @@ def renderizar_buscador():
         st.session_state["input_busqueda_medico"] = ""
         st.session_state["clear_search_flag"] = False
 
-    # Fila de Buscador Centrado en Pantalla (sin botones manuales B, L, R)
+    la = st.session_state.get('last_action')
+    tiene_deshacer = bool(st.session_state.get('is_admin') and isinstance(la, dict) and bool(la))
+
+    # Fila de Buscador Centrado en Pantalla con botón Deshacer al lado si aplica
     col_spacer_l, col_search_center, col_spacer_r = st.columns([1.5, 3.0, 1.5])
     with col_search_center:
         st.markdown("<div class='custom-search-marker'></div>", unsafe_allow_html=True)
-        search_query = st.text_input(
-            "Buscador", 
-            key="input_busqueda_medico", 
-            placeholder="", 
-            label_visibility="collapsed"
-        ).strip().upper()
+        if tiene_deshacer:
+            col_search_input, col_undo_btn = st.columns([0.87, 0.13], vertical_alignment="center")
+            with col_search_input:
+                search_query = st.text_input(
+                    "Buscador", 
+                    key="input_busqueda_medico", 
+                    placeholder="", 
+                    label_visibility="collapsed"
+                ).strip().upper()
+            with col_undo_btn:
+                if st.button(" ", key="btn_deshacer_ultimo_cambio", help="Deshacer último movimiento"):
+                    _ejecutar_deshacer(cargar_datos_fn)
+        else:
+            search_query = st.text_input(
+                "Buscador", 
+                key="input_busqueda_medico", 
+                placeholder="", 
+                label_visibility="collapsed"
+            ).strip().upper()
 
     # Estado para el filtro de clasificación (por defecto Todos)
     st.session_state["filter_class"] = "Todos"

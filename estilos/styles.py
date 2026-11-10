@@ -1030,6 +1030,93 @@ def apply_styles():
         width: 100% !important;
     }
 
+    /* Fila de buscador + botón deshacer juntos */
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"],
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 390px !important;
+        margin: 0 auto !important;
+    }
+
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="column"]:first-child,
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="stColumn"]:first-child,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="column"]:first-child,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="stColumn"]:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: 340px !important;
+    }
+
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="column"]:last-child,
+    div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="stColumn"]:last-child,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="column"]:last-child,
+    div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stHorizontalBlock"] div[data-testid="stColumn"]:last-child {
+        flex: 0 0 36px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+    }
+
+    /* Botón Deshacer Último Movimiento al lado del buscador (Estético, #F0FBFB y solo flecha) */
+    div[class*="st-key-btn_deshacer_ultimo_cambio"] {
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    div[class*="st-key-btn_deshacer_ultimo_cambio"] button {
+        background: #F0FBFB url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f9a9b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='1 4 1 10 7 10'></polyline><path d='M3.51 15a9 9 0 1 0 2.13-9.36L1 10'></path></svg>") no-repeat center !important;
+        background-color: #F0FBFB !important;
+        background-size: 18px 18px !important;
+        border: 1.5px solid #ccebee !important;
+        border-radius: 12px !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-btn_deshacer_ultimo_cambio"] button * {
+        display: none !important;
+    }
+
+    div[class*="st-key-btn_deshacer_ultimo_cambio"] button:hover {
+        background-color: #e2f7f7 !important;
+        border-color: #a3e0e5 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 10px rgba(15, 154, 155, 0.15) !important;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a6c6d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='1 4 1 10 7 10'></polyline><path d='M3.51 15a9 9 0 1 0 2.13-9.36L1 10'></path></svg>") !important;
+    }
+
+    div[class*="st-key-btn_deshacer_ultimo_cambio"] button:active {
+        background-color: #d5f2f2 !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(15, 154, 155, 0.1) !important;
+    }
+
     div[data-testid="column"]:has(.custom-search-marker) div[data-testid="stTextInput"],
     div[data-testid="stColumn"]:has(.custom-search-marker) div[data-testid="stTextInput"] {
         width: 100% !important;

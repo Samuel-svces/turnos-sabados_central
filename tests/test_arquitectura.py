@@ -169,6 +169,24 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('#ccebee', contenido, "El borde #ccebee no está configurado en styles.py")
         self.assertIn('#17243D', contenido, "El color de texto #17243D no está configurado en styles.py")
 
+    def test_12_boton_deshacer_estilo_f0fbfb(self):
+        """Verifica que el botón de deshacer esté en buscador.py y tenga estilo #F0FBFB y solo flecha."""
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn('btn_deshacer_ultimo_cambio', contenido_b, "El botón deshacer debe estar en buscador.py")
+
+        app_path = os.path.join(PROJECT_DIR, "app.py")
+        with open(app_path, "r", encoding="utf-8") as f:
+            contenido_app = f.read()
+        self.assertNotIn('key="btn_deshacer_ultimo_cambio"', contenido_app, "El botón deshacer no debe estar duplicado en app.py")
+
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('btn_deshacer_ultimo_cambio', contenido_s, "Estilo de btn_deshacer_ultimo_cambio no encontrado en styles.py")
+        self.assertIn('%230f9a9b', contenido_s, "Flecha SVG no configurada para botón deshacer")
+
 
 if __name__ == "__main__":
     unittest.main()
