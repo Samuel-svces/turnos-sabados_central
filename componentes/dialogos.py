@@ -736,6 +736,53 @@ def es_misma_secuencia_sabado(d1, d2) -> bool:
         return False
 
 
+def get_candidatos_intercambio(df_shifts: pd.DataFrame, target_date, doctor_to_exclude: str = "") -> list:
+    """
+    Retorna la lista ordenada de médicos disponibles para intercambio de turno en la fecha destino.
+    Reglas de negocio estrictas:
+    - Solo supernumerarios programados en la fecha destino (target_date).
+    - EXCLUYE turnos por Compensación ('Compensación' en Classification).
+    - EXCLUYE turnos por Cambio de turno ('Cambio' en Classification).
+    - EXCLUYE al propio médico que se está trasladando (doctor_to_exclude).
+    - Solo incluye los supernumerarios que pertenecen a la Secuencia Normal de ese sábado.
+    """
+    if df_shifts is None or not isinstance(df_shifts, pd.DataFrame) or df_shifts.empty or 'Date' not in df_shifts.columns:
+        return []
+
+    t_date = target_date
+    if isinstance(t_date, str):
+        try:
+            t_date = pd.to_datetime(t_date).date()
+        except Exception:
+            pass
+    elif isinstance(t_date, datetime.datetime):
+        t_date = t_date.date()
+
+    df_dates = pd.to_datetime(df_shifts['Date'], errors='coerce').dt.date
+    target_shifts = df_shifts[df_dates == t_date].copy()
+
+    if target_shifts.empty or 'Supernumerary' not in target_shifts.columns:
+        return []
+
+    # Filtrar estrictamente solo aquellos en Secuencia Normal (excluir Compensación y Cambio)
+    if 'Classification' in target_shifts.columns:
+        clasif_series = target_shifts['Classification'].astype(str)
+        mask_secuencia_normal = (
+            ~clasif_series.str.contains('Compensación', na=False, case=False) &
+            ~clasif_series.str.contains('Cambio', na=False, case=False)
+        )
+        target_shifts = target_shifts[mask_secuencia_normal]
+
+    doc_excl = str(doctor_to_exclude or "").strip().upper()
+    candidatos = []
+    for doc in target_shifts['Supernumerary'].dropna().unique():
+        clean_d = str(doc).strip()
+        if clean_d and clean_d.upper() != doc_excl:
+            candidatos.append(clean_d)
+
+    return sorted(candidatos)
+
+
 @st.dialog("Modulo de turnos")
 def show_drag_drop_action_dialog(payload, load_app_data_func):
     """
@@ -801,19 +848,16 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     df_s = st.session_state.get('shifts_df', pd.DataFrame())
     excel_path = st.session_state.get('excel_path', '')
 
-    # 1. OPCIÓN CAMBIO DE TURNO
+    # 1. OPCIÓN CAMBIO DE TURNO (Solo supernumerarios en su secuencia normal para ese sábado)
+    swap_peer = None
     if accion_sel == "Cambio de turno":
-        target_shifts = df_s[df_s['Date'] == target_date] if not df_s.empty else pd.DataFrame()
-        target_docs = sorted(list(target_shifts['Supernumerary'].dropna().unique())) if not target_shifts.empty else []
-        target_docs = [d for d in target_docs if d != doctor_name]
+        target_docs = get_candidatos_intercambio(df_s, target_date, doctor_name)
 
         if target_docs:
             swap_peer = st.selectbox("Seleccione el médico con quien intercambia turno:", target_docs)
         else:
-            allowed = get_allowed_doctors(target_date=target_date)
-            allowed = [d for d in allowed if d != doctor_name]
-            st.info(f"No hay otros médicos programados aún el {target_str}. Seleccione uno del directorio:")
-            swap_peer = st.selectbox("Seleccione médico para el intercambio:", allowed)
+            st.warning(f"No hay supernumerarios de secuencia normal programados el {target_str} disponibles para realizar el cambio.")
+            swap_peer = None
 
         obs_val = st.text_input("Observaciones:", value="", key="dd_obs_cambio")
 
@@ -828,8 +872,9 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
     c_btn1, c_btn2 = st.columns([1, 1])
 
+    btn_disabled = bool(misma_secuencia or (accion_sel == "Cambio de turno" and not swap_peer))
     with c_btn1:
-        if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop", disabled=misma_secuencia):
+        if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop", disabled=btn_disabled):
             try:
                 sheet_orig = payload.get('sheet') or f"SABADOS {source_date.year}"
                 sheet_dest = f"SABADOS {target_date.year}"

@@ -118,6 +118,49 @@ class TestDragDropLogic(unittest.TestCase):
         # 21 Nov a 5 Dic -> Misma secuencia -> True (BLOQUEADO)
         self.assertTrue(es_misma(sat_21_nov, sat_05_dic), "21 Nov y 5 Dic pertenecen a la misma secuencia y deben bloquearse")
 
+    def test_07_filtro_supernumerarios_solo_secuencia_normal_en_destino(self):
+        """
+        Valida que para 'Cambio de turno', en el listado desplegable de médicos destino:
+        - Solo aparezcan supernumerarios de ese sábado en su Secuencia Normal.
+        - Se excluyan turnos de Compensación.
+        - Se excluyan turnos de Cambio de turno previo.
+        - Se excluya al médico de origen.
+        - Funcione idéntico en ambos sentidos (14 nov a 21 nov y viceversa).
+        """
+        from componentes.dialogos import get_candidatos_intercambio
+
+        sat_14_nov = datetime.date(2026, 11, 14)
+        sat_21_nov = datetime.date(2026, 11, 21)
+
+        data = [
+            # Sábado 14 Noviembre
+            {"Date": sat_14_nov, "Supernumerary": "MEDICO 14 NORMAL 1", "Classification": "Secuencia Normal"},
+            {"Date": sat_14_nov, "Supernumerary": "MEDICO 14 NORMAL 2", "Classification": "Secuencia Normal"},
+            {"Date": sat_14_nov, "Supernumerary": "MEDICO 14 COMP", "Classification": "Compensación / Pago de turno"},
+            {"Date": sat_14_nov, "Supernumerary": "MEDICO 14 SWAP", "Classification": "Cambio de turno con OTRO"},
+
+            # Sábado 21 Noviembre
+            {"Date": sat_21_nov, "Supernumerary": "MEDICO 21 NORMAL 1", "Classification": "Secuencia Normal"},
+            {"Date": sat_21_nov, "Supernumerary": "MEDICO 21 NORMAL 2", "Classification": "Secuencia Normal"},
+            {"Date": sat_21_nov, "Supernumerary": "MEDICO 21 COMP", "Classification": "Compensación / Pago de turno"},
+            {"Date": sat_21_nov, "Supernumerary": "MEDICO 21 SWAP", "Classification": "Cambio de turno con OTRO"},
+        ]
+        df_shifts = pd.DataFrame(data)
+
+        # 1. Caso: Mover desde 14 Nov a 21 Nov a "MEDICO 14 NORMAL 1"
+        candidatos_21 = get_candidatos_intercambio(df_shifts, sat_21_nov, "MEDICO 14 NORMAL 1")
+        self.assertEqual(candidatos_21, ["MEDICO 21 NORMAL 1", "MEDICO 21 NORMAL 2"])
+        self.assertNotIn("MEDICO 21 COMP", candidatos_21)
+        self.assertNotIn("MEDICO 21 SWAP", candidatos_21)
+        self.assertNotIn("MEDICO 14 NORMAL 1", candidatos_21)
+
+        # 2. Caso contrario: Mover desde 21 Nov a 14 Nov a "MEDICO 21 NORMAL 1"
+        candidatos_14 = get_candidatos_intercambio(df_shifts, sat_14_nov, "MEDICO 21 NORMAL 1")
+        self.assertEqual(candidatos_14, ["MEDICO 14 NORMAL 1", "MEDICO 14 NORMAL 2"])
+        self.assertNotIn("MEDICO 14 COMP", candidatos_14)
+        self.assertNotIn("MEDICO 14 SWAP", candidatos_14)
+        self.assertNotIn("MEDICO 21 NORMAL 1", candidatos_14)
+
 
 if __name__ == "__main__":
     unittest.main()
