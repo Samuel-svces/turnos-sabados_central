@@ -158,6 +158,17 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn(1, dp.MONTH_NAMES_SP)
         self.assertEqual(dp.MONTH_NAMES_SP[1], "ENERO")
 
+    def test_11_encabezados_modo_normal_f0fbfb(self):
+        """Verifica que los encabezados de fecha en modo normal tengan estilo #F0FBFB y tipografía Outfit."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido = f.read()
+
+        self.assertIn('btn_ordenar_pub', contenido, "No se encontró el selector de botón de ordenar público en styles.py")
+        self.assertIn('#F0FBFB', contenido, "El color pastel #F0FBFB no está configurado en styles.py")
+        self.assertIn('#ccebee', contenido, "El borde #ccebee no está configurado en styles.py")
+        self.assertIn('#17243D', contenido, "El color de texto #17243D no está configurado en styles.py")
+
 
 if __name__ == "__main__":
     unittest.main()

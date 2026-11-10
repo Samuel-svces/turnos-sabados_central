@@ -1567,28 +1567,39 @@ def apply_styles():
     
     /* 8. Botón de Encabezado de Fecha (Fondo #F0FBFB y Letra #17243D) */
     button.custom-header-btn,
+    div[class*="st-key-btn_ordenar_pub"] button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
         background: #F0FBFB !important;
         background-color: #F0FBFB !important;
         color: #17243D !important;
         border: 1.5px solid #ccebee !important;
-        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.06) !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
-        font-size: 0.92rem !important;
+        font-size: 0.82rem !important;
+        letter-spacing: 0.2px !important;
         line-height: 1.3 !important;
-        padding: 0.6rem 0.6rem !important;
+        padding: 0.5rem 0.75rem !important;
         width: 100% !important;
-        display: block !important;
-        margin-bottom: 0.75rem !important;
-        border-radius: 12px !important;
-        min-height: unset !important;
-        height: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-bottom: 0.2rem !important;
+        border-radius: 10px !important;
+        min-height: 40px !important;
         transition: all 0.2s ease !important;
         text-shadow: none !important;
     }
     button.custom-header-btn:hover,
     button.custom-header-btn:focus,
+    div[class*="st-key-btn_ordenar_pub"] button:hover,
+    div[class*="st-key-btn_ordenar_pub"] button:focus,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:focus,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:focus,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:focus {
         background: #e2f7f7 !important;
@@ -1599,6 +1610,9 @@ def apply_styles():
         transform: translateY(-1px) !important;
     }
     button.custom-header-btn:active,
+    div[class*="st-key-btn_ordenar_pub"] button:active,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:active,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:active,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:active {
         background: #d5f2f2 !important;
         background-color: #d5f2f2 !important;
@@ -1608,16 +1622,23 @@ def apply_styles():
     button.custom-header-btn p, 
     button.custom-header-btn span, 
     button.custom-header-btn *,
+    div[class*="st-key-btn_ordenar_pub"] button *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
         color: #17243D !important;
         background-color: transparent !important;
+        font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
+        font-size: 0.82rem !important;
         text-shadow: none !important;
     }
 
-    /* 9. Botones de Médico en Modo Editor (Admin) - Fondo Blanco */
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn),
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn) {
+    /* 9. Botones de Médico en Modo Editor (Admin) - Fondo Blanco (Excluye encabezados) */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn),
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn),
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn),
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn) {
         background: #ffffff !important;
         background-color: #ffffff !important;
         color: #262730 !important;
@@ -1630,23 +1651,29 @@ def apply_styles():
         line-height: 1.25 !important;
         text-shadow: none !important;
     }
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn) *,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn) * {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn) *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn) *,
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn) *,
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn) * {
         color: #262730 !important;
         background-color: transparent !important;
         font-weight: 500 !important;
         text-shadow: none !important;
     }
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover,
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover,
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover {
         background: #f1f5f9 !important;
         background-color: #f1f5f9 !important;
         border-color: #cbd5e1 !important;
         color: #1e293b !important;
         transform: scale(1.01) !important;
     }
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover *,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover * {
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover *,
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover *,
+    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover * {
         color: #1e293b !important;
     }
     
@@ -2323,6 +2350,9 @@ def apply_styles():
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn,
     div[class*="st-key-popover_filtro"] button,
     div[class*="st-key-popover_filtro"] button[aria-expanded="true"],
+    div[class*="st-key-btn_ordenar_pub"] button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
         background: #F0FBFB !important;
         background-color: #F0FBFB !important;
@@ -2333,7 +2363,7 @@ def apply_styles():
         font-weight: 700 !important;
         font-size: 0.82rem !important;
         letter-spacing: 0.2px !important;
-        padding: 0.5rem 1.8rem 0.5rem 0.5rem !important;
+        padding: 0.5rem 0.75rem !important;
         margin-bottom: 0.2rem !important;
         text-align: center !important;
         box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
@@ -2347,7 +2377,15 @@ def apply_styles():
         transition: all 0.2s ease !important;
     }
 
+    /* Padding con espacio a la derecha exclusivo para popover admin con icono de embudo */
+    div[class*="st-key-popover_filtro"] button {
+        padding: 0.5rem 1.8rem 0.5rem 0.5rem !important;
+    }
+
     div[class*="st-key-popover_filtro"] button *,
+    div[class*="st-key-btn_ordenar_pub"] button *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
         color: #17243D !important;
         font-family: 'Outfit', sans-serif !important;
@@ -2361,6 +2399,9 @@ def apply_styles():
     }
 
     div[class*="st-key-popover_filtro"] button:hover,
+    div[class*="st-key-btn_ordenar_pub"] button:hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover {
         background: #e2f7f7 !important;
         background-color: #e2f7f7 !important;
