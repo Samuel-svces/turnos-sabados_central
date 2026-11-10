@@ -225,6 +225,15 @@ def renderizar_buscador():
 
     function inicializarDragAndDrop() {
         const parentDoc = window.parent.document;
+
+        // Ocultar preventivamente los contenedores del puente en el DOM
+        const bridgeElements = parentDoc.querySelectorAll('div[class*="st-key-bridge_drag_drop_payload"], div[class*="st-key-btn_trigger_drag_drop"], .drag-drop-bridge-container');
+        bridgeElements.forEach(el => {
+            el.style.setProperty('display', 'none', 'important');
+            const cont = el.closest('div[data-testid="stElementContainer"]');
+            if (cont) cont.style.setProperty('display', 'none', 'important');
+        });
+
         const colMarkers = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)');
 
         colMarkers.forEach(col => {
@@ -311,31 +320,60 @@ def renderizar_buscador():
 
                         data.target_date = targetDate;
 
-                        const allInputs = parentDoc.querySelectorAll('input');
-                        let targetInput = null;
-                        for (let inp of allInputs) {
-                            if (inp.getAttribute('aria-label') === 'dd_bridge_input') {
-                                targetInput = inp;
-                                break;
+                        let targetInput = parentDoc.querySelector('div[class*="st-key-bridge_drag_drop_payload"] input, input[aria-label="dd_bridge_input"]');
+                        if (!targetInput) {
+                            const allInputs = parentDoc.querySelectorAll('input');
+                            for (let inp of allInputs) {
+                                if (inp.getAttribute('aria-label') === 'dd_bridge_input') {
+                                    targetInput = inp;
+                                    break;
+                                }
                             }
                         }
 
-                        const allBtns = parentDoc.querySelectorAll('button');
-                        let targetBtn = null;
-                        for (let b of allBtns) {
-                            const txt = (b.innerText || "").trim();
-                            if (txt === 'dd_bridge_btn') {
-                                targetBtn = b;
-                                break;
+                        let targetBtn = parentDoc.querySelector('div[class*="st-key-btn_trigger_drag_drop"] button, button[data-testid*="btn_trigger_drag_drop"]');
+                        if (!targetBtn) {
+                            const allBtns = parentDoc.querySelectorAll('button');
+                            for (let b of allBtns) {
+                                const txt = (b.innerText || "").trim();
+                                if (txt === 'dd_bridge_btn') {
+                                    targetBtn = b;
+                                    break;
+                                }
                             }
                         }
 
-                        if (targetInput && targetBtn) {
+                        // Ocultar preventivamente los contenedores
+                        if (targetInput) {
+                            const cont = targetInput.closest('div[data-testid="stElementContainer"]') || targetInput.parentElement;
+                            if (cont) cont.style.setProperty('display', 'none', 'important');
+                        }
+                        if (targetBtn) {
+                            const cont = targetBtn.closest('div[data-testid="stElementContainer"]') || targetBtn.parentElement;
+                            if (cont) cont.style.setProperty('display', 'none', 'important');
+                        }
+
+                        if (targetInput) {
                             const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
                             nativeInputValueSetter.call(targetInput, JSON.stringify(data));
                             targetInput.dispatchEvent(new Event('input', { bubbles: true }));
                             targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-                            setTimeout(() => targetBtn.click(), 50);
+
+                            // Disparar Enter para que Streamlit capture el evento directamente
+                            targetInput.focus();
+                            targetInput.dispatchEvent(new KeyboardEvent('keydown', {
+                                bubbles: true,
+                                cancelable: true,
+                                key: 'Enter',
+                                code: 'Enter',
+                                keyCode: 13,
+                                which: 13
+                            }));
+                            targetInput.blur();
+                        }
+
+                        if (targetBtn) {
+                            setTimeout(() => targetBtn.click(), 40);
                         }
                     } catch (err) {
                         console.error("Error al procesar drop:", err);

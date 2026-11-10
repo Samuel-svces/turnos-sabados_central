@@ -1100,10 +1100,13 @@ def apply_styles():
 
     /* Ocultar puente de comunicación Drag & Drop y marcadores de metadatos */
     .drag-drop-bridge-container,
+    div.drag-drop-bridge-container,
+    div[class*="st-key-bridge_drag_drop_payload"],
+    div[class*="st-key-btn_trigger_drag_drop"],
+    div[data-testid="stElementContainer"]:has(div[class*="st-key-bridge_drag_drop_payload"]),
+    div[data-testid="stElementContainer"]:has(div[class*="st-key-btn_trigger_drag_drop"]),
     div[data-testid="stElementContainer"]:has(.drag-drop-bridge-container),
-    div[data-testid="stTextInput"]:has(input[aria-label="dd_bridge_input"]),
     div[data-testid="stElementContainer"]:has(input[aria-label="dd_bridge_input"]),
-    div[data-testid="stButton"]:has(button:contains("dd_bridge_btn")),
     div[data-testid="stElementContainer"]:has(button[data-testid*="btn_trigger_drag_drop"]),
     .doc-admin-card-wrap,
     div[data-testid="stElementContainer"]:has(.doc-admin-card-wrap) {
@@ -1117,8 +1120,10 @@ def apply_styles():
         padding: 0 !important;
         position: absolute !important;
         left: -9999px !important;
+        top: -9999px !important;
         pointer-events: none !important;
         opacity: 0 !important;
+        overflow: hidden !important;
     }
 
     /* Tarjetas de médico arrastrables en modo Administrador */

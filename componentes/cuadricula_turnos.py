@@ -408,19 +408,40 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
     
     if st.session_state.is_admin:
         # Puente reactivo oculto para Drag & Drop entre columnas de sábados
-        st.markdown("<div class='drag-drop-bridge-container'>", unsafe_allow_html=True)
+        st.markdown("""
+        <style>
+        div[class*="st-key-bridge_drag_drop_payload"],
+        div[class*="st-key-btn_trigger_drag_drop"],
+        div[data-testid="stElementContainer"]:has(div[class*="st-key-bridge_drag_drop_payload"]),
+        div[data-testid="stElementContainer"]:has(div[class*="st-key-btn_trigger_drag_drop"]),
+        .drag-drop-bridge-container {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0px !important;
+            min-height: 0px !important;
+            max-height: 0px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            position: absolute !important;
+            left: -9999px !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
+        }
+        </style>
+        <div class='drag-drop-bridge-container'></div>
+        """, unsafe_allow_html=True)
         bridge_payload = st.text_input("dd_bridge_input", key="bridge_drag_drop_payload", label_visibility="collapsed")
         trigger_drop = st.button("dd_bridge_btn", key="btn_trigger_drag_drop")
-        st.markdown("</div>", unsafe_allow_html=True)
 
-        if trigger_drop and bridge_payload:
+        # Procesar payload si llegó por Enter en el input O por click en el botón
+        raw_payload = bridge_payload or st.session_state.get("bridge_drag_drop_payload", "")
+        if raw_payload:
             import json
             try:
-                payload_parsed = json.loads(bridge_payload)
-                st.session_state["active_drag_drop_payload"] = payload_parsed
-                st.session_state["bridge_drag_drop_payload"] = ""
+                st.session_state["active_drag_drop_payload"] = json.loads(raw_payload)
             except Exception as e_json:
                 print("Error deserializando drag drop payload:", e_json)
+            st.session_state["bridge_drag_drop_payload"] = ""
 
         if st.session_state.get("active_drag_drop_payload"):
             dialogos.show_drag_drop_action_dialog(st.session_state["active_drag_drop_payload"], cargar_datos_fn)
