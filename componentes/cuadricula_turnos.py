@@ -464,8 +464,18 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
             on_click=_cb_on_drag_drop
         )
 
+        # Invocación de diálogos modales en el contenedor raíz principal (evita StreamlitInvalidLayoutContextError)
         if st.session_state.get("active_drag_drop_payload"):
-            dialogos.show_drag_drop_action_dialog(st.session_state["active_drag_drop_payload"], cargar_datos_fn)
+            payload = st.session_state.pop("active_drag_drop_payload")
+            dialogos.show_drag_drop_action_dialog(payload, cargar_datos_fn)
+
+        if st.session_state.get("modal_shift_action_details"):
+            details = st.session_state.pop("modal_shift_action_details")
+            dialogos.show_shift_dialog(details, cargar_datos_fn)
+
+        if st.session_state.get("modal_add_action_details"):
+            add_info = st.session_state.pop("modal_add_action_details")
+            dialogos.show_add_dialog(add_info['sat_date'], add_info['sheet'], cargar_datos_fn)
 
         # VISTA ADMINISTRADOR: Botones interactivos con diálogo de edición
         st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)
@@ -527,7 +537,7 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     
                     st.markdown(f"<div class='doc-admin-card-wrap' data-doc='{name}' data-date='{sat_date}' data-row='{row_excel}' data-col='{col_excel}' data-sheet=\"{sheet_excel}\" data-clasif=\"{clasif}\"></div>", unsafe_allow_html=True)
                     if st.button(display_name, key=f"btn_turno_admin_{sat_date}_{s_idx}", use_container_width=True, help=help_text if help_text else None):
-                        action_details = {
+                        st.session_state["modal_shift_action_details"] = {
                             'date': sat_date,
                             'doctor': name,
                             'row': row_excel,
@@ -536,14 +546,18 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                             'observation': shift_obs,
                             'classification': clasif
                         }
-                        dialogos.show_shift_dialog(action_details, cargar_datos_fn)
+                        st.rerun()
                     
                 st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
                 
                 # 1. Botón Agregar Médico
                 sheet_name = date_shifts_all.iloc[0]['Sheet'] if not date_shifts_all.empty else f"SABADOS {sat_date.year}"
                 if st.button("Agregar Médico", key=f"btn_agregar_medico_{sat_date}", use_container_width=True, type="primary", icon=":material/person_add:"):
-                    dialogos.show_add_dialog(sat_date, sheet_name, cargar_datos_fn)
+                    st.session_state["modal_add_action_details"] = {
+                        'sat_date': sat_date,
+                        'sheet': sheet_name
+                    }
+                    st.rerun()
                     
                 # 2. Botón Duplicar (si existen turnos anteriores)
                 two_weeks_ago = sat_date - datetime.timedelta(weeks=2)

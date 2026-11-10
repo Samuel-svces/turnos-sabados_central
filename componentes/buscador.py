@@ -430,14 +430,31 @@ def renderizar_buscador():
         });
     }
 
+    function configurarTooltipsRadio() {
+        const parentDoc = window.parent.document;
+        const labels = parentDoc.querySelectorAll('div[data-testid="stRadio"] div[role="radiogroup"] > label');
+        labels.forEach(lbl => {
+            const txt = (lbl.innerText || lbl.textContent || "").trim();
+            if (txt.includes("Cambio de turno")) {
+                lbl.title = "Intercambio de turno de un medico supernumerario contraria a su secuencia actual";
+            } else if (txt.includes("Compensación de turno")) {
+                lbl.title = "pago de turno por permiso o por otros motivos";
+            } else if (txt.includes("Cambia de secuencia")) {
+                lbl.title = "cambio total de la secuencia que cuenta actualmente";
+            }
+        });
+    }
+
     // Inicialización rápida y reintentos ligeros
     vincularBuscadorReactivo();
     inicializarDragAndDrop();
+    configurarTooltipsRadio();
     const timers = [50, 150, 300, 600, 1200];
     timers.forEach(ms => {
         setTimeout(() => {
             vincularBuscadorReactivo();
             inicializarDragAndDrop();
+            configurarTooltipsRadio();
         }, ms);
     });
     </script>

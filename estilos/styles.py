@@ -1176,6 +1176,108 @@ def apply_styles():
     }
 
     /* Tooltip informativo con hover en opciones del modal */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1) {
+        position: relative !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover::after {
+        content: "Intercambio de turno de un medico supernumerario contraria a su secuencia actual";
+        position: absolute;
+        bottom: 125%;
+        left: 20px;
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: normal;
+        width: 270px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
+        z-index: 9999999;
+        pointer-events: none;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover::before {
+        content: '';
+        position: absolute;
+        bottom: 110%;
+        left: 32px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 9999999;
+        pointer-events: none;
+    }
+
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {
+        position: relative !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover::after {
+        content: "pago de turno por permiso o por otros motivos";
+        position: absolute;
+        bottom: 125%;
+        left: 20px;
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: normal;
+        width: 250px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
+        z-index: 9999999;
+        pointer-events: none;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover::before {
+        content: '';
+        position: absolute;
+        bottom: 110%;
+        left: 32px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 9999999;
+        pointer-events: none;
+    }
+
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3) {
+        position: relative !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover::after {
+        content: "cambio total de la secuencia que cuenta actualmente";
+        position: absolute;
+        bottom: 125%;
+        left: 20px;
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: normal;
+        width: 250px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
+        z-index: 9999999;
+        pointer-events: none;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover::before {
+        content: '';
+        position: absolute;
+        bottom: 110%;
+        left: 32px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 9999999;
+        pointer-events: none;
+    }
+
     .info-tooltip-badge {
         display: inline-flex;
         align-items: center;

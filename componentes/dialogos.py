@@ -792,103 +792,117 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
         st.error("⚠️ Restricción de secuencia: No es posible trasladar un médico a un sábado de su misma secuencia. Debe trasladarse a su secuencia contraria.")
 
     opciones_accion = [
-        "Cambio de turno",
-        "Compensación de turno",
-        "Cambia de secuencia"
+        "Cambio de turno ℹ️",
+        "Compensación de turno ℹ️",
+        "Cambia de secuencia ℹ️"
     ]
 
-    # Inyección de badges de información y tooltips flotantes en las opciones
+    # Inyección de estilos y tooltips flotantes al pasar el mouse sobre las opciones
     st.markdown("""
     <style>
-    .info-tooltip-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 17px;
-        height: 17px;
-        margin-left: 7px;
-        border-radius: 50%;
-        background-color: #e6f7f6;
-        color: #0f9a9b;
-        font-size: 11px;
-        font-weight: 800;
-        cursor: help;
-        position: relative;
-        vertical-align: middle;
-        user-select: none;
-        transition: all 0.2s ease;
-        border: 1px solid #a3e0dd;
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1) {
+        position: relative !important;
     }
-    .info-tooltip-badge:hover {
-        background-color: #0f9a9b;
-        color: #ffffff;
-    }
-    .info-tooltip-badge:hover::after {
-        content: attr(data-tooltip);
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover::after {
+        content: "Intercambio de turno de un medico supernumerario contraria a su secuencia actual";
         position: absolute;
-        bottom: 130%;
-        left: 50%;
-        transform: translateX(-50%);
+        bottom: 125%;
+        left: 20px;
         background-color: #17243D;
         color: #ffffff;
-        padding: 7px 11px;
+        padding: 7px 12px;
         border-radius: 8px;
         font-size: 12px;
-        font-weight: 500;
         font-family: 'Plus Jakarta Sans', sans-serif;
-        white-space: normal;
-        min-width: 220px;
-        max-width: 300px;
-        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.25);
-        z-index: 999999;
+        font-weight: 500;
         line-height: 1.35;
+        white-space: normal;
+        width: 270px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
+        z-index: 9999999;
         pointer-events: none;
-        text-align: center;
     }
-    .info-tooltip-badge:hover::before {
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover::before {
         content: '';
         position: absolute;
-        bottom: 118%;
-        left: 50%;
-        transform: translateX(-50%);
+        bottom: 110%;
+        left: 32px;
         border-width: 6px;
         border-style: solid;
         border-color: #17243D transparent transparent transparent;
-        z-index: 999999;
+        z-index: 9999999;
+        pointer-events: none;
+    }
+
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {
+        position: relative !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover::after {
+        content: "pago de turno por permiso o por otros motivos";
+        position: absolute;
+        bottom: 125%;
+        left: 20px;
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: normal;
+        width: 250px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
+        z-index: 9999999;
+        pointer-events: none;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover::before {
+        content: '';
+        position: absolute;
+        bottom: 110%;
+        left: 32px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 9999999;
+        pointer-events: none;
+    }
+
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3) {
+        position: relative !important;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover::after {
+        content: "cambio total de la secuencia que cuenta actualmente";
+        position: absolute;
+        bottom: 125%;
+        left: 20px;
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        line-height: 1.35;
+        white-space: normal;
+        width: 250px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
+        z-index: 9999999;
+        pointer-events: none;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover::before {
+        content: '';
+        position: absolute;
+        bottom: 110%;
+        left: 32px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 9999999;
+        pointer-events: none;
     }
     </style>
     """, unsafe_allow_html=True)
-
-    st.components.v1.html("""
-    <script>
-    const tooltipsData = {
-        "Cambio de turno": "Intercambio de turno de un medico supernumerario contraria a su secuencia actual",
-        "Compensación de turno": "pago de turno por permiso o por otros motivos",
-        "Cambia de secuencia": "cambio total de la secuencia que cuenta actualmente"
-    };
-
-    function injectTooltips() {
-        const parentDoc = window.parent.document;
-        const labels = parentDoc.querySelectorAll('div[data-testid="stRadio"] label');
-        labels.forEach(lbl => {
-            const txt = (lbl.innerText || lbl.textContent || "").trim();
-            for (let [key, desc] of Object.entries(tooltipsData)) {
-                if (txt.includes(key) && !lbl.querySelector('.info-tooltip-badge')) {
-                    const badge = parentDoc.createElement('span');
-                    badge.className = 'info-tooltip-badge';
-                    badge.setAttribute('data-tooltip', desc);
-                    badge.innerText = 'ℹ️';
-                    lbl.appendChild(badge);
-                }
-            }
-        });
-    }
-
-    injectTooltips();
-    setTimeout(injectTooltips, 100);
-    setTimeout(injectTooltips, 300);
-    </script>
-    """, height=0)
 
     accion_sel = st.radio("Acción a realizar:", opciones_accion, index=0)
 
@@ -896,7 +910,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     excel_path = st.session_state.get('excel_path', '')
 
     # 1. OPCIÓN CAMBIO DE TURNO
-    if accion_sel == opciones_accion[0]:
+    if accion_sel.startswith("Cambio de turno"):
         target_shifts = df_s[df_s['Date'] == target_date] if not df_s.empty else pd.DataFrame()
         target_docs = sorted(list(target_shifts['Supernumerary'].dropna().unique())) if not target_shifts.empty else []
         target_docs = [d for d in target_docs if d != doctor_name]
@@ -912,7 +926,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
         obs_val = st.text_input("Observaciones:", value="", key="dd_obs_cambio")
 
     # 2. OPCIÓN COMPENSACIÓN
-    elif accion_sel == opciones_accion[1]:
+    elif accion_sel.startswith("Compensación"):
         modalidad_comp = st.radio(
             "Modalidad de compensación:",
             ["Trasladar turno al nuevo sábado (deja el sábado origen)", "Turno adicional (conserva el sábado origen y suma el nuevo)"],
@@ -942,7 +956,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
 
                 mods = []
 
-                if accion_sel == opciones_accion[0]:
+                if accion_sel.startswith("Cambio de turno"):
                     # 1. CAMBIO DE TURNO (SWAP)
                     peer_match = df_s[(df_s['Date'] == target_date) & (df_s['Supernumerary'] == swap_peer)] if not df_s.empty else pd.DataFrame()
                     peer_row = int(peer_match.iloc[0]['Excel_Row']) if not peer_match.empty else 0
@@ -990,7 +1004,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
                     st.session_state["swap_doc_2"] = swap_peer
                     st.session_state["swap_alert_counter"] = st.session_state.get("swap_alert_counter", 0) + 1
 
-                elif accion_sel == opciones_accion[1]:
+                elif accion_sel.startswith("Compensación"):
                     # 2. COMPENSACIÓN
                     if "Trasladar turno" in modalidad_comp:
                         mods.append({
