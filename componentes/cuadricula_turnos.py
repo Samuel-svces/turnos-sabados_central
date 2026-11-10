@@ -611,16 +611,16 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         col_nav_prev, col_nav_info, col_nav_next = st.columns([1.2, 2, 1.2])
         with col_nav_prev:
             has_prev = offset > 0
-            if st.button("◀ Sábados Anteriores", use_container_width=True, disabled=not has_prev, key="btn_admin_sats_anteriores"):
+            if st.button("Sábados Anteriores", icon=":material/arrow_back:", use_container_width=True, disabled=not has_prev, key="btn_admin_sats_anteriores"):
                 st.session_state.saturday_offset = max(0, offset - 4)
                 st.rerun()
         with col_nav_info:
             start_sat = offset + 1
             end_sat = min(len(all_visible_saturdays), offset + 4)
-            st.markdown(f"<div style='text-align: center; font-weight: bold; padding: 0.5rem; color: #1565c0; font-family: Outfit; font-size: 1.05rem;'>Sábados {start_sat} a {end_sat} de {len(all_visible_saturdays)} programados</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='sat-nav-info-banner'>Sábados {start_sat} a {end_sat} de {len(all_visible_saturdays)} programados</div>", unsafe_allow_html=True)
         with col_nav_next:
             has_next = offset + 4 < len(all_visible_saturdays)
-            if st.button("Siguientes Sábados ▶", use_container_width=True, disabled=not has_next, key="btn_admin_sats_siguientes"):
+            if st.button("Siguientes Sábados", icon=":material/arrow_forward:", use_container_width=True, disabled=not has_next, key="btn_admin_sats_siguientes"):
                 st.session_state.saturday_offset = offset + 4
                 st.rerun()
     else:

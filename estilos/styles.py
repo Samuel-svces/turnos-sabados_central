@@ -2476,6 +2476,111 @@ def apply_styles():
         color: #ffffff !important;
     }
 
+    /* ---- Botones de Navegación de Sábados (Mismo color y estilo de los encabezados) ---- */
+    div[class*="st-key-btn_admin_sats_anteriores"] button,
+    div[class*="st-key-btn_admin_sats_siguientes"] button {
+        background: #F0FBFB !important;
+        background-color: #F0FBFB !important;
+        color: #17243D !important;
+        border: 1.5px solid #ccebee !important;
+        border-radius: 10px !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+        letter-spacing: 0.2px !important;
+        padding: 0.5rem 1rem !important;
+        text-align: center !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 0.5rem !important;
+        min-height: 40px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-btn_admin_sats_anteriores"] button *,
+    div[class*="st-key-btn_admin_sats_siguientes"] button * {
+        color: #17243D !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Iconos Material de las flechas estéticas */
+    div[class*="st-key-btn_admin_sats_anteriores"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-btn_admin_sats_siguientes"] button [data-testid="stIconMaterial"] {
+        color: #0f9a9b !important;
+        font-size: 1.15rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: transform 0.2s ease, color 0.2s ease !important;
+    }
+
+    /* Flecha siguiente colocada estéticamente a la derecha del texto */
+    div[class*="st-key-btn_admin_sats_siguientes"] button {
+        flex-direction: row-reverse !important;
+    }
+
+    /* Hover interactivo y fluido idéntico a encabezados */
+    div[class*="st-key-btn_admin_sats_anteriores"] button:hover:not(:disabled),
+    div[class*="st-key-btn_admin_sats_siguientes"] button:hover:not(:disabled) {
+        background: #e2f7f7 !important;
+        background-color: #e2f7f7 !important;
+        border-color: #a3e0e5 !important;
+        box-shadow: 0 4px 12px rgba(23, 36, 61, 0.1) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[class*="st-key-btn_admin_sats_anteriores"] button:hover:not(:disabled) [data-testid="stIconMaterial"] {
+        transform: translateX(-3px) !important;
+        color: #0d8283 !important;
+    }
+
+    div[class*="st-key-btn_admin_sats_siguientes"] button:hover:not(:disabled) [data-testid="stIconMaterial"] {
+        transform: translateX(3px) !important;
+        color: #0d8283 !important;
+    }
+
+    /* Estado deshabilitado consistente */
+    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled,
+    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled {
+        background: #f8fafc !important;
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+        opacity: 0.45 !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled *,
+    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled * {
+        color: #94a3b8 !important;
+    }
+
+    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled [data-testid="stIconMaterial"],
+    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled [data-testid="stIconMaterial"] {
+        color: #94a3b8 !important;
+    }
+
+    /* Banner informativo central de navegación de sábados */
+    .sat-nav-info-banner {
+        text-align: center !important;
+        font-weight: 700 !important;
+        padding: 0.5rem !important;
+        color: #17243D !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 1.05rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 40px !important;
+    }
+
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn p,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button p {
         padding-right: 0px !important;
