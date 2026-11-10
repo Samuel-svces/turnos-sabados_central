@@ -792,196 +792,17 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
         st.error("⚠️ Restricción de secuencia: No es posible trasladar un médico a un sábado de su misma secuencia. Debe trasladarse a su secuencia contraria.")
 
     opciones_accion = [
-        "Cambio de turno ℹ️",
-        "Compensación de turno ℹ️",
-        "Cambia de secuencia ℹ️"
+        "Cambio de turno",
+        "Compensación de turno",
+        "Cambia de secuencia"
     ]
-
-    # Inyección de estilos y tooltips flotantes al pasar el mouse sobre las opciones
-    st.markdown("""
-    <style>
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1) {
-        position: relative !important;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover::after {
-        content: "Intercambio de turno de un medico supernumerario contraria a su secuencia actual";
-        position: absolute;
-        bottom: 125%;
-        left: 20px;
-        background-color: #17243D;
-        color: #ffffff;
-        padding: 7px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-weight: 500;
-        line-height: 1.35;
-        white-space: normal;
-        width: 270px;
-        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
-        z-index: 9999999;
-        pointer-events: none;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(1):hover::before {
-        content: '';
-        position: absolute;
-        bottom: 110%;
-        left: 32px;
-        border-width: 6px;
-        border-style: solid;
-        border-color: #17243D transparent transparent transparent;
-        z-index: 9999999;
-        pointer-events: none;
-    }
-
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2) {
-        position: relative !important;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover::after {
-        content: "pago de turno por permiso o por otros motivos";
-        position: absolute;
-        bottom: 125%;
-        left: 20px;
-        background-color: #17243D;
-        color: #ffffff;
-        padding: 7px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-weight: 500;
-        line-height: 1.35;
-        white-space: normal;
-        width: 250px;
-        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
-        z-index: 9999999;
-        pointer-events: none;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(2):hover::before {
-        content: '';
-        position: absolute;
-        bottom: 110%;
-        left: 32px;
-        border-width: 6px;
-        border-style: solid;
-        border-color: #17243D transparent transparent transparent;
-        z-index: 9999999;
-        pointer-events: none;
-    }
-
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3) {
-        position: relative !important;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover::after {
-        content: "cambio total de la secuencia que cuenta actualmente";
-        position: absolute;
-        bottom: 125%;
-        left: 20px;
-        background-color: #17243D;
-        color: #ffffff;
-        padding: 7px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-weight: 500;
-        line-height: 1.35;
-        white-space: normal;
-        width: 250px;
-        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.35);
-        z-index: 9999999;
-        pointer-events: none;
-    }
-    div[data-testid="stRadio"] div[role="radiogroup"] > label:nth-child(3):hover::before {
-        content: '';
-        position: absolute;
-        bottom: 110%;
-        left: 32px;
-        border-width: 6px;
-        border-style: solid;
-        border-color: #17243D transparent transparent transparent;
-        z-index: 9999999;
-        pointer-events: none;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
     accion_sel = st.radio("Acción a realizar:", opciones_accion, index=0)
-
-    st.components.v1.html("""
-    <script>
-    (function() {
-        const pDoc = window.parent.document;
-        if (!pDoc) return;
-
-        let gTip = pDoc.getElementById('custom-info-floating-tooltip');
-        if (!gTip) {
-            gTip = pDoc.createElement('div');
-            gTip.id = 'custom-info-floating-tooltip';
-            gTip.style.cssText = 'position:fixed;display:none;background-color:#17243D;color:#fff;padding:9px 14px;border-radius:9px;font-size:12px;font-family:system-ui,sans-serif;font-weight:500;line-height:1.45;max-width:300px;box-shadow:0 8px 24px rgba(23,36,61,0.45);z-index:9999999999;pointer-events:none;opacity:0;border:1px solid #2d436b;transition:opacity 0.15s ease;';
-            pDoc.body.appendChild(gTip);
-        }
-
-        const tips = {
-            "Cambio de turno": "Intercambio de turno de un medico supernumerario contraria a su secuencia actual",
-            "Compensación de turno": "pago de turno por permiso o por otros motivos",
-            "Cambia de secuencia": "cambio total de la secuencia que cuenta actualmente"
-        };
-
-        function bindTips() {
-            const labels = pDoc.querySelectorAll('div[data-testid="stRadio"] label, div[role="radiogroup"] label, label[data-baseweb="radio"]');
-            labels.forEach(lbl => {
-                const txt = (lbl.innerText || lbl.textContent || "").trim();
-                for (let [k, desc] of Object.entries(tips)) {
-                    if (txt.includes(k)) {
-                        lbl.title = desc;
-                        lbl.setAttribute('title', desc);
-                        lbl.querySelectorAll('*').forEach(el => el.setAttribute('title', desc));
-
-                        if (!lbl.dataset.tipAttached) {
-                            lbl.dataset.tipAttached = "true";
-                            lbl.style.cursor = "pointer";
-
-                            const repos = () => {
-                                const r = lbl.getBoundingClientRect();
-                                let l = r.right + 14;
-                                let t = r.top - 2;
-                                if (l + 300 > window.innerWidth) {
-                                    l = Math.max(16, r.left);
-                                    t = r.bottom + 8;
-                                }
-                                gTip.style.left = l + 'px';
-                                gTip.style.top = t + 'px';
-                            };
-
-                            lbl.addEventListener('mouseenter', () => {
-                                gTip.innerText = desc;
-                                gTip.style.display = 'block';
-                                gTip.style.opacity = '1';
-                                repos();
-                            });
-                            lbl.addEventListener('mousemove', repos);
-                            lbl.addEventListener('mouseleave', () => {
-                                gTip.style.opacity = '0';
-                                gTip.style.display = 'none';
-                            });
-                        }
-                    }
-                }
-            });
-        }
-
-        bindTips();
-        setTimeout(bindTips, 60);
-        setTimeout(bindTips, 200);
-        setTimeout(bindTips, 600);
-    })();
-    </script>
-    """, height=0)
 
     df_s = st.session_state.get('shifts_df', pd.DataFrame())
     excel_path = st.session_state.get('excel_path', '')
 
     # 1. OPCIÓN CAMBIO DE TURNO
-    if accion_sel.startswith("Cambio de turno"):
+    if accion_sel == "Cambio de turno":
         target_shifts = df_s[df_s['Date'] == target_date] if not df_s.empty else pd.DataFrame()
         target_docs = sorted(list(target_shifts['Supernumerary'].dropna().unique())) if not target_shifts.empty else []
         target_docs = [d for d in target_docs if d != doctor_name]
@@ -996,13 +817,8 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
 
         obs_val = st.text_input("Observaciones:", value="", key="dd_obs_cambio")
 
-    # 2. OPCIÓN COMPENSACIÓN
-    elif accion_sel.startswith("Compensación"):
-        modalidad_comp = st.radio(
-            "Modalidad de compensación:",
-            ["Trasladar turno al nuevo sábado (deja el sábado origen)", "Turno adicional (conserva el sábado origen y suma el nuevo)"],
-            index=0
-        )
+    # 2. OPCIÓN COMPENSACIÓN (Conserva el sábado actual y suma el turno de compensación en el sábado destino)
+    elif accion_sel == "Compensación de turno":
         obs_val = st.text_input("Observaciones:", value="", key="dd_obs_comp")
 
     # 3. OPCIÓN CAMBIO DE SECUENCIA
@@ -1027,7 +843,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
 
                 mods = []
 
-                if accion_sel.startswith("Cambio de turno"):
+                if accion_sel == "Cambio de turno":
                     # 1. CAMBIO DE TURNO (SWAP)
                     peer_match = df_s[(df_s['Date'] == target_date) & (df_s['Supernumerary'] == swap_peer)] if not df_s.empty else pd.DataFrame()
                     peer_row = int(peer_match.iloc[0]['Excel_Row']) if not peer_match.empty else 0
@@ -1075,20 +891,8 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
                     st.session_state["swap_doc_2"] = swap_peer
                     st.session_state["swap_alert_counter"] = st.session_state.get("swap_alert_counter", 0) + 1
 
-                elif accion_sel.startswith("Compensación"):
-                    # 2. COMPENSACIÓN
-                    if "Trasladar turno" in modalidad_comp:
-                        mods.append({
-                            'sheet': sheet_orig,
-                            'date': source_date,
-                            'original_name': doctor_name,
-                            'new_name': '',
-                            'row': row_orig,
-                            'col': col_orig,
-                            'type': 'ELIMINAR',
-                            'observaciones': '',
-                            'clasificacion': 'Secuencia Normal'
-                        })
+                elif accion_sel == "Compensación de turno":
+                    # 2. COMPENSACIÓN: Conserva el turno en su sábado actual y se suma la compensación en el sábado destino
                     mods.append({
                         'sheet': sheet_dest,
                         'date': target_date,
@@ -1104,8 +908,6 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
                     dp.save_modifications_batch(excel_path, mods)
 
                     df_upd = df_s.copy()
-                    if "Trasladar turno" in modalidad_comp:
-                        df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == source_date) & (df_upd['Supernumerary'] == doctor_name)].index)
                     new_row = pd.DataFrame([{
                         'Sheet': sheet_dest,
                         'Month_Header': dp.MONTH_NAMES_SP.get(target_date.month, 'EXTRA'),

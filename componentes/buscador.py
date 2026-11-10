@@ -430,116 +430,14 @@ def renderizar_buscador():
         });
     }
 
-    function configurarTooltipsRadio() {
-        const parentDoc = window.parent.document;
-        if (!parentDoc || !parentDoc.body) return;
-
-        // Tooltip flotante global persistente en el body del documento principal (inmune a clipping de overflow)
-        let globalTooltip = parentDoc.getElementById('custom-info-floating-tooltip');
-        if (!globalTooltip) {
-            globalTooltip = parentDoc.createElement('div');
-            globalTooltip.id = 'custom-info-floating-tooltip';
-            globalTooltip.style.cssText = `
-                position: fixed;
-                display: none;
-                background-color: #17243D;
-                color: #ffffff;
-                padding: 9px 14px;
-                border-radius: 9px;
-                font-size: 12px;
-                font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-                font-weight: 500;
-                line-height: 1.45;
-                max-width: 300px;
-                box-shadow: 0 8px 24px rgba(23, 36, 61, 0.45);
-                z-index: 9999999999;
-                pointer-events: none;
-                opacity: 0;
-                border: 1px solid #2d436b;
-                transition: opacity 0.15s ease;
-            `;
-            parentDoc.body.appendChild(globalTooltip);
-        }
-
-        const descriptions = {
-            "Cambio de turno": "Intercambio de turno de un medico supernumerario contraria a su secuencia actual",
-            "Compensación de turno": "pago de turno por permiso o por otros motivos",
-            "Cambia de secuencia": "cambio total de la secuencia que cuenta actualmente"
-        };
-
-        const labels = parentDoc.querySelectorAll('div[data-testid="stRadio"] label, div[role="radiogroup"] label, div[data-testid="stModal"] label, label[data-baseweb="radio"]');
-        labels.forEach(lbl => {
-            const txt = (lbl.innerText || lbl.textContent || "").trim();
-            for (let [key, desc] of Object.entries(descriptions)) {
-                if (txt.includes(key)) {
-                    // 1. Tooltip nativo del navegador como garantía
-                    lbl.title = desc;
-                    lbl.setAttribute('title', desc);
-                    const innerP = lbl.querySelectorAll('p, span, div');
-                    innerP.forEach(el => {
-                        el.title = desc;
-                        el.setAttribute('title', desc);
-                    });
-
-                    // 2. Tooltip interactivo flotante en pantalla
-                    if (!lbl.dataset.tooltipBound) {
-                        lbl.dataset.tooltipBound = "true";
-                        lbl.style.cursor = "pointer";
-
-                        const posicionar = () => {
-                            const rect = lbl.getBoundingClientRect();
-                            let left = rect.right + 14;
-                            let top = rect.top - 2;
-                            if (left + 300 > window.innerWidth) {
-                                left = Math.max(16, rect.left);
-                                top = rect.bottom + 8;
-                            }
-                            globalTooltip.style.left = left + 'px';
-                            globalTooltip.style.top = top + 'px';
-                        };
-
-                        lbl.addEventListener('mouseenter', () => {
-                            globalTooltip.innerText = desc;
-                            globalTooltip.style.display = 'block';
-                            globalTooltip.style.opacity = '1';
-                            posicionar();
-                        });
-
-                        lbl.addEventListener('mousemove', posicionar);
-
-                        lbl.addEventListener('mouseleave', () => {
-                            globalTooltip.style.opacity = '0';
-                            globalTooltip.style.display = 'none';
-                        });
-                    }
-                }
-            }
-        });
-    }
-
-    // Observador continuo de mutaciones para detectar la apertura dinámica del modal
-    try {
-        const pDoc = window.parent.document;
-        if (pDoc && pDoc.body && !pDoc._radioTooltipObserver) {
-            pDoc._radioTooltipObserver = new MutationObserver(() => {
-                configurarTooltipsRadio();
-            });
-            pDoc._radioTooltipObserver.observe(pDoc.body, { childList: true, subtree: true });
-        }
-    } catch (e) {
-        console.warn("No se pudo iniciar MutationObserver:", e);
-    }
-
     // Inicialización rápida y reintentos periódicos
     vincularBuscadorReactivo();
     inicializarDragAndDrop();
-    configurarTooltipsRadio();
-    const timers = [50, 150, 300, 600, 1200, 2500];
+    const timers = [50, 150, 300, 600, 1200];
     timers.forEach(ms => {
         setTimeout(() => {
             vincularBuscadorReactivo();
             inicializarDragAndDrop();
-            configurarTooltipsRadio();
         }, ms);
     });
     </script>

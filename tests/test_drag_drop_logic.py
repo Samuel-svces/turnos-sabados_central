@@ -30,9 +30,10 @@ class TestDragDropLogic(unittest.TestCase):
             contenido = f.read()
         self.assertIn("def show_drag_drop_action_dialog(", contenido, "show_drag_drop_action_dialog debe estar definido")
         self.assertIn('@st.dialog("Modulo de turnos")', contenido, "El diálogo debe llamarse 'Modulo de turnos' sin icono")
-        self.assertIn('"Cambio de turno ℹ️"', contenido)
-        self.assertIn('"Compensación de turno ℹ️"', contenido)
-        self.assertIn('"Cambia de secuencia ℹ️"', contenido)
+        self.assertIn('"Cambio de turno"', contenido)
+        self.assertIn('"Compensación de turno"', contenido)
+        self.assertIn('"Cambia de secuencia"', contenido)
+        self.assertNotIn("Modalidad de compensación", contenido)
         self.assertNotIn("Intercambiar el turno de este médico con un colega programado en el sábado destino.", contenido)
 
     def test_02_cuadricula_puente_y_marcadores(self):
