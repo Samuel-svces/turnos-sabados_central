@@ -2495,34 +2495,50 @@ def apply_styles():
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 0.5rem !important;
         min-height: 40px !important;
         cursor: pointer !important;
         transition: all 0.2s ease !important;
     }
 
-    div[class*="st-key-btn_admin_sats_anteriores"] button *,
-    div[class*="st-key-btn_admin_sats_siguientes"] button * {
+    div[class*="st-key-btn_admin_sats_anteriores"] button p,
+    div[class*="st-key-btn_admin_sats_siguientes"] button p {
         color: #17243D !important;
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
         font-size: 0.85rem !important;
-    }
-
-    /* Iconos Material de las flechas estéticas */
-    div[class*="st-key-btn_admin_sats_anteriores"] button [data-testid="stIconMaterial"],
-    div[class*="st-key-btn_admin_sats_siguientes"] button [data-testid="stIconMaterial"] {
-        color: #0f9a9b !important;
-        font-size: 1.15rem !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        transition: transform 0.2s ease, color 0.2s ease !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Flecha siguiente colocada estéticamente a la derecha del texto */
-    div[class*="st-key-btn_admin_sats_siguientes"] button {
-        flex-direction: row-reverse !important;
+    /* Icono SVG flecha izquierda estética (Sábados Anteriores) */
+    div[class*="st-key-btn_admin_sats_anteriores"] button p::before {
+        content: "" !important;
+        display: inline-block !important;
+        width: 17px !important;
+        height: 17px !important;
+        margin-right: 8px !important;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f9a9b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><line x1='19' y1='12' x2='5' y2='12'></line><polyline points='12 19 5 12 12 5'></polyline></svg>") !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: contain !important;
+        transition: transform 0.2s ease !important;
+    }
+
+    /* Icono SVG flecha derecha estética (Siguientes Sábados) */
+    div[class*="st-key-btn_admin_sats_siguientes"] button p::after {
+        content: "" !important;
+        display: inline-block !important;
+        width: 17px !important;
+        height: 17px !important;
+        margin-left: 8px !important;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f9a9b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><line x1='5' y1='12' x2='19' y2='12'></line><polyline points='12 5 19 12 12 19'></polyline></svg>") !important;
+        background-repeat: no-repeat !important;
+        background-position: center !important;
+        background-size: contain !important;
+        transition: transform 0.2s ease !important;
     }
 
     /* Hover interactivo y fluido idéntico a encabezados */
@@ -2535,14 +2551,12 @@ def apply_styles():
         transform: translateY(-1px) !important;
     }
 
-    div[class*="st-key-btn_admin_sats_anteriores"] button:hover:not(:disabled) [data-testid="stIconMaterial"] {
+    div[class*="st-key-btn_admin_sats_anteriores"] button:hover:not(:disabled) p::before {
         transform: translateX(-3px) !important;
-        color: #0d8283 !important;
     }
 
-    div[class*="st-key-btn_admin_sats_siguientes"] button:hover:not(:disabled) [data-testid="stIconMaterial"] {
+    div[class*="st-key-btn_admin_sats_siguientes"] button:hover:not(:disabled) p::after {
         transform: translateX(3px) !important;
-        color: #0d8283 !important;
     }
 
     /* Estado deshabilitado consistente */
@@ -2551,20 +2565,33 @@ def apply_styles():
         background: #f8fafc !important;
         background-color: #f8fafc !important;
         border-color: #e2e8f0 !important;
-        opacity: 0.45 !important;
+        opacity: 0.55 !important;
         cursor: not-allowed !important;
         box-shadow: none !important;
         transform: none !important;
     }
 
-    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled *,
-    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled * {
+    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled p,
+    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled p {
         color: #94a3b8 !important;
     }
 
-    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled [data-testid="stIconMaterial"],
-    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled [data-testid="stIconMaterial"] {
-        color: #94a3b8 !important;
+    div[class*="st-key-btn_admin_sats_anteriores"] button:disabled p::before {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><line x1='19' y1='12' x2='5' y2='12'></line><polyline points='12 19 5 12 12 5'></polyline></svg>") !important;
+        transform: none !important;
+    }
+
+    div[class*="st-key-btn_admin_sats_siguientes"] button:disabled p::after {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><line x1='5' y1='12' x2='19' y2='12'></line><polyline points='12 5 19 12 12 19'></polyline></svg>") !important;
+        transform: none !important;
+    }
+
+    /* Ocultar cualquier elemento residual de iconos de Streamlit en estos botones */
+    div[class*="st-key-btn_admin_sats_anteriores"] button svg,
+    div[class*="st-key-btn_admin_sats_anteriores"] button [data-testid="stIconMaterial"],
+    div[class*="st-key-btn_admin_sats_siguientes"] button svg,
+    div[class*="st-key-btn_admin_sats_siguientes"] button [data-testid="stIconMaterial"] {
+        display: none !important;
     }
 
     /* Banner informativo central de navegación de sábados */
