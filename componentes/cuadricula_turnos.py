@@ -384,16 +384,24 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
     month_shifts = df_shifts[df_shifts['Date'].isin(saturdays)] if not df_shifts.empty else pd.DataFrame()
     
     if search_query:
-        search_shifts = month_shifts.copy()
+        # 1. Buscar en TODOS los turnos (df_shifts)
+        all_matches = df_shifts[df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False)] if not df_shifts.empty else pd.DataFrame()
         filter_val = st.session_state.get("filter_class", "Todos")
-        if filter_val != "Todos" and not search_shifts.empty and 'Classification' in search_shifts.columns:
-            search_shifts = search_shifts[search_shifts['Classification'].str.contains(filter_val, na=False, case=False)]
+        if filter_val != "Todos" and not all_matches.empty and 'Classification' in all_matches.columns:
+            all_matches = all_matches[all_matches['Classification'].str.contains(filter_val, na=False, case=False)]
         
-        found = False
-        if not search_shifts.empty and search_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False).any():
-            found = True
-            
-        if not found:
+        if not all_matches.empty:
+            # Encontrado: Si estamos en modo admin y la fecha está fuera de los 4 sábados visibles, navegar a esa página
+            if st.session_state.is_admin:
+                earliest_sat = all_matches['Date'].min()
+                if earliest_sat in all_visible_saturdays:
+                    target_idx = all_visible_saturdays.index(earliest_sat)
+                    current_offset = st.session_state.get('saturday_offset', 0)
+                    if target_idx < current_offset or target_idx >= current_offset + 4:
+                        st.session_state.saturday_offset = (target_idx // 4) * 4
+                        st.rerun()
+        else:
+            # El nombre no existe en ninguna fecha
             st.session_state["clear_search_flag"] = True
             st.session_state["show_error_alert"] = True
             st.rerun()
@@ -416,6 +424,8 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
 
                 # Lista de médicos filtrada y ordenada según el icono de la columna
                 date_shifts_loop = _aplicar_filtro_orden(date_shifts_all, sat_date)
+                if search_query:
+                    date_shifts_loop = date_shifts_loop[date_shifts_loop['Supernumerary'].str.upper().str.contains(search_query, na=False)]
 
                 _render_encabezado_columna(
                     sat_date, num_doctors_all, len(date_shifts_loop), is_holiday, "admin", nombres_dia
@@ -565,6 +575,9 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                         ).sort_values(by='_orden').drop(columns='_orden')
                     else:
                         date_shifts_loop = date_shifts
+
+                    if search_query:
+                        date_shifts_loop = date_shifts_loop[date_shifts_loop['Supernumerary'].str.upper().str.contains(search_query, na=False)]
                     for _, s_row in date_shifts_loop.reset_index().iterrows():
                         name = s_row['Supernumerary']
                         shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''

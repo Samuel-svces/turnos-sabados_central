@@ -1046,19 +1046,50 @@ def apply_styles():
         visibility: hidden !important;
     }
 
-    .search-highlight-active,
-    .search-highlight-active *,
-    .search-highlight-active p,
-    .search-highlight-active span,
-    .search-highlight-active div {
-        text-decoration: underline !important;
-        text-decoration-color: #0f9a9b !important;
-        text-decoration-thickness: 3px !important;
-        text-underline-offset: 4px !important;
-        background-color: #ecfdf5 !important;
-        box-shadow: 0 0 10px rgba(15, 154, 155, 0.35) !important;
+    /* Ocultar tooltip de instrucciones nativo de Streamlit ("Press Enter to apply") */
+    [data-testid="stTextInputInstructions"],
+    div[data-testid="stTextInputInstructions"],
+    .stTextInputInstructions,
+    div[data-testid="InputInstructions"],
+    div[data-testid="stTextInput"] div[data-baseweb="popover"],
+    div[data-testid="stTextInput"] div[data-baseweb="tooltip"],
+    div[data-testid="stTextInput"] ul[role="listbox"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        width: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+    }
+
+    /* Resaltado destacado de médico coincidente con la búsqueda en tiempo real */
+    button.search-highlight-active,
+    .doc-name-badge.search-highlight-active,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button.search-highlight-active {
+        background-color: #e6f7f6 !important;
+        background: #e6f7f6 !important;
+        border: 1.5px solid #0f9a9b !important;
+        border-color: #0f9a9b !important;
+        box-shadow: 0 2px 10px rgba(15, 154, 155, 0.28) !important;
         opacity: 1 !important;
+        color: #0f4c4c !important;
+        font-weight: 700 !important;
+        transform: translateY(-1px) !important;
         transition: all 0.15s ease !important;
+    }
+
+    button.search-highlight-active *,
+    button.search-highlight-active p,
+    button.search-highlight-active span,
+    .doc-name-badge.search-highlight-active span {
+        color: #0f4c4c !important;
+        font-weight: 700 !important;
     }
 
     .search-dimmed {

@@ -38,7 +38,7 @@ def renderizar_buscador():
     # Estado para el filtro de clasificación (por defecto Todos)
     st.session_state["filter_class"] = "Todos"
 
-    # Inyección de script reactivo en tiempo real para estilizar y subrayar con cada pulsación de tecla
+    # Inyección de script reactivo en tiempo real para filtrar y resaltar con cada pulsación de tecla
     st.components.v1.html(r"""
     <script>
     function normalizarTexto(txt) {
@@ -49,7 +49,7 @@ def renderizar_buscador():
             .toUpperCase();
     }
 
-    // Controles del filtro/orden por columna: no se resaltan ni se estilizan como médicos
+    // Controles del filtro/orden por columna: no se ocultan ni se estilizan como médicos
     function esControlFiltro(el) {
         if (!el || !el.closest) return false;
         if (el.closest('[data-testid="stPopover"]')) return true;
@@ -64,82 +64,104 @@ def renderizar_buscador():
         const parentDoc = window.parent.document;
         const cleanTerm = normalizarTexto(termino);
         
-        // Elementos de médico en modo administrador (botones) y modo público (badges)
-        const items = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button, .doc-name-badge');
+        // Columnas de sábados
+        const cols = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)');
 
-        items.forEach(item => {
-            // Ignorar por completo los controles del filtro/orden de columna
-            if (esControlFiltro(item)) return;
-            const rawText = (item.innerText || item.textContent || "").trim();
-            // Omitir botones que son encabezados con fecha, agregar médico, o el popover admin
-            if (!rawText || /^\d/.test(rawText) || rawText.includes("Agregar Médico") || rawText.includes("⚙️")) {
-                return;
-            }
+        cols.forEach(col => {
+            // MODO ADMINISTRADOR: Botones de turno
+            const adminButtons = col.querySelectorAll('button');
+            adminButtons.forEach(btn => {
+                if (esControlFiltro(btn)) return;
+                const rawText = (btn.innerText || btn.textContent || "").trim();
+                if (!rawText) return;
 
-            if (!cleanTerm) {
-                // Sin término de búsqueda: restablecer estilos
-                item.classList.remove('search-highlight-active', 'search-dimmed');
-                item.style.removeProperty('text-decoration');
-                item.style.removeProperty('text-decoration-color');
-                item.style.removeProperty('text-decoration-thickness');
-                item.style.removeProperty('text-underline-offset');
-                item.style.removeProperty('background-color');
-                item.style.removeProperty('box-shadow');
-                item.style.removeProperty('opacity');
+                // Encabezados de fecha: SIEMPRE visibles
+                if (/^\d/.test(rawText) || btn.classList.contains('custom-header-btn')) {
+                    return;
+                }
 
-                item.querySelectorAll('p, span, div').forEach(c => {
-                    c.style.removeProperty('text-decoration');
-                    c.style.removeProperty('text-decoration-color');
-                    c.style.removeProperty('text-decoration-thickness');
-                    c.style.removeProperty('text-underline-offset');
-                });
-                return;
-            }
+                // Botones de acción (Agregar Médico, Duplicar): ocultar durante búsqueda activa
+                if (rawText.includes("Agregar Médico") || rawText.includes("Duplicar") || rawText.includes("⚙️")) {
+                    const cont = btn.closest('div[data-testid="stElementContainer"]') || btn.parentElement;
+                    if (cont) {
+                        if (cleanTerm) {
+                            cont.style.setProperty('display', 'none', 'important');
+                        } else {
+                            cont.style.removeProperty('display');
+                        }
+                    }
+                    return;
+                }
 
-            const itemText = normalizarTexto(rawText);
-            if (itemText.includes(cleanTerm)) {
-                // Coincidencia: resaltar con subrayado visible
-                item.classList.remove('search-dimmed');
-                item.classList.add('search-highlight-active');
-                item.style.setProperty('text-decoration', 'underline', 'important');
-                item.style.setProperty('text-decoration-color', '#0f9a9b', 'important');
-                item.style.setProperty('text-decoration-thickness', '3px', 'important');
-                item.style.setProperty('text-underline-offset', '4px', 'important');
-                item.style.setProperty('background-color', '#ecfdf5', 'important');
-                item.style.setProperty('box-shadow', '0 0 10px rgba(15, 154, 155, 0.35)', 'important');
-                item.style.setProperty('opacity', '1', 'important');
+                // Botón de médico individual
+                const cont = btn.closest('div[data-testid="stElementContainer"]') || btn;
+                const docText = normalizarTexto(rawText);
 
-                item.querySelectorAll('p, span, div').forEach(c => {
-                    c.style.setProperty('text-decoration', 'underline', 'important');
-                    c.style.setProperty('text-decoration-color', '#0f9a9b', 'important');
-                    c.style.setProperty('text-decoration-thickness', '3px', 'important');
-                    c.style.setProperty('text-underline-offset', '4px', 'important');
-                });
-            } else {
-                // No coincide: atenuar sutilmente
-                item.classList.remove('search-highlight-active');
-                item.classList.add('search-dimmed');
-                item.style.removeProperty('text-decoration');
-                item.style.removeProperty('text-decoration-color');
-                item.style.removeProperty('text-decoration-thickness');
-                item.style.removeProperty('text-underline-offset');
-                item.style.removeProperty('background-color');
-                item.style.removeProperty('box-shadow');
-                item.style.setProperty('opacity', '0.28', 'important');
+                if (!cleanTerm) {
+                    // Sin búsqueda: restaurar todo visible y limpio
+                    if (cont) cont.style.removeProperty('display');
+                    btn.style.removeProperty('display');
+                    btn.classList.remove('search-highlight-active', 'search-dimmed');
+                    return;
+                }
 
-                item.querySelectorAll('p, span, div').forEach(c => {
-                    c.style.removeProperty('text-decoration');
-                    c.style.removeProperty('text-decoration-color');
-                    c.style.removeProperty('text-decoration-thickness');
-                    c.style.removeProperty('text-underline-offset');
-                });
-            }
+                if (docText.includes(cleanTerm)) {
+                    // Coincide: mostrar inmediatamente y resaltar para que se vea apenas se escribe
+                    if (cont) cont.style.removeProperty('display');
+                    btn.style.removeProperty('display');
+                    btn.classList.remove('search-dimmed');
+                    btn.classList.add('search-highlight-active');
+                } else {
+                    // No coincide: ocultar por completo para que los que coinciden suban y se vean al instante
+                    if (cont) {
+                        cont.style.setProperty('display', 'none', 'important');
+                    } else {
+                        btn.style.setProperty('display', 'none', 'important');
+                    }
+                    btn.classList.remove('search-highlight-active');
+                    btn.classList.add('search-dimmed');
+                }
+            });
+
+            // MODO PÚBLICO: Badges (.doc-btn-wrap)
+            const docWraps = col.querySelectorAll('.doc-btn-wrap');
+            docWraps.forEach(wrap => {
+                const badge = wrap.querySelector('.doc-name-badge') || wrap;
+                const rawText = (badge.innerText || badge.textContent || "").trim();
+                const docText = normalizarTexto(rawText);
+                const cont = wrap.closest('div[data-testid="stElementContainer"]') || wrap;
+
+                if (!cleanTerm) {
+                    if (cont) cont.style.removeProperty('display');
+                    wrap.style.removeProperty('display');
+                    badge.classList.remove('search-highlight-active', 'search-dimmed');
+                    return;
+                }
+
+                if (docText.includes(cleanTerm)) {
+                    // Coincide: mostrar inmediatamente
+                    if (cont) cont.style.removeProperty('display');
+                    wrap.style.removeProperty('display');
+                    badge.classList.remove('search-dimmed');
+                    badge.classList.add('search-highlight-active');
+                } else {
+                    // No coincide: ocultar
+                    if (cont) {
+                        cont.style.setProperty('display', 'none', 'important');
+                    } else {
+                        wrap.style.setProperty('display', 'none', 'important');
+                    }
+                    badge.classList.remove('search-highlight-active');
+                    badge.classList.add('search-dimmed');
+                }
+            });
         });
     }
 
+    const aplicarBusquedaEnVivo = aplicarResaltadoEnVivo;
+
     function vincularBuscadorReactivo() {
         const parentDoc = window.parent.document;
-        // Localizar el input del buscador de forma resiliente
         const marker = parentDoc.querySelector('.custom-search-marker');
         let inputBuscador = null;
         if (marker) {
@@ -151,180 +173,61 @@ def renderizar_buscador():
         if (!inputBuscador) {
             inputBuscador = parentDoc.querySelector('input[aria-label="Buscador"], div[data-testid="stTextInput"] input');
         }
-        if (!inputBuscador) return;
+        if (!inputBuscador) return false;
 
-        // Asegurar que el placeholder esté completamente vacío
+        // Limpiar placeholder y evitar cualquier autofill o tooltip emergente nativo
         inputBuscador.placeholder = "";
         inputBuscador.setAttribute("placeholder", "");
+        inputBuscador.setAttribute("autocomplete", "off");
+        inputBuscador.setAttribute("autocorrect", "off");
+        inputBuscador.setAttribute("autocapitalize", "off");
+        inputBuscador.setAttribute("spellcheck", "false");
+        inputBuscador.setAttribute("name", "filtro_vivo_medicos");
 
-        // Asegurar borde verde agua suave, fondo blanco y esquinas redondeadas
-        const baseInput = inputBuscador.closest('div[data-baseweb="input"], [data-baseweb="base-input"]') || inputBuscador.parentElement;
-        if (baseInput) {
-            baseInput.style.setProperty('background-color', '#ffffff', 'important');
-            baseInput.style.setProperty('background', '#ffffff', 'important');
-            baseInput.style.setProperty('border', '1.5px solid #5ec2ba', 'important');
-            baseInput.style.setProperty('border-radius', '14px', 'important');
-            baseInput.style.setProperty('box-shadow', 'none', 'important');
-            baseInput.style.setProperty('box-sizing', 'border-box', 'important');
-            baseInput.style.setProperty('max-width', '340px', 'important');
-            baseInput.style.setProperty('margin', '0 auto', 'important');
+        // Ocultar cualquier tooltip de instrucciones de Streamlit adyacente
+        const containerInput = inputBuscador.closest('div[data-testid="stTextInput"]');
+        if (containerInput) {
+            const tooltips = containerInput.querySelectorAll('[data-testid="stTextInputInstructions"], [data-testid="InputInstructions"], .stTextInputInstructions');
+            tooltips.forEach(t => t.style.setProperty('display', 'none', 'important'));
         }
-
-        inputBuscador.style.setProperty('background-image', 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230f9a9b\' stroke-width=\'2.2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'11\' cy=\'11\' r=\'7\'></circle><line x1=\'21\' y1=\'21\' x2=\'16\' y2=\'16\'></line></svg>")', 'important');
-        inputBuscador.style.setProperty('background-repeat', 'no-repeat', 'important');
-        inputBuscador.style.setProperty('background-position', '11px center', 'important');
-        inputBuscador.style.setProperty('background-size', '16px 16px', 'important');
-        inputBuscador.style.setProperty('padding-left', '36px', 'important');
-        inputBuscador.style.setProperty('border', 'none', 'important');
-        inputBuscador.style.setProperty('outline', 'none', 'important');
-        inputBuscador.style.setProperty('border-radius', '14px', 'important');
 
         if (!inputBuscador.dataset.liveSearchBound) {
             inputBuscador.dataset.liveSearchBound = "true";
             
-            // Escuchar cada letra escrita en tiempo real
+            // Filtrado reactivo inmediato con cada letra pulsada
             inputBuscador.addEventListener('input', (e) => {
-                aplicarResaltadoEnVivo(e.target.value);
+                aplicarBusquedaEnVivo(e.target.value);
             });
 
-            // Restablecer al presionar Escape
+            inputBuscador.addEventListener('focus', () => {
+                if (inputBuscador.value) aplicarBusquedaEnVivo(inputBuscador.value);
+            });
+
+            inputBuscador.addEventListener('paste', () => {
+                setTimeout(() => aplicarBusquedaEnVivo(inputBuscador.value), 20);
+            });
+
+            // Tecla Escape para restablecer instantáneamente
             inputBuscador.addEventListener('keydown', (e) => {
                 if (e.key === "Escape") {
                     inputBuscador.value = "";
-                    aplicarResaltadoEnVivo("");
+                    aplicarBusquedaEnVivo("");
                 }
             });
         }
 
-        // Si ya hay un valor cargado, aplicar resaltado inmediatamente
+        // Si ya hay un valor cargado, aplicar el filtrado de inmediato
         if (inputBuscador.value) {
-            aplicarResaltadoEnVivo(inputBuscador.value);
+            aplicarBusquedaEnVivo(inputBuscador.value);
         }
+        return true;
     }
 
-    function styleButtons() {
-        const parentDoc = window.parent.document;
-        const colButtons = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker) button');
-        colButtons.forEach(btn => {
-            // El botón del embudo y el panel del filtro tienen su propio estilo CSS
-            if (esControlFiltro(btn)) return;
-            const text = (btn.innerText || "").trim();
-            if (!text) return;
-            if (text.includes('⚙️')) return;
-            
-            // Encabezado de fecha (Fondo #F0FBFB y Letra #17243D)
-            if (/^\d/.test(text)) {
-                btn.classList.add('custom-header-btn');
-                btn.style.setProperty('background', '#F0FBFB', 'important');
-                btn.style.setProperty('background-color', '#F0FBFB', 'important');
-                btn.style.setProperty('color', '#17243D', 'important');
-                btn.style.setProperty('border', '1.5px solid #ccebee', 'important');
-                btn.style.setProperty('border-radius', '8px', 'important');
-                btn.style.setProperty('box-shadow', '0 2px 6px rgba(23, 36, 61, 0.06)', 'important');
-                btn.style.setProperty('font-weight', '700', 'important');
-                btn.style.setProperty('font-size', '0.88rem', 'important');
-                btn.style.setProperty('letter-spacing', '0.2px', 'important');
-                btn.style.setProperty('padding', '0.35rem 0.5rem', 'important');
-                btn.style.setProperty('margin-bottom', '0.35rem', 'important');
-                btn.style.setProperty('text-shadow', 'none', 'important');
-                const pHeaders = btn.querySelectorAll('p, span, div');
-                pHeaders.forEach(el => {
-                    el.style.setProperty('color', '#17243D', 'important');
-                    el.style.setProperty('font-weight', '700', 'important');
-                    el.style.setProperty('text-shadow', 'none', 'important');
-                });
-                return;
-            }
-
-            // Botón Agregar Médico
-            if (text.includes("Agregar Médico")) {
-                btn.style.setProperty('background-color', 'rgb(20, 116, 220)', 'important');
-                btn.style.setProperty('background', 'rgb(20, 116, 220)', 'important');
-                btn.style.setProperty('border-color', 'rgb(20, 116, 220)', 'important');
-                btn.style.setProperty('color', '#ffffff', 'important');
-                btn.querySelectorAll('*').forEach(el => el.style.setProperty('color', '#ffffff', 'important'));
-                return;
-            }
-
-            // Ignorar Duplicar
-            if (text.includes("Duplicar")) {
-                return;
-            }
-
-            let bg = '#ffffff';
-            let fg = '#262730';
-            let border = 'rgba(49, 51, 63, 0.2)';
-            let shadow = '0 1px 2px rgba(0, 0, 0, 0.04)';
-
-            if (text.includes('🎯')) {
-                bg = '#fff8e1';
-                fg = '#e65100';
-                border = '#ffc107';
-                shadow = '0 0 12px rgba(255, 193, 7, 0.4)';
-            } else if (text.includes('DUPLICADO') || text.includes('🚨')) {
-                bg = '#ffebee';
-                fg = '#c62828';
-                border = '#ffcdd2';
-            } else if (text.includes('COMP') || text.includes('🟡')) {
-                bg = '#fffde6';
-                fg = '#b58900';
-                border = '#ffecb3';
-            } else if (text.includes('Cambio') || text.includes('🔄')) {
-                bg = '#e8f5e9';
-                fg = '#2e7d32';
-                border = '#c8e6c9';
-            }
-
-            // Si no está resaltado por la búsqueda activa en vivo, aplicar estilos base
-            if (!btn.classList.contains('search-highlight-active')) {
-                btn.style.setProperty('background', bg, 'important');
-                btn.style.setProperty('background-color', bg, 'important');
-                btn.style.setProperty('color', fg, 'important');
-                btn.style.setProperty('border-color', border, 'important');
-                btn.style.setProperty('box-shadow', shadow, 'important');
-            }
-
-            btn.style.setProperty('border-style', 'solid', 'important');
-            btn.style.setProperty('border-width', '1px', 'important');
-            btn.style.setProperty('border-radius', '8px', 'important');
-            btn.style.setProperty('font-weight', '500', 'important');
-            btn.style.setProperty('font-size', '0.8rem', 'important');
-            btn.style.setProperty('padding', '0.22rem 0.5rem', 'important');
-            btn.style.setProperty('width', '100%', 'important');
-            btn.style.setProperty('display', 'block', 'important');
-            btn.style.setProperty('margin-bottom', '0px', 'important');
-            btn.style.setProperty('min-height', 'auto', 'important');
-            btn.style.setProperty('line-height', '1.15', 'important');
-            btn.style.setProperty('text-shadow', 'none', 'important');
-
-            const childs = btn.querySelectorAll('*');
-            childs.forEach(c => {
-                if (!btn.classList.contains('search-highlight-active')) {
-                    c.style.setProperty('color', fg, 'important');
-                }
-                c.style.setProperty('background-color', 'transparent', 'important');
-                c.style.setProperty('text-shadow', 'none', 'important');
-            });
-        });
-
-        vincularBuscadorReactivo();
+    // Inicialización rápida y reintentos ligeros
+    if (!vincularBuscadorReactivo()) {
+        const timers = [50, 150, 300, 600];
+        timers.forEach(ms => setTimeout(vincularBuscadorReactivo, ms));
     }
-
-    styleButtons();
-    vincularBuscadorReactivo();
-    let rAFPending = false;
-    const observer = new MutationObserver(() => {
-        if (!rAFPending) {
-            rAFPending = true;
-            window.requestAnimationFrame(() => {
-                styleButtons();
-                vincularBuscadorReactivo();
-                rAFPending = false;
-            });
-        }
-    });
-    observer.observe(window.parent.document.body, { childList: true, subtree: true });
-
     </script>
     """, height=0)
 
