@@ -72,42 +72,94 @@ def _clave_checkbox(sat_date, prefijo: str, indice: int) -> str:
 
 def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
     """Renderiza el menú emergente flotante con funciones idénticas a Microsoft Excel."""
-    # 1. Acciones superiores de ordenamiento estilo Excel
-    st.markdown("<div class='excel-menu-btn'>", unsafe_allow_html=True)
-    if st.button("Ordenar de A a la Z", key=f"btn_ord_asc_{sat_date}_{prefijo}", icon=":material/arrow_downward:", use_container_width=True):
+    txt_key = f"filtro_txt_{sat_date}_{prefijo}"
+    if txt_key not in st.session_state:
+        st.session_state[txt_key] = ""
+
+    # Callbacks pre-ejecución para evitar StreamlitAPIException al modificar session_state
+    def _cb_ord_asc():
         st.session_state.column_sorts[sat_date] = "asc"
         st.session_state[pop_key] = False
-        st.rerun()
 
-    if st.button("Ordenar de Z a la A", key=f"btn_ord_desc_{sat_date}_{prefijo}", icon=":material/arrow_upward:", use_container_width=True):
+    def _cb_ord_desc():
         st.session_state.column_sorts[sat_date] = "desc"
         st.session_state[pop_key] = False
-        st.rerun()
+
+    def _cb_borrar_filtro():
+        st.session_state.column_filters[sat_date] = None
+        st.session_state.column_sorts[sat_date] = "natural"
+        st.session_state[txt_key] = ""
+        for idx in range(len(nombres)):
+            st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True
+        st.session_state[pop_key] = False
+
+    def _cb_aplicar():
+        consulta_val = st.session_state.get(txt_key, "")
+        consulta_c = dp.normalize_name_no_accents(consulta_val or "").upper().strip()
+        if consulta_c:
+            coincidencias = [n for n in nombres if consulta_c in dp.normalize_name_no_accents(n).upper()]
+            marcados = [
+                n for n in coincidencias 
+                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+            ]
+        else:
+            marcados = [
+                n for n in nombres 
+                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+            ]
+
+        if not marcados:
+            st.session_state.column_filters[sat_date] = []
+            for idx, n in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = False
+        elif set(marcados) >= set(nombres):
+            st.session_state.column_filters[sat_date] = None
+            for idx, n in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True
+        else:
+            st.session_state.column_filters[sat_date] = marcados
+            for idx, n in enumerate(nombres):
+                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = (n in marcados)
+
+        st.session_state[txt_key] = ""
+        st.session_state[pop_key] = False
+
+    # 1. Acciones superiores de ordenamiento estilo Excel
+    st.markdown("<div class='excel-menu-btn'>", unsafe_allow_html=True)
+    st.button(
+        "Ordenar de A a la Z",
+        key=f"btn_ord_asc_{sat_date}_{prefijo}",
+        icon=":material/arrow_downward:",
+        use_container_width=True,
+        on_click=_cb_ord_asc
+    )
+
+    st.button(
+        "Ordenar de Z a la A",
+        key=f"btn_ord_desc_{sat_date}_{prefijo}",
+        icon=":material/arrow_upward:",
+        use_container_width=True,
+        on_click=_cb_ord_desc
+    )
 
     orden_actual = st.session_state.column_sorts.get(sat_date, "natural")
     filtro_actual = st.session_state.column_filters.get(sat_date)
     tiene_filtro = (orden_actual != "natural") or (filtro_actual is not None)
 
     etiqueta_borrar = f"Borrar filtro de '{sat_date.day} {dp.MONTH_NAMES_SP[sat_date.month]}'"
-    if st.button(etiqueta_borrar, key=f"btn_borrar_filtro_{sat_date}_{prefijo}", icon=":material/filter_alt_off:", use_container_width=True, disabled=not tiene_filtro):
-        st.session_state.column_filters[sat_date] = None
-        st.session_state.column_sorts[sat_date] = "natural"
-        txt_key = f"filtro_txt_{sat_date}_{prefijo}"
-        if txt_key in st.session_state:
-            st.session_state[txt_key] = ""
-        for idx in range(len(nombres)):
-            st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True
-        st.session_state[pop_key] = False
-        st.rerun()
+    st.button(
+        etiqueta_borrar,
+        key=f"btn_borrar_filtro_{sat_date}_{prefijo}",
+        icon=":material/filter_alt_off:",
+        use_container_width=True,
+        disabled=not tiene_filtro,
+        on_click=_cb_borrar_filtro
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<hr class='excel-menu-divider' />", unsafe_allow_html=True)
 
     # 2. Buscador interactivo de texto
-    txt_key = f"filtro_txt_{sat_date}_{prefijo}"
-    if txt_key not in st.session_state:
-        st.session_state[txt_key] = ""
-
     consulta = st.text_input(
         "Buscar",
         key=txt_key,
@@ -161,37 +213,13 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
 
     # 5. Botón Aplicar
     st.markdown("<div class='excel-apply-btn'>", unsafe_allow_html=True)
-    if st.button("Aplicar", key=f"btn_aplicar_{sat_date}_{prefijo}", use_container_width=True, type="primary"):
-        if consulta_norm:
-            # Si hay una búsqueda activa, se filtran únicamente los médicos resultantes de la búsqueda que estén marcados
-            marcados = [
-                n for n in filtrados 
-                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
-            ]
-        else:
-            marcados = [
-                n for n in nombres 
-                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
-            ]
-
-        if not marcados:
-            st.session_state.column_filters[sat_date] = []
-            for idx, n in enumerate(nombres):
-                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = False
-        elif set(marcados) >= set(nombres):
-            st.session_state.column_filters[sat_date] = None
-            for idx, n in enumerate(nombres):
-                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True
-        else:
-            st.session_state.column_filters[sat_date] = marcados
-            for idx, n in enumerate(nombres):
-                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = (n in marcados)
-
-        # Limpiar el texto de búsqueda para que la lista vuelva a su estado general
-        txt_key = f"filtro_txt_{sat_date}_{prefijo}"
-        st.session_state[txt_key] = ""
-        st.session_state[pop_key] = False
-        st.rerun()
+    st.button(
+        "Aplicar",
+        key=f"btn_aplicar_{sat_date}_{prefijo}",
+        use_container_width=True,
+        type="primary",
+        on_click=_cb_aplicar
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
 
