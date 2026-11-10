@@ -710,15 +710,41 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
 show_selection_dialog = show_shift_dialog
 
 
-@st.dialog("🔄 Traslado de Turno")
+def es_misma_secuencia_sabado(d1, d2) -> bool:
+    """
+    Determina si dos sábados pertenecen a la misma secuencia quincenal.
+    Retorna True si tienen la misma paridad quincenal (múltiplo de 14 días),
+    lo cual significa que NO se pueden trasladar entre sí.
+    Retorna False si pertenecen a secuencias contrarias (permitido).
+    """
+    if not d1 or not d2:
+        return False
+    try:
+        if isinstance(d1, str):
+            d1 = pd.to_datetime(d1).date()
+        elif isinstance(d1, datetime.datetime):
+            d1 = d1.date()
+
+        if isinstance(d2, str):
+            d2 = pd.to_datetime(d2).date()
+        elif isinstance(d2, datetime.datetime):
+            d2 = d2.date()
+
+        diff_days = abs((d2 - d1).days)
+        return (diff_days % 14) == 0
+    except Exception:
+        return False
+
+
+@st.dialog("Modulo de turnos")
 def show_drag_drop_action_dialog(payload, load_app_data_func):
     """
     Diálogo modal interactivo que se abre cuando un médico es arrastrado y soltado
     en otra columna de sábado.
     Permite elegir entre:
-    1. 🔀 Cambio de Turno (intercambio mutuo con otro médico)
-    2. 🟡 Compensación / Pago de Turno (traslado o turno adicional)
-    3. 🔁 Cambiar de Secuencia (reubicar el ciclo quincenal de sábados)
+    1. Cambio de turno (intercambio mutuo con otro médico de secuencia contraria)
+    2. Compensación de turno (traslado o turno adicional)
+    3. Cambia de secuencia (reubicar el ciclo quincenal de sábados)
     """
     if not st.session_state.is_admin:
         st.error("Acceso denegado: Se requieren permisos de administrador.")
@@ -761,11 +787,109 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     </div>
     """, unsafe_allow_html=True)
 
+    misma_secuencia = es_misma_secuencia_sabado(source_date, target_date)
+    if misma_secuencia:
+        st.error("⚠️ Restricción de secuencia: No es posible trasladar un médico a un sábado de su misma secuencia. Debe trasladarse a su secuencia contraria.")
+
     opciones_accion = [
-        "🔀 Cambio de Turno (Intercambio con otro médico)",
-        "🟡 Compensación / Pago de Turno",
-        "🔁 Cambiar de Secuencia (Ciclo quincenal)"
+        "Cambio de turno",
+        "Compensación de turno",
+        "Cambia de secuencia"
     ]
+
+    # Inyección de badges de información y tooltips flotantes en las opciones
+    st.markdown("""
+    <style>
+    .info-tooltip-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 17px;
+        height: 17px;
+        margin-left: 7px;
+        border-radius: 50%;
+        background-color: #e6f7f6;
+        color: #0f9a9b;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: help;
+        position: relative;
+        vertical-align: middle;
+        user-select: none;
+        transition: all 0.2s ease;
+        border: 1px solid #a3e0dd;
+    }
+    .info-tooltip-badge:hover {
+        background-color: #0f9a9b;
+        color: #ffffff;
+    }
+    .info-tooltip-badge:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 130%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 11px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        white-space: normal;
+        min-width: 220px;
+        max-width: 300px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.25);
+        z-index: 999999;
+        line-height: 1.35;
+        pointer-events: none;
+        text-align: center;
+    }
+    .info-tooltip-badge:hover::before {
+        content: '';
+        position: absolute;
+        bottom: 118%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 999999;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.components.v1.html("""
+    <script>
+    const tooltipsData = {
+        "Cambio de turno": "Intercambio de turno de un medico supernumerario contraria a su secuencia actual",
+        "Compensación de turno": "pago de turno por permiso o por otros motivos",
+        "Cambia de secuencia": "cambio total de la secuencia que cuenta actualmente"
+    };
+
+    function injectTooltips() {
+        const parentDoc = window.parent.document;
+        const labels = parentDoc.querySelectorAll('div[data-testid="stRadio"] label');
+        labels.forEach(lbl => {
+            const txt = (lbl.innerText || lbl.textContent || "").trim();
+            for (let [key, desc] of Object.entries(tooltipsData)) {
+                if (txt.includes(key) && !lbl.querySelector('.info-tooltip-badge')) {
+                    const badge = parentDoc.createElement('span');
+                    badge.className = 'info-tooltip-badge';
+                    badge.setAttribute('data-tooltip', desc);
+                    badge.innerText = 'ℹ️';
+                    lbl.appendChild(badge);
+                }
+            }
+        });
+    }
+
+    injectTooltips();
+    setTimeout(injectTooltips, 100);
+    setTimeout(injectTooltips, 300);
+    </script>
+    """, height=0)
+
     accion_sel = st.radio("Acción a realizar:", opciones_accion, index=0)
 
     df_s = st.session_state.get('shifts_df', pd.DataFrame())
@@ -773,7 +897,6 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
 
     # 1. OPCIÓN CAMBIO DE TURNO
     if accion_sel == opciones_accion[0]:
-        st.markdown("<p style='font-size: 0.85rem; color: #475569; margin: 4px 0 10px 0;'>Intercambiar el turno de este médico con un colega programado en el sábado destino.</p>", unsafe_allow_html=True)
         target_shifts = df_s[df_s['Date'] == target_date] if not df_s.empty else pd.DataFrame()
         target_docs = sorted(list(target_shifts['Supernumerary'].dropna().unique())) if not target_shifts.empty else []
         target_docs = [d for d in target_docs if d != doctor_name]
@@ -786,33 +909,31 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
             st.info(f"No hay otros médicos programados aún el {target_str}. Seleccione uno del directorio:")
             swap_peer = st.selectbox("Seleccione médico para el intercambio:", allowed)
 
-        obs_val = st.text_input("Observaciones:", value=f"Cambio de turno", key="dd_obs_cambio")
+        obs_val = st.text_input("Observaciones:", value="", key="dd_obs_cambio")
 
     # 2. OPCIÓN COMPENSACIÓN
     elif accion_sel == opciones_accion[1]:
-        st.markdown("<p style='font-size: 0.85rem; color: #475569; margin: 4px 0 10px 0;'>Asignar al médico en el sábado destino bajo modalidad de compensación o pago de turno.</p>", unsafe_allow_html=True)
         modalidad_comp = st.radio(
             "Modalidad de compensación:",
             ["Trasladar turno al nuevo sábado (deja el sábado origen)", "Turno adicional (conserva el sábado origen y suma el nuevo)"],
             index=0
         )
-        obs_val = st.text_input("Observaciones:", value="Turno de compensación", key="dd_obs_comp")
+        obs_val = st.text_input("Observaciones:", value="", key="dd_obs_comp")
 
     # 3. OPCIÓN CAMBIO DE SECUENCIA
     else:
-        st.markdown("<p style='font-size: 0.85rem; color: #475569; margin: 4px 0 10px 0;'>Cambiar al médico de grupo de secuencia para que sus turnos se alternen en las fechas de esta paridad.</p>", unsafe_allow_html=True)
         alcance_sec = st.radio(
             "Alcance del cambio:",
             ["A partir de esta fecha en adelante (todos los turnos futuros)", "Solo para este turno específico"],
             index=0
         )
-        obs_val = st.text_input("Observaciones:", value="Cambio de secuencia", key="dd_obs_sec")
+        obs_val = st.text_input("Observaciones:", value="", key="dd_obs_sec")
 
     st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
     c_btn1, c_btn2 = st.columns([1, 1])
 
     with c_btn1:
-        if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop"):
+        if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop", disabled=misma_secuencia):
             try:
                 sheet_orig = payload.get('sheet') or f"SABADOS {source_date.year}"
                 sheet_dest = f"SABADOS {target_date.year}"

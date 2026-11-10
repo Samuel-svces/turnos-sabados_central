@@ -383,6 +383,17 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         
     month_shifts = df_shifts[df_shifts['Date'].isin(saturdays)] if not df_shifts.empty else pd.DataFrame()
     
+    # Pre-cálculo de observaciones personales para acceso O(1) ultra rápido (optimización de renderizado)
+    super_obs_dict = {}
+    if isinstance(df_super, pd.DataFrame) and not df_super.empty:
+        col_n = 'NOMBRES Y APELLIDOS' if 'NOMBRES Y APELLIDOS' in df_super.columns else ('Profesional' if 'Profesional' in df_super.columns else None)
+        col_o = 'OBSERVACIONES' if 'OBSERVACIONES' in df_super.columns else ('Observaciones' if 'Observaciones' in df_super.columns else None)
+        if col_n and col_o:
+            super_obs_dict = dict(zip(
+                df_super[col_n].astype(str).str.strip().str.upper(),
+                df_super[col_o].fillna('').astype(str).str.strip()
+            ))
+
     if search_query:
         # 1. Buscar en TODOS los turnos (df_shifts)
         all_matches = df_shifts[df_shifts['Supernumerary'].str.upper().str.contains(search_query, na=False)] if not df_shifts.empty else pd.DataFrame()
@@ -479,16 +490,16 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                 _render_encabezado_columna(
                     sat_date, num_doctors_all, len(date_shifts_loop), is_holiday, "admin", nombres_dia
                 )
-                for s_idx, s_row in date_shifts_loop.reset_index().iterrows():
-                    name = s_row['Supernumerary']
+                shifts_records = date_shifts_loop.to_dict('records')
+                for s_idx, s_row in enumerate(shifts_records):
+                    name = str(s_row.get('Supernumerary', '')).strip()
                     shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
                     clasif = s_row.get('Classification', 'Secuencia Normal')
+                    row_excel = int(s_row.get('Excel_Row', 0))
+                    col_excel = int(s_row.get('Excel_Col', 0))
+                    sheet_excel = str(s_row.get('Sheet', ''))
                     
-                    personal_obs = ""
-                    if not df_super.empty:
-                        doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
-                        if not doc_match.empty:
-                            personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
+                    personal_obs = super_obs_dict.get(name.upper(), "")
                             
                     has_conflict = doc_counts.get(name, 0) > 1
                     
@@ -514,14 +525,14 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     
                     help_text = "\n".join(help_lines).strip()
                     
-                    st.markdown(f"<div class='doc-admin-card-wrap' data-doc='{name}' data-date='{sat_date}' data-row='{int(s_row['Excel_Row'])}' data-col='{int(s_row['Excel_Col'])}' data-sheet=\"{s_row['Sheet']}\" data-clasif=\"{clasif}\"></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='doc-admin-card-wrap' data-doc='{name}' data-date='{sat_date}' data-row='{row_excel}' data-col='{col_excel}' data-sheet=\"{sheet_excel}\" data-clasif=\"{clasif}\"></div>", unsafe_allow_html=True)
                     if st.button(display_name, key=f"btn_turno_admin_{sat_date}_{s_idx}", use_container_width=True, help=help_text if help_text else None):
                         action_details = {
                             'date': sat_date,
                             'doctor': name,
-                            'row': int(s_row['Excel_Row']),
-                            'col': int(s_row['Excel_Col']),
-                            'sheet': s_row['Sheet'],
+                            'row': row_excel,
+                            'col': col_excel,
+                            'sheet': sheet_excel,
                             'observation': shift_obs,
                             'classification': clasif
                         }
@@ -628,17 +639,14 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
 
                     if search_query:
                         date_shifts_loop = date_shifts_loop[date_shifts_loop['Supernumerary'].str.upper().str.contains(search_query, na=False)]
-                    for _, s_row in date_shifts_loop.reset_index().iterrows():
-                        name = s_row['Supernumerary']
+                    pub_records = date_shifts_loop.to_dict('records')
+                    for s_row in pub_records:
+                        name = str(s_row.get('Supernumerary', '')).strip()
                         shift_obs = str(s_row.get('Observation', '')) if pd.notna(s_row.get('Observation')) else ''
                         clasif = s_row.get('Classification', 'Secuencia Normal')
                         is_compensation = "Compensación" in str(clasif)
                         
-                        personal_obs = ""
-                        if not df_super.empty:
-                            doc_match = df_super[df_super['NOMBRES Y APELLIDOS'] == name]
-                            if not doc_match.empty:
-                                personal_obs = str(doc_match.iloc[0].get('OBSERVACIONES', '')).strip()
+                        personal_obs = super_obs_dict.get(name.upper(), "")
                                 
                         has_obs = (clasif and clasif != "Secuencia Normal") or shift_obs or personal_obs
                         help_lines = []

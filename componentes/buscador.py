@@ -223,6 +223,19 @@ def renderizar_buscador():
         return true;
     }
 
+    function sonMismaSecuencia(fechaStr1, fechaStr2) {
+        if (!fechaStr1 || !fechaStr2) return false;
+        try {
+            const d1 = new Date(fechaStr1 + 'T00:00:00');
+            const d2 = new Date(fechaStr2 + 'T00:00:00');
+            const diffTime = Math.abs(d2.getTime() - d1.getTime());
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+            return (diffDays % 14) === 0;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function inicializarDragAndDrop() {
         const parentDoc = window.parent.document;
 
@@ -270,7 +283,11 @@ def renderizar_buscador():
                         const targetMarker = targetCol.querySelector('.saturday-col-marker');
                         const targetDate = targetMarker ? targetMarker.getAttribute('data-sat-date') : null;
                         if (targetDate && targetDate !== data.source_date) {
-                            targetCol.classList.add('saturday-col-droppable-hint');
+                            if (sonMismaSecuencia(data.source_date, targetDate)) {
+                                targetCol.classList.add('saturday-col-blocked-sequence');
+                            } else {
+                                targetCol.classList.add('saturday-col-droppable-hint');
+                            }
                         }
                     });
                 });
@@ -278,7 +295,7 @@ def renderizar_buscador():
                 btn.addEventListener('dragend', () => {
                     btn.classList.remove('doc-card-dragging');
                     colMarkers.forEach(c => {
-                        c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active');
+                        c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active', 'saturday-col-blocked-sequence');
                     });
                 });
             });
@@ -289,6 +306,10 @@ def renderizar_buscador():
 
                 col.addEventListener('dragover', (e) => {
                     e.preventDefault();
+                    if (col.classList.contains('saturday-col-blocked-sequence')) {
+                        e.dataTransfer.dropEffect = 'none';
+                        return;
+                    }
                     e.dataTransfer.dropEffect = 'move';
                     if (!col.classList.contains('saturday-col-drop-active')) {
                         col.classList.add('saturday-col-drop-active');
@@ -304,7 +325,7 @@ def renderizar_buscador():
                 col.addEventListener('drop', (e) => {
                     e.preventDefault();
                     col.classList.remove('saturday-col-drop-active');
-                    colMarkers.forEach(c => c.classList.remove('saturday-col-droppable-hint'));
+                    colMarkers.forEach(c => c.classList.remove('saturday-col-droppable-hint', 'saturday-col-blocked-sequence'));
 
                     const jsonStr = e.dataTransfer.getData('text/plain');
                     if (!jsonStr) return;
@@ -315,6 +336,32 @@ def renderizar_buscador():
                         const targetDate = marker ? marker.getAttribute('data-sat-date') : null;
 
                         if (!targetDate || data.source_date === targetDate) {
+                            return;
+                        }
+
+                        // Validación de secuencia estricta: Bloquear si es la misma secuencia
+                        if (sonMismaSecuencia(data.source_date, targetDate)) {
+                            const mostrarAlertaSecuencia = () => {
+                                if (window.parent && window.parent.Swal) {
+                                    window.parent.Swal.fire({
+                                        title: "Secuencia no permitida",
+                                        text: "No puedes mover a este médico a su misma secuencia. Debe trasladarse a su secuencia contraria (ej. 21 de noviembre o 5 de diciembre).",
+                                        icon: "warning",
+                                        confirmButtonColor: '#0f9a9b'
+                                    });
+                                } else {
+                                    alert("Secuencia no permitida: No puedes mover a este médico a su misma secuencia. Debe ser a la secuencia contraria.");
+                                }
+                            };
+
+                            if (!window.parent.Swal) {
+                                const sc = window.parent.document.createElement('script');
+                                sc.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                                sc.onload = mostrarAlertaSecuencia;
+                                window.parent.document.head.appendChild(sc);
+                            } else {
+                                mostrarAlertaSecuencia();
+                            }
                             return;
                         }
 

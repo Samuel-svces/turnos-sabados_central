@@ -1148,18 +1148,89 @@ def apply_styles():
         transform: scale(0.97) !important;
     }
 
-    /* Indicador sutil de columnas destino disponibles */
+    /* Indicador sutil de columnas destino disponibles (secuencia contraria válida) */
     .saturday-col-droppable-hint {
-        transition: background-color 0.2s ease, border-color 0.2s ease !important;
+        border: 2px dashed #0f9a9b !important;
+        border-radius: 12px !important;
+        background-color: #f0fbfb !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* Columna de sábado bloqueada porque pertenece a la misma secuencia quincenal */
+    div[data-testid="stColumn"].saturday-col-blocked-sequence,
+    .saturday-col-blocked-sequence {
+        opacity: 0.5 !important;
+        border: 2px dashed #cbd5e1 !important;
+        border-radius: 12px !important;
+        cursor: not-allowed !important;
+        transition: all 0.2s ease !important;
     }
 
     /* Zona de soltado activa (cuando el cursor entra en la columna destino) */
     div[data-testid="stColumn"].saturday-col-drop-active {
-        background-color: #f0fbfb !important;
+        background-color: #e6f7f6 !important;
         border: 2px dashed #0f9a9b !important;
         border-radius: 12px !important;
         box-shadow: 0 0 16px rgba(15, 154, 155, 0.28) !important;
         transition: all 0.15s ease !important;
+    }
+
+    /* Tooltip informativo con hover en opciones del modal */
+    .info-tooltip-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 17px;
+        height: 17px;
+        margin-left: 7px;
+        border-radius: 50%;
+        background-color: #e6f7f6;
+        color: #0f9a9b;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: help;
+        position: relative;
+        vertical-align: middle;
+        user-select: none;
+        transition: all 0.2s ease;
+        border: 1px solid #a3e0dd;
+    }
+    .info-tooltip-badge:hover {
+        background-color: #0f9a9b;
+        color: #ffffff;
+    }
+    .info-tooltip-badge:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 130%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #17243D;
+        color: #ffffff;
+        padding: 7px 11px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        white-space: normal;
+        min-width: 220px;
+        max-width: 300px;
+        box-shadow: 0 4px 14px rgba(23, 36, 61, 0.25);
+        z-index: 999999;
+        line-height: 1.35;
+        pointer-events: none;
+        text-align: center;
+    }
+    .info-tooltip-badge:hover::before {
+        content: '';
+        position: absolute;
+        bottom: 118%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: #17243D transparent transparent transparent;
+        z-index: 999999;
     }
 
     /* Estilos para los botones con fondo blanco por defecto y color en hover/active/focus */

@@ -11,11 +11,14 @@ Pruebas unitarias para la funcionalidad de Drag & Drop entre columnas de sábado
 
 import unittest
 import os
+import sys
 import datetime
 import pandas as pd
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.abspath(os.path.join(TEST_DIR, ".."))
+if PROJECT_DIR not in sys.path:
+    sys.path.insert(0, PROJECT_DIR)
 
 
 class TestDragDropLogic(unittest.TestCase):
@@ -26,10 +29,11 @@ class TestDragDropLogic(unittest.TestCase):
         with open(dialogos_path, "r", encoding="utf-8") as f:
             contenido = f.read()
         self.assertIn("def show_drag_drop_action_dialog(", contenido, "show_drag_drop_action_dialog debe estar definido")
-        self.assertIn("@st.dialog", contenido, "show_drag_drop_action_dialog debe usar el decorador @st.dialog")
-        self.assertIn("Cambio de Turno (Intercambio con otro médico)", contenido)
-        self.assertIn("Compensación / Pago de Turno", contenido)
-        self.assertIn("Cambiar de Secuencia", contenido)
+        self.assertIn('@st.dialog("Modulo de turnos")', contenido, "El diálogo debe llamarse 'Modulo de turnos' sin icono")
+        self.assertIn('"Cambio de turno"', contenido)
+        self.assertIn('"Compensación de turno"', contenido)
+        self.assertIn('"Cambia de secuencia"', contenido)
+        self.assertNotIn("Intercambiar el turno de este médico con un colega programado en el sábado destino.", contenido)
 
     def test_02_cuadricula_puente_y_marcadores(self):
         """Verifica que la cuadrícula contenga el puente oculto y los atributos de arrastre."""
@@ -78,6 +82,38 @@ class TestDragDropLogic(unittest.TestCase):
         d3 = d1 + datetime.timedelta(days=14)
         p3 = d3.isocalendar()[1] % 2
         self.assertEqual(p1, p3, "Sábados cada 14 días deben pertenecer a la misma secuencia")
+
+    def test_06_regla_estricta_misma_secuencia_bloqueada(self):
+        """
+        Valida la regla de negocio:
+        Si se traslada un médico a un sábado de su MISMA secuencia (ej: 14 nov a 28 nov),
+        debe ser RECHAZADO / BLOQUEADO.
+        Solo se permite a sábados de su SECUENCIA CONTRARIA (ej: 21 nov o 5 dic).
+        """
+        try:
+            from componentes import dialogos
+            es_misma = getattr(dialogos, 'es_misma_secuencia_sabado', None)
+        except Exception:
+            es_misma = None
+
+        self.assertIsNotNone(es_misma, "dialogos debe exportar es_misma_secuencia_sabado")
+
+        sat_14_nov = datetime.date(2026, 11, 14)
+        sat_28_nov = datetime.date(2026, 11, 28)
+        sat_21_nov = datetime.date(2026, 11, 21)
+        sat_05_dic = datetime.date(2026, 12, 5)
+
+        # 14 Nov a 28 Nov -> Misma secuencia -> True (BLOQUEADO)
+        self.assertTrue(es_misma(sat_14_nov, sat_28_nov), "14 Nov y 28 Nov pertenecen a la misma secuencia y deben bloquearse")
+
+        # 14 Nov a 21 Nov -> Secuencia contraria -> False (PERMITIDO)
+        self.assertFalse(es_misma(sat_14_nov, sat_21_nov), "14 Nov y 21 Nov son secuencias contrarias y deben permitirse")
+
+        # 14 Nov a 5 Dic -> Secuencia contraria -> False (PERMITIDO)
+        self.assertFalse(es_misma(sat_14_nov, sat_05_dic), "14 Nov y 5 Dic son secuencias contrarias y deben permitirse")
+
+        # 21 Nov a 5 Dic -> Misma secuencia -> True (BLOQUEADO)
+        self.assertTrue(es_misma(sat_21_nov, sat_05_dic), "21 Nov y 5 Dic pertenecen a la misma secuencia y deben bloquearse")
 
 
 if __name__ == "__main__":
