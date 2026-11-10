@@ -1654,10 +1654,15 @@ def apply_styles():
     
     /* 8. Botón de Encabezado de Fecha (Fondo #F0FBFB y Letra #17243D) */
     button.custom-header-btn,
+    button[data-testid*="secondary"][aria-label*="Médico"],
+    button[data-testid*="secondary"][aria-label*="Médicos"],
+    button[aria-label*="Médicos"],
+    button[aria-label*="Médico"],
     div[class*="st-key-btn_ordenar_pub"] button,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button {
         background: #F0FBFB !important;
         background-color: #F0FBFB !important;
         color: #17243D !important;
@@ -1681,6 +1686,10 @@ def apply_styles():
     }
     button.custom-header-btn:hover,
     button.custom-header-btn:focus,
+    button[data-testid*="secondary"][aria-label*="Médico"]:hover,
+    button[data-testid*="secondary"][aria-label*="Médicos"]:hover,
+    button[aria-label*="Médicos"]:hover,
+    button[aria-label*="Médico"]:hover,
     div[class*="st-key-btn_ordenar_pub"] button:hover,
     div[class*="st-key-btn_ordenar_pub"] button:focus,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
@@ -1688,7 +1697,9 @@ def apply_styles():
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:focus,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:focus {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:focus,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button:hover,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button:focus {
         background: #e2f7f7 !important;
         background-color: #e2f7f7 !important;
         color: #17243D !important;
@@ -1697,10 +1708,15 @@ def apply_styles():
         transform: translateY(-1px) !important;
     }
     button.custom-header-btn:active,
+    button[data-testid*="secondary"][aria-label*="Médico"]:active,
+    button[data-testid*="secondary"][aria-label*="Médicos"]:active,
+    button[aria-label*="Médicos"]:active,
+    button[aria-label*="Médico"]:active,
     div[class*="st-key-btn_ordenar_pub"] button:active,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:active,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:active,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:active {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:active,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button:active {
         background: #d5f2f2 !important;
         background-color: #d5f2f2 !important;
         transform: translateY(0px) !important;
@@ -1709,10 +1725,15 @@ def apply_styles():
     button.custom-header-btn p, 
     button.custom-header-btn span, 
     button.custom-header-btn *,
+    button[data-testid*="secondary"][aria-label*="Médico"] *,
+    button[data-testid*="secondary"][aria-label*="Médicos"] *,
+    button[aria-label*="Médicos"] *,
+    button[aria-label*="Médico"] *,
     div[class*="st-key-btn_ordenar_pub"] button *,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button *,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button * {
         color: #17243D !important;
         background-color: transparent !important;
         font-family: 'Outfit', sans-serif !important;
@@ -1721,11 +1742,10 @@ def apply_styles():
         text-shadow: none !important;
     }
 
-    /* 9. Botones de Médico en Modo Editor (Admin) - Fondo Blanco (Excluye encabezados) */
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn),
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn),
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn),
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn) {
+    /* 9. Botón Duplicar en Modo Editor (Admin) - Fondo Blanco */
+    div[class*="st-key-btn_duplicar"] button,
+    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button,
+    div[data-testid="column"]:has(.dup-btn-wrapper) button {
         background: #ffffff !important;
         background-color: #ffffff !important;
         color: #262730 !important;
@@ -1738,29 +1758,26 @@ def apply_styles():
         line-height: 1.25 !important;
         text-shadow: none !important;
     }
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn) *,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn) *,
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn) *,
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn) * {
+    div[class*="st-key-btn_duplicar"] button *,
+    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button *,
+    div[data-testid="column"]:has(.dup-btn-wrapper) button * {
         color: #262730 !important;
         background-color: transparent !important;
         font-weight: 500 !important;
         text-shadow: none !important;
     }
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover,
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover,
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover {
+    div[class*="st-key-btn_duplicar"] button:hover,
+    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:hover,
+    div[data-testid="column"]:has(.dup-btn-wrapper) button:hover {
         background: #f1f5f9 !important;
         background-color: #f1f5f9 !important;
         border-color: #cbd5e1 !important;
         color: #1e293b !important;
         transform: scale(1.01) !important;
     }
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover *,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover *,
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="stBaseButton-secondary"]:not(.custom-header-btn):hover *,
-    div[data-testid="column"]:has(.saturday-col-marker) div:not([class*="st-key-btn_ordenar_pub"]):not([class*="st-key-popover_filtro"]) > button[data-testid="baseButton-secondary"]:not(.custom-header-btn):hover * {
+    div[class*="st-key-btn_duplicar"] button:hover *,
+    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:hover *,
+    div[data-testid="column"]:has(.dup-btn-wrapper) button:hover * {
         color: #1e293b !important;
     }
     
@@ -2435,12 +2452,17 @@ def apply_styles():
 
     /* El propio encabezado de fecha abre el panel (clic en toda la píldora) */
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn,
+    button[data-testid*="secondary"][aria-label*="Médico"],
+    button[data-testid*="secondary"][aria-label*="Médicos"],
+    button[aria-label*="Médicos"],
+    button[aria-label*="Médico"],
     div[class*="st-key-popover_filtro"] button,
     div[class*="st-key-popover_filtro"] button[aria-expanded="true"],
     div[class*="st-key-btn_ordenar_pub"] button,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button {
         background: #F0FBFB !important;
         background-color: #F0FBFB !important;
         color: #17243D !important;
@@ -2470,10 +2492,15 @@ def apply_styles():
     }
 
     div[class*="st-key-popover_filtro"] button *,
+    button[data-testid*="secondary"][aria-label*="Médico"] *,
+    button[data-testid*="secondary"][aria-label*="Médicos"] *,
+    button[aria-label*="Médicos"] *,
+    button[aria-label*="Médico"] *,
     div[class*="st-key-btn_ordenar_pub"] button *,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button *,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button * {
         color: #17243D !important;
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
@@ -2486,10 +2513,15 @@ def apply_styles():
     }
 
     div[class*="st-key-popover_filtro"] button:hover,
+    button[data-testid*="secondary"][aria-label*="Médico"]:hover,
+    button[data-testid*="secondary"][aria-label*="Médicos"]:hover,
+    button[aria-label*="Médicos"]:hover,
+    button[aria-label*="Médico"]:hover,
     div[class*="st-key-btn_ordenar_pub"] button:hover,
     div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
     div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button:hover,
-    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover {
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button:hover {
         background: #e2f7f7 !important;
         background-color: #e2f7f7 !important;
         border-color: #a3e0e5 !important;
