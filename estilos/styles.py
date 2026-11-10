@@ -1098,6 +1098,65 @@ def apply_styles():
         transition: opacity 0.15s ease !important;
     }
 
+    /* Ocultar puente de comunicación Drag & Drop y marcadores de metadatos */
+    .drag-drop-bridge-container,
+    div[data-testid="stElementContainer"]:has(.drag-drop-bridge-container),
+    div[data-testid="stTextInput"]:has(input[aria-label="dd_bridge_input"]),
+    div[data-testid="stElementContainer"]:has(input[aria-label="dd_bridge_input"]),
+    div[data-testid="stButton"]:has(button:contains("dd_bridge_btn")),
+    div[data-testid="stElementContainer"]:has(button[data-testid*="btn_trigger_drag_drop"]),
+    .doc-admin-card-wrap,
+    div[data-testid="stElementContainer"]:has(.doc-admin-card-wrap) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+        min-height: 0px !important;
+        max-height: 0px !important;
+        width: 0px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
+
+    /* Tarjetas de médico arrastrables en modo Administrador */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button.doc-draggable-card,
+    button.doc-draggable-card {
+        cursor: grab !important;
+        user-select: none !important;
+        -webkit-user-drag: element !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) button.doc-draggable-card:active,
+    button.doc-draggable-card:active {
+        cursor: grabbing !important;
+    }
+
+    /* Estado visual mientras la tarjeta se está arrastrando */
+    .doc-card-dragging,
+    button.doc-card-dragging {
+        opacity: 0.35 !important;
+        border: 1.5px dashed #0f9a9b !important;
+        background-color: #f0fbfb !important;
+        transform: scale(0.97) !important;
+    }
+
+    /* Indicador sutil de columnas destino disponibles */
+    .saturday-col-droppable-hint {
+        transition: background-color 0.2s ease, border-color 0.2s ease !important;
+    }
+
+    /* Zona de soltado activa (cuando el cursor entra en la columna destino) */
+    div[data-testid="stColumn"].saturday-col-drop-active {
+        background-color: #f0fbfb !important;
+        border: 2px dashed #0f9a9b !important;
+        border-radius: 12px !important;
+        box-shadow: 0 0 16px rgba(15, 154, 155, 0.28) !important;
+        transition: all 0.15s ease !important;
+    }
+
     /* Estilos para los botones con fondo blanco por defecto y color en hover/active/focus */
     
     /* Ocultar marcadores de botones de búsqueda */

@@ -223,11 +223,138 @@ def renderizar_buscador():
         return true;
     }
 
-    // Inicialización rápida y reintentos ligeros
-    if (!vincularBuscadorReactivo()) {
-        const timers = [50, 150, 300, 600];
-        timers.forEach(ms => setTimeout(vincularBuscadorReactivo, ms));
+    function inicializarDragAndDrop() {
+        const parentDoc = window.parent.document;
+        const colMarkers = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)');
+
+        colMarkers.forEach(col => {
+            const marker = col.querySelector('.saturday-col-marker');
+            const colDate = marker ? marker.getAttribute('data-sat-date') : null;
+
+            // 1. Configurar botones de médicos como arrastrables
+            const wraps = col.querySelectorAll('.doc-admin-card-wrap');
+            wraps.forEach(wrap => {
+                const container = wrap.closest('div[data-testid="stElementContainer"]');
+                if (!container) return;
+                const nextContainer = container.nextElementSibling;
+                const btn = nextContainer ? nextContainer.querySelector('button') : null;
+                if (!btn || btn.dataset.dragInitialized) return;
+
+                btn.dataset.dragInitialized = "true";
+                btn.setAttribute('draggable', 'true');
+                btn.classList.add('doc-draggable-card');
+
+                btn.addEventListener('dragstart', (e) => {
+                    const data = {
+                        doctor: wrap.getAttribute('data-doc'),
+                        source_date: wrap.getAttribute('data-date') || colDate,
+                        row: parseInt(wrap.getAttribute('data-row') || '0'),
+                        col: parseInt(wrap.getAttribute('data-col') || '0'),
+                        sheet: wrap.getAttribute('data-sheet'),
+                        clasificacion: wrap.getAttribute('data-clasif') || 'Secuencia Normal'
+                    };
+                    e.dataTransfer.setData('text/plain', JSON.stringify(data));
+                    e.dataTransfer.effectAllowed = 'move';
+                    btn.classList.add('doc-card-dragging');
+
+                    colMarkers.forEach(targetCol => {
+                        const targetMarker = targetCol.querySelector('.saturday-col-marker');
+                        const targetDate = targetMarker ? targetMarker.getAttribute('data-sat-date') : null;
+                        if (targetDate && targetDate !== data.source_date) {
+                            targetCol.classList.add('saturday-col-droppable-hint');
+                        }
+                    });
+                });
+
+                btn.addEventListener('dragend', () => {
+                    btn.classList.remove('doc-card-dragging');
+                    colMarkers.forEach(c => {
+                        c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active');
+                    });
+                });
+            });
+
+            // 2. Configurar columna como zona de soltado (Drop Target)
+            if (!col.dataset.dropTargetBound) {
+                col.dataset.dropTargetBound = "true";
+
+                col.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    if (!col.classList.contains('saturday-col-drop-active')) {
+                        col.classList.add('saturday-col-drop-active');
+                    }
+                });
+
+                col.addEventListener('dragleave', (e) => {
+                    if (!col.contains(e.relatedTarget)) {
+                        col.classList.remove('saturday-col-drop-active');
+                    }
+                });
+
+                col.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    col.classList.remove('saturday-col-drop-active');
+                    colMarkers.forEach(c => c.classList.remove('saturday-col-droppable-hint'));
+
+                    const jsonStr = e.dataTransfer.getData('text/plain');
+                    if (!jsonStr) return;
+
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        const marker = col.querySelector('.saturday-col-marker');
+                        const targetDate = marker ? marker.getAttribute('data-sat-date') : null;
+
+                        if (!targetDate || data.source_date === targetDate) {
+                            return;
+                        }
+
+                        data.target_date = targetDate;
+
+                        const allInputs = parentDoc.querySelectorAll('input');
+                        let targetInput = null;
+                        for (let inp of allInputs) {
+                            if (inp.getAttribute('aria-label') === 'dd_bridge_input') {
+                                targetInput = inp;
+                                break;
+                            }
+                        }
+
+                        const allBtns = parentDoc.querySelectorAll('button');
+                        let targetBtn = null;
+                        for (let b of allBtns) {
+                            const txt = (b.innerText || "").trim();
+                            if (txt === 'dd_bridge_btn') {
+                                targetBtn = b;
+                                break;
+                            }
+                        }
+
+                        if (targetInput && targetBtn) {
+                            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                            nativeInputValueSetter.call(targetInput, JSON.stringify(data));
+                            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            setTimeout(() => targetBtn.click(), 50);
+                        }
+                    } catch (err) {
+                        console.error("Error al procesar drop:", err);
+                    }
+                });
+            }
+        });
     }
+
+    // Inicialización rápida y reintentos ligeros
+    vincularBuscadorReactivo();
+    inicializarDragAndDrop();
+    const timers = [50, 150, 300, 600, 1200];
+    timers.forEach(ms => {
+        setTimeout(() => {
+            vincularBuscadorReactivo();
+            inicializarDragAndDrop();
+        }, ms);
+    });
     </script>
     """, height=0)
 

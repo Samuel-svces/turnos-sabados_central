@@ -709,3 +709,324 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
 
 show_selection_dialog = show_shift_dialog
 
+
+@st.dialog("🔄 Traslado de Turno")
+def show_drag_drop_action_dialog(payload, load_app_data_func):
+    """
+    Diálogo modal interactivo que se abre cuando un médico es arrastrado y soltado
+    en otra columna de sábado.
+    Permite elegir entre:
+    1. 🔀 Cambio de Turno (intercambio mutuo con otro médico)
+    2. 🟡 Compensación / Pago de Turno (traslado o turno adicional)
+    3. 🔁 Cambiar de Secuencia (reubicar el ciclo quincenal de sábados)
+    """
+    if not st.session_state.is_admin:
+        st.error("Acceso denegado: Se requieren permisos de administrador.")
+        st.stop()
+
+    if not payload or not isinstance(payload, dict):
+        st.session_state["active_drag_drop_payload"] = None
+        st.rerun()
+
+    doctor_name = str(payload.get('doctor', '')).strip().upper()
+    source_date_raw = payload.get('source_date')
+    target_date_raw = payload.get('target_date')
+
+    if isinstance(source_date_raw, str):
+        source_date = pd.to_datetime(source_date_raw).date()
+    elif isinstance(source_date_raw, datetime.datetime):
+        source_date = source_date_raw.date()
+    else:
+        source_date = source_date_raw
+
+    if isinstance(target_date_raw, str):
+        target_date = pd.to_datetime(target_date_raw).date()
+    elif isinstance(target_date_raw, datetime.datetime):
+        target_date = target_date_raw.date()
+    else:
+        target_date = target_date_raw
+
+    source_str = f"{source_date.day} {dp.MONTH_NAMES_SP.get(source_date.month, '')} {source_date.year}" if source_date else str(source_date_raw)
+    target_str = f"{target_date.day} {dp.MONTH_NAMES_SP.get(target_date.month, '')} {target_date.year}" if target_date else str(target_date_raw)
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #f0fbfb 0%, #e6f7f6 100%); border: 1.5px solid #0f9a9b; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;">
+        <div style="font-size: 0.78rem; color: #5a7184; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Médico a Trasladar</div>
+        <div style="font-size: 1.15rem; color: #17243D; font-weight: 800; font-family: Outfit, sans-serif; margin-bottom: 4px;">{doctor_name}</div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #0f4c4c; font-weight: 600;">
+            <span>📅 {source_str}</span>
+            <span style="color: #0f9a9b; font-weight: 800; font-size: 1.1rem;">➔</span>
+            <span>📅 {target_str}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    opciones_accion = [
+        "🔀 Cambio de Turno (Intercambio con otro médico)",
+        "🟡 Compensación / Pago de Turno",
+        "🔁 Cambiar de Secuencia (Ciclo quincenal)"
+    ]
+    accion_sel = st.radio("Acción a realizar:", opciones_accion, index=0)
+
+    df_s = st.session_state.get('shifts_df', pd.DataFrame())
+    excel_path = st.session_state.get('excel_path', '')
+
+    # 1. OPCIÓN CAMBIO DE TURNO
+    if accion_sel == opciones_accion[0]:
+        st.markdown("<p style='font-size: 0.85rem; color: #475569; margin: 4px 0 10px 0;'>Intercambiar el turno de este médico con un colega programado en el sábado destino.</p>", unsafe_allow_html=True)
+        target_shifts = df_s[df_s['Date'] == target_date] if not df_s.empty else pd.DataFrame()
+        target_docs = sorted(list(target_shifts['Supernumerary'].dropna().unique())) if not target_shifts.empty else []
+        target_docs = [d for d in target_docs if d != doctor_name]
+
+        if target_docs:
+            swap_peer = st.selectbox("Seleccione el médico con quien intercambia turno:", target_docs)
+        else:
+            allowed = get_allowed_doctors(target_date=target_date)
+            allowed = [d for d in allowed if d != doctor_name]
+            st.info(f"No hay otros médicos programados aún el {target_str}. Seleccione uno del directorio:")
+            swap_peer = st.selectbox("Seleccione médico para el intercambio:", allowed)
+
+        obs_val = st.text_input("Observaciones:", value=f"Cambio de turno", key="dd_obs_cambio")
+
+    # 2. OPCIÓN COMPENSACIÓN
+    elif accion_sel == opciones_accion[1]:
+        st.markdown("<p style='font-size: 0.85rem; color: #475569; margin: 4px 0 10px 0;'>Asignar al médico en el sábado destino bajo modalidad de compensación o pago de turno.</p>", unsafe_allow_html=True)
+        modalidad_comp = st.radio(
+            "Modalidad de compensación:",
+            ["Trasladar turno al nuevo sábado (deja el sábado origen)", "Turno adicional (conserva el sábado origen y suma el nuevo)"],
+            index=0
+        )
+        obs_val = st.text_input("Observaciones:", value="Turno de compensación", key="dd_obs_comp")
+
+    # 3. OPCIÓN CAMBIO DE SECUENCIA
+    else:
+        st.markdown("<p style='font-size: 0.85rem; color: #475569; margin: 4px 0 10px 0;'>Cambiar al médico de grupo de secuencia para que sus turnos se alternen en las fechas de esta paridad.</p>", unsafe_allow_html=True)
+        alcance_sec = st.radio(
+            "Alcance del cambio:",
+            ["A partir de esta fecha en adelante (todos los turnos futuros)", "Solo para este turno específico"],
+            index=0
+        )
+        obs_val = st.text_input("Observaciones:", value="Cambio de secuencia", key="dd_obs_sec")
+
+    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
+    c_btn1, c_btn2 = st.columns([1, 1])
+
+    with c_btn1:
+        if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop"):
+            try:
+                sheet_orig = payload.get('sheet') or f"SABADOS {source_date.year}"
+                sheet_dest = f"SABADOS {target_date.year}"
+                row_orig = int(payload.get('row', 0))
+                col_orig = int(payload.get('col', 0))
+
+                mods = []
+
+                if accion_sel == opciones_accion[0]:
+                    # 1. CAMBIO DE TURNO (SWAP)
+                    peer_match = df_s[(df_s['Date'] == target_date) & (df_s['Supernumerary'] == swap_peer)] if not df_s.empty else pd.DataFrame()
+                    peer_row = int(peer_match.iloc[0]['Excel_Row']) if not peer_match.empty else 0
+                    peer_col = int(peer_match.iloc[0]['Excel_Col']) if not peer_match.empty else 0
+                    peer_sheet = str(peer_match.iloc[0]['Sheet']) if not peer_match.empty else sheet_dest
+
+                    mods.append({
+                        'sheet': sheet_orig,
+                        'date': source_date,
+                        'original_name': doctor_name,
+                        'new_name': swap_peer,
+                        'row': row_orig,
+                        'col': col_orig,
+                        'type': 'REEMPLAZAR',
+                        'observaciones': obs_val.strip(),
+                        'clasificacion': f"Cambio de turno con {swap_peer}"
+                    })
+                    mods.append({
+                        'sheet': peer_sheet,
+                        'date': target_date,
+                        'original_name': swap_peer,
+                        'new_name': doctor_name,
+                        'row': peer_row,
+                        'col': peer_col,
+                        'type': 'REEMPLAZAR',
+                        'observaciones': obs_val.strip(),
+                        'clasificacion': f"Cambio de turno con {doctor_name}"
+                    })
+
+                    dp.save_modifications_batch(excel_path, mods)
+
+                    df_upd = df_s.copy()
+                    m_orig = (df_upd['Date'] == source_date) & (df_upd['Supernumerary'] == doctor_name)
+                    m_dest = (df_upd['Date'] == target_date) & (df_upd['Supernumerary'] == swap_peer)
+                    df_upd.loc[m_orig, 'Supernumerary'] = swap_peer
+                    df_upd.loc[m_orig, 'Classification'] = f"Cambio de turno con {swap_peer}"
+                    df_upd.loc[m_orig, 'Observation'] = obs_val.strip()
+                    df_upd.loc[m_dest, 'Supernumerary'] = doctor_name
+                    df_upd.loc[m_dest, 'Classification'] = f"Cambio de turno con {doctor_name}"
+                    df_upd.loc[m_dest, 'Observation'] = obs_val.strip()
+                    st.session_state.shifts_df = df_upd
+
+                    st.session_state["show_swap_success_alert"] = True
+                    st.session_state["swap_doc_1"] = doctor_name
+                    st.session_state["swap_doc_2"] = swap_peer
+                    st.session_state["swap_alert_counter"] = st.session_state.get("swap_alert_counter", 0) + 1
+
+                elif accion_sel == opciones_accion[1]:
+                    # 2. COMPENSACIÓN
+                    if "Trasladar turno" in modalidad_comp:
+                        mods.append({
+                            'sheet': sheet_orig,
+                            'date': source_date,
+                            'original_name': doctor_name,
+                            'new_name': '',
+                            'row': row_orig,
+                            'col': col_orig,
+                            'type': 'ELIMINAR',
+                            'observaciones': '',
+                            'clasificacion': 'Secuencia Normal'
+                        })
+                    mods.append({
+                        'sheet': sheet_dest,
+                        'date': target_date,
+                        'original_name': '',
+                        'new_name': doctor_name,
+                        'row': 0,
+                        'col': 0,
+                        'type': 'AGREGAR',
+                        'observaciones': obs_val.strip(),
+                        'clasificacion': 'Compensación / Pago de turno'
+                    })
+
+                    dp.save_modifications_batch(excel_path, mods)
+
+                    df_upd = df_s.copy()
+                    if "Trasladar turno" in modalidad_comp:
+                        df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == source_date) & (df_upd['Supernumerary'] == doctor_name)].index)
+                    new_row = pd.DataFrame([{
+                        'Sheet': sheet_dest,
+                        'Month_Header': dp.MONTH_NAMES_SP.get(target_date.month, 'EXTRA'),
+                        'Date': target_date,
+                        'Year': target_date.year,
+                        'Month': target_date.month,
+                        'Supernumerary': doctor_name,
+                        'Excel_Row': 0,
+                        'Excel_Col': 0,
+                        'Header_Row': 0,
+                        'Observation': obs_val.strip(),
+                        'Classification': 'Compensación / Pago de turno'
+                    }])
+                    st.session_state.shifts_df = pd.concat([df_upd, new_row], ignore_index=True)
+
+                    st.session_state["show_edit_success_alert"] = True
+                    st.session_state["edited_doc_name"] = f"{doctor_name} (Compensación)"
+                    st.session_state["edit_alert_counter"] = st.session_state.get("edit_alert_counter", 0) + 1
+
+                else:
+                    # 3. CAMBIAR DE SECUENCIA
+                    if "A partir de esta fecha en adelante" in alcance_sec:
+                        source_parity = source_date.isocalendar()[1] % 2
+                        day_shift = (target_date - source_date).days
+
+                        futuros = df_s[
+                            (df_s['Supernumerary'].astype(str).str.strip().str.upper() == doctor_name) &
+                            (pd.to_datetime(df_s['Date']).dt.date >= source_date)
+                        ]
+                        
+                        df_upd = df_s.copy()
+                        for _, f_row in futuros.iterrows():
+                            f_date = pd.to_datetime(f_row['Date']).date()
+                            if (f_date.isocalendar()[1] % 2) == source_parity:
+                                new_f_date = f_date + datetime.timedelta(days=day_shift)
+                                mods.append({
+                                    'sheet': f_row['Sheet'],
+                                    'date': f_date,
+                                    'original_name': doctor_name,
+                                    'new_name': '',
+                                    'row': int(f_row.get('Excel_Row', 0)),
+                                    'col': int(f_row.get('Excel_Col', 0)),
+                                    'type': 'ELIMINAR',
+                                    'observaciones': '',
+                                    'clasificacion': f_row.get('Classification', 'Secuencia Normal')
+                                })
+                                mods.append({
+                                    'sheet': f"SABADOS {new_f_date.year}",
+                                    'date': new_f_date,
+                                    'original_name': '',
+                                    'new_name': doctor_name,
+                                    'row': 0,
+                                    'col': 0,
+                                    'type': 'AGREGAR',
+                                    'observaciones': obs_val.strip(),
+                                    'clasificacion': 'Secuencia Normal'
+                                })
+                                df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == f_date) & (df_upd['Supernumerary'] == doctor_name)].index)
+                                df_upd = pd.concat([df_upd, pd.DataFrame([{
+                                    'Sheet': f"SABADOS {new_f_date.year}",
+                                    'Month_Header': dp.MONTH_NAMES_SP.get(new_f_date.month, 'EXTRA'),
+                                    'Date': new_f_date,
+                                    'Year': new_f_date.year,
+                                    'Month': new_f_date.month,
+                                    'Supernumerary': doctor_name,
+                                    'Excel_Row': 0,
+                                    'Excel_Col': 0,
+                                    'Header_Row': 0,
+                                    'Observation': obs_val.strip(),
+                                    'Classification': 'Secuencia Normal'
+                                }])], ignore_index=True)
+                        st.session_state.shifts_df = df_upd
+                    else:
+                        mods.append({
+                            'sheet': sheet_orig,
+                            'date': source_date,
+                            'original_name': doctor_name,
+                            'new_name': '',
+                            'row': row_orig,
+                            'col': col_orig,
+                            'type': 'ELIMINAR',
+                            'observaciones': '',
+                            'clasificacion': 'Secuencia Normal'
+                        })
+                        mods.append({
+                            'sheet': sheet_dest,
+                            'date': target_date,
+                            'original_name': '',
+                            'new_name': doctor_name,
+                            'row': 0,
+                            'col': 0,
+                            'type': 'AGREGAR',
+                            'observaciones': obs_val.strip(),
+                            'clasificacion': 'Secuencia Normal'
+                        })
+                        df_upd = df_s.copy()
+                        df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == source_date) & (df_upd['Supernumerary'] == doctor_name)].index)
+                        new_row = pd.DataFrame([{
+                            'Sheet': sheet_dest,
+                            'Month_Header': dp.MONTH_NAMES_SP.get(target_date.month, 'EXTRA'),
+                            'Date': target_date,
+                            'Year': target_date.year,
+                            'Month': target_date.month,
+                            'Supernumerary': doctor_name,
+                            'Excel_Row': 0,
+                            'Excel_Col': 0,
+                            'Header_Row': 0,
+                            'Observation': obs_val.strip(),
+                            'Classification': 'Secuencia Normal'
+                        }])
+                        st.session_state.shifts_df = pd.concat([df_upd, new_row], ignore_index=True)
+
+                    if mods:
+                        dp.save_modifications_batch(excel_path, mods)
+
+                    st.session_state["show_edit_success_alert"] = True
+                    st.session_state["edited_doc_name"] = f"{doctor_name} (Secuencia)"
+                    st.session_state["edit_alert_counter"] = st.session_state.get("edit_alert_counter", 0) + 1
+
+                dp.load_modifications.clear()
+                st.session_state["active_drag_drop_payload"] = None
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error al aplicar la acción: {e}")
+
+    with c_btn2:
+        if st.button("Cancelar", type="secondary", use_container_width=True, key="btn_cancelar_drag_drop"):
+            st.session_state["active_drag_drop_payload"] = None
+            st.rerun()
+

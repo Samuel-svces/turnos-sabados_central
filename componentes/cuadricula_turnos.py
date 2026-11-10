@@ -407,13 +407,31 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
             st.rerun()
     
     if st.session_state.is_admin:
+        # Puente reactivo oculto para Drag & Drop entre columnas de sábados
+        st.markdown("<div class='drag-drop-bridge-container'>", unsafe_allow_html=True)
+        bridge_payload = st.text_input("dd_bridge_input", key="bridge_drag_drop_payload", label_visibility="collapsed")
+        trigger_drop = st.button("dd_bridge_btn", key="btn_trigger_drag_drop")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if trigger_drop and bridge_payload:
+            import json
+            try:
+                payload_parsed = json.loads(bridge_payload)
+                st.session_state["active_drag_drop_payload"] = payload_parsed
+                st.session_state["bridge_drag_drop_payload"] = ""
+            except Exception as e_json:
+                print("Error deserializando drag drop payload:", e_json)
+
+        if st.session_state.get("active_drag_drop_payload"):
+            dialogos.show_drag_drop_action_dialog(st.session_state["active_drag_drop_payload"], cargar_datos_fn)
+
         # VISTA ADMINISTRADOR: Botones interactivos con diálogo de edición
         st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)
         st.markdown("<div class='calendar-grid'>", unsafe_allow_html=True)
         cols = st.columns(len(saturdays))
         for idx, sat_date in enumerate(saturdays):
             with cols[idx]:
-                st.markdown("<div class='saturday-col-marker'></div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='saturday-col-marker' data-sat-date='{sat_date}'></div>", unsafe_allow_html=True)
                 is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
                 
                 date_shifts_all = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
@@ -465,6 +483,7 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     
                     help_text = "\n".join(help_lines).strip()
                     
+                    st.markdown(f"<div class='doc-admin-card-wrap' data-doc='{name}' data-date='{sat_date}' data-row='{int(s_row['Excel_Row'])}' data-col='{int(s_row['Excel_Col'])}' data-sheet=\"{s_row['Sheet']}\" data-clasif=\"{clasif}\"></div>", unsafe_allow_html=True)
                     if st.button(display_name, key=f"btn_turno_admin_{sat_date}_{s_idx}", use_container_width=True, help=help_text if help_text else None):
                         action_details = {
                             'date': sat_date,
