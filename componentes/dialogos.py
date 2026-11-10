@@ -821,13 +821,8 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     elif accion_sel == "Compensación de turno":
         obs_val = st.text_input("Observaciones:", value="", key="dd_obs_comp")
 
-    # 3. OPCIÓN CAMBIO DE SECUENCIA
+    # 3. OPCIÓN CAMBIO DE SECUENCIA (Aplica automáticamente de ahí en adelante a todos los turnos futuros)
     else:
-        alcance_sec = st.radio(
-            "Alcance del cambio:",
-            ["A partir de esta fecha en adelante (todos los turnos futuros)", "Solo para este turno específico"],
-            index=0
-        )
         obs_val = st.text_input("Observaciones:", value="", key="dd_obs_sec")
 
     st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
@@ -928,97 +923,57 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
                     st.session_state["edit_alert_counter"] = st.session_state.get("edit_alert_counter", 0) + 1
 
                 else:
-                    # 3. CAMBIAR DE SECUENCIA
-                    if "A partir de esta fecha en adelante" in alcance_sec:
-                        source_parity = source_date.isocalendar()[1] % 2
-                        day_shift = (target_date - source_date).days
+                    # 3. CAMBIAR DE SECUENCIA (A partir de esta fecha en adelante: todos los turnos futuros)
+                    source_parity = source_date.isocalendar()[1] % 2
+                    day_shift = (target_date - source_date).days
 
-                        futuros = df_s[
-                            (df_s['Supernumerary'].astype(str).str.strip().str.upper() == doctor_name) &
-                            (pd.to_datetime(df_s['Date']).dt.date >= source_date)
-                        ]
-                        
-                        df_upd = df_s.copy()
-                        for _, f_row in futuros.iterrows():
-                            f_date = pd.to_datetime(f_row['Date']).date()
-                            if (f_date.isocalendar()[1] % 2) == source_parity:
-                                new_f_date = f_date + datetime.timedelta(days=day_shift)
-                                mods.append({
-                                    'sheet': f_row['Sheet'],
-                                    'date': f_date,
-                                    'original_name': doctor_name,
-                                    'new_name': '',
-                                    'row': int(f_row.get('Excel_Row', 0)),
-                                    'col': int(f_row.get('Excel_Col', 0)),
-                                    'type': 'ELIMINAR',
-                                    'observaciones': '',
-                                    'clasificacion': f_row.get('Classification', 'Secuencia Normal')
-                                })
-                                mods.append({
-                                    'sheet': f"SABADOS {new_f_date.year}",
-                                    'date': new_f_date,
-                                    'original_name': '',
-                                    'new_name': doctor_name,
-                                    'row': 0,
-                                    'col': 0,
-                                    'type': 'AGREGAR',
-                                    'observaciones': obs_val.strip(),
-                                    'clasificacion': 'Secuencia Normal'
-                                })
-                                df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == f_date) & (df_upd['Supernumerary'] == doctor_name)].index)
-                                df_upd = pd.concat([df_upd, pd.DataFrame([{
-                                    'Sheet': f"SABADOS {new_f_date.year}",
-                                    'Month_Header': dp.MONTH_NAMES_SP.get(new_f_date.month, 'EXTRA'),
-                                    'Date': new_f_date,
-                                    'Year': new_f_date.year,
-                                    'Month': new_f_date.month,
-                                    'Supernumerary': doctor_name,
-                                    'Excel_Row': 0,
-                                    'Excel_Col': 0,
-                                    'Header_Row': 0,
-                                    'Observation': obs_val.strip(),
-                                    'Classification': 'Secuencia Normal'
-                                }])], ignore_index=True)
-                        st.session_state.shifts_df = df_upd
-                    else:
-                        mods.append({
-                            'sheet': sheet_orig,
-                            'date': source_date,
-                            'original_name': doctor_name,
-                            'new_name': '',
-                            'row': row_orig,
-                            'col': col_orig,
-                            'type': 'ELIMINAR',
-                            'observaciones': '',
-                            'clasificacion': 'Secuencia Normal'
-                        })
-                        mods.append({
-                            'sheet': sheet_dest,
-                            'date': target_date,
-                            'original_name': '',
-                            'new_name': doctor_name,
-                            'row': 0,
-                            'col': 0,
-                            'type': 'AGREGAR',
-                            'observaciones': obs_val.strip(),
-                            'clasificacion': 'Secuencia Normal'
-                        })
-                        df_upd = df_s.copy()
-                        df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == source_date) & (df_upd['Supernumerary'] == doctor_name)].index)
-                        new_row = pd.DataFrame([{
-                            'Sheet': sheet_dest,
-                            'Month_Header': dp.MONTH_NAMES_SP.get(target_date.month, 'EXTRA'),
-                            'Date': target_date,
-                            'Year': target_date.year,
-                            'Month': target_date.month,
-                            'Supernumerary': doctor_name,
-                            'Excel_Row': 0,
-                            'Excel_Col': 0,
-                            'Header_Row': 0,
-                            'Observation': obs_val.strip(),
-                            'Classification': 'Secuencia Normal'
-                        }])
-                        st.session_state.shifts_df = pd.concat([df_upd, new_row], ignore_index=True)
+                    futuros = df_s[
+                        (df_s['Supernumerary'].astype(str).str.strip().str.upper() == doctor_name) &
+                        (pd.to_datetime(df_s['Date']).dt.date >= source_date)
+                    ]
+                    
+                    df_upd = df_s.copy()
+                    for _, f_row in futuros.iterrows():
+                        f_date = pd.to_datetime(f_row['Date']).date()
+                        if (f_date.isocalendar()[1] % 2) == source_parity:
+                            new_f_date = f_date + datetime.timedelta(days=day_shift)
+                            mods.append({
+                                'sheet': f_row['Sheet'],
+                                'date': f_date,
+                                'original_name': doctor_name,
+                                'new_name': '',
+                                'row': int(f_row.get('Excel_Row', 0)),
+                                'col': int(f_row.get('Excel_Col', 0)),
+                                'type': 'ELIMINAR',
+                                'observaciones': '',
+                                'clasificacion': f_row.get('Classification', 'Secuencia Normal')
+                            })
+                            mods.append({
+                                'sheet': f"SABADOS {new_f_date.year}",
+                                'date': new_f_date,
+                                'original_name': '',
+                                'new_name': doctor_name,
+                                'row': 0,
+                                'col': 0,
+                                'type': 'AGREGAR',
+                                'observaciones': obs_val.strip(),
+                                'clasificacion': 'Secuencia Normal'
+                            })
+                            df_upd = df_upd.drop(index=df_upd[(df_upd['Date'] == f_date) & (df_upd['Supernumerary'] == doctor_name)].index)
+                            df_upd = pd.concat([df_upd, pd.DataFrame([{
+                                'Sheet': f"SABADOS {new_f_date.year}",
+                                'Month_Header': dp.MONTH_NAMES_SP.get(new_f_date.month, 'EXTRA'),
+                                'Date': new_f_date,
+                                'Year': new_f_date.year,
+                                'Month': new_f_date.month,
+                                'Supernumerary': doctor_name,
+                                'Excel_Row': 0,
+                                'Excel_Col': 0,
+                                'Header_Row': 0,
+                                'Observation': obs_val.strip(),
+                                'Classification': 'Secuencia Normal'
+                            }])], ignore_index=True)
+                    st.session_state.shifts_df = df_upd
 
                     if mods:
                         dp.save_modifications_batch(excel_path, mods)

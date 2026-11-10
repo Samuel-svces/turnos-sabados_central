@@ -35,6 +35,8 @@ class TestDragDropLogic(unittest.TestCase):
         self.assertIn('"Cambia de secuencia"', contenido)
         self.assertNotIn("Modalidad de compensación", contenido)
         self.assertNotIn("Intercambiar el turno de este médico con un colega programado en el sábado destino.", contenido)
+        self.assertNotIn("Alcance del cambio:", contenido)
+        self.assertNotIn("Solo para este turno específico", contenido)
 
     def test_02_cuadricula_puente_y_marcadores(self):
         """Verifica que la cuadrícula contenga el puente oculto y los atributos de arrastre."""
