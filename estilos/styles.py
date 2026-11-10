@@ -2321,8 +2321,6 @@ def apply_styles():
 
     /* El propio encabezado de fecha abre el panel (clic en toda la píldora) */
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button[aria-expanded="true"],
     div[class*="st-key-popover_filtro"] button,
     div[class*="st-key-popover_filtro"] button[aria-expanded="true"],
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button {
@@ -2349,7 +2347,6 @@ def apply_styles():
         transition: all 0.2s ease !important;
     }
 
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button *,
     div[class*="st-key-popover_filtro"] button *,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button * {
         color: #17243D !important;
@@ -2358,14 +2355,11 @@ def apply_styles():
     }
 
     /* Ocultar chevron por defecto de stPopover en el encabezado de sábados */
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button svg,
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button [data-testid="stIconMaterial"],
     div[class*="st-key-popover_filtro"] button svg,
     div[class*="st-key-popover_filtro"] button [data-testid="stIconMaterial"] {
         display: none !important;
     }
 
-    div[data-testid="stColumn"]:has(.saturday-col-marker) div[data-testid="stPopover"] button:hover,
     div[class*="st-key-popover_filtro"] button:hover,
     div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover {
         background: #e2f7f7 !important;
@@ -2373,6 +2367,113 @@ def apply_styles():
         border-color: #a3e0e5 !important;
         box-shadow: 0 4px 12px rgba(23, 36, 61, 0.1) !important;
         transform: translateY(-1px) !important;
+    }
+
+    /* ---- Tarjetas de médicos con panel adyacente (popover de turno) ---- */
+    div[class*="st-key-pop_turno"] button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-pop_turno"] button {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #262730 !important;
+        border: 1px solid rgba(49, 51, 63, 0.2) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        font-weight: 500 !important;
+        font-size: 0.8rem !important;
+        padding: 0.22rem 0.5rem !important;
+        line-height: 1.25 !important;
+        text-shadow: none !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        transition: all 0.15s ease !important;
+    }
+
+    div[class*="st-key-pop_turno"] button *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-pop_turno"] button * {
+        color: #262730 !important;
+        background-color: transparent !important;
+        font-weight: 500 !important;
+        font-size: 0.8rem !important;
+        text-shadow: none !important;
+    }
+
+    div[class*="st-key-pop_turno"] button:hover,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-pop_turno"] button:hover {
+        background-color: #f8fafc !important;
+        border-color: #0f9a9b !important;
+        color: #0f172a !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Ocultar chevron/flecha de stPopover en tarjetas de médico */
+    div[class*="st-key-pop_turno"] button svg,
+    div[class*="st-key-pop_turno"] button [data-testid="stIconMaterial"] {
+        display: none !important;
+    }
+
+    /* Estilos del panel desplegable adyacente al hacer clic */
+    div[data-testid="stPopoverBody"] div[class*="st-key-pop_rad_clasif"] {
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-pop_rad_clasif"] label {
+        font-size: 0.82rem !important;
+        color: #1e293b !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-pop_txt_obs"] input {
+        font-size: 0.82rem !important;
+        border-radius: 6px !important;
+    }
+
+    /* Botón Remover Turno */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button {
+        background: #fff5f5 !important;
+        background-color: #fff5f5 !important;
+        border: 1px solid #fca5a5 !important;
+        color: #b91c1c !important;
+        border-radius: 6px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        padding: 0.35rem 0.5rem !important;
+        transition: all 0.15s ease !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button:hover {
+        background: #fee2e2 !important;
+        background-color: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #991b1b !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button * {
+        color: #b91c1c !important;
+    }
+
+    /* Botón Guardar Cambios */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button {
+        background: linear-gradient(135deg, #0f9a9b 0%, #0d8283 100%) !important;
+        border: 1px solid #0f9a9b !important;
+        color: #ffffff !important;
+        border-radius: 6px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        padding: 0.35rem 0.5rem !important;
+        box-shadow: 0 2px 4px rgba(15, 154, 155, 0.2) !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button:hover {
+        background: linear-gradient(135deg, #0d8283 0%, #0b6c6d 100%) !important;
+        box-shadow: 0 4px 8px rgba(15, 154, 155, 0.3) !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button * {
+        color: #ffffff !important;
     }
 
     div[data-testid="stColumn"]:has(.saturday-col-marker) button.custom-header-btn p,

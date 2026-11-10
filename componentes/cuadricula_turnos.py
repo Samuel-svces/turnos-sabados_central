@@ -255,6 +255,251 @@ def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: 
         _render_menu_excel(sat_date, nombres, prefijo, pop_key)
 
 
+def _guardar_edicion_rapida(sat_date, name, nueva_clasif, nueva_obs, clasif_actual, obs_actual, row_excel, col_excel, sheet_excel):
+    """Guarda modificaciones de clasificación y observación directamente desde el panel adyacente."""
+    excel_path = st.session_state.excel_path
+    mods_list = []
+
+    # 1. Si antes era cambio de turno y la clasificación cambió, restaurar contraparte
+    df_s = st.session_state.shifts_df
+    if "Cambio de turno con" in str(clasif_actual) and nueva_clasif != clasif_actual:
+        counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
+        cp_match = df_s[
+            (df_s['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
+            (df_s['Classification'].str.contains(name, na=False))
+        ]
+        for _, cp_r in cp_match.iterrows():
+            mods_list.append({
+                'sheet': cp_r['Sheet'],
+                'date': cp_r['Date'],
+                'original_name': cp_r['Supernumerary'],
+                'new_name': cp_r['Supernumerary'],
+                'row': int(cp_r['Excel_Row']),
+                'col': int(cp_r['Excel_Col']),
+                'type': 'REEMPLAZAR',
+                'observaciones': cp_r.get('Observation', ''),
+                'clasificacion': 'Secuencia Normal'
+            })
+
+    # 2. Registrar modificación del turno
+    mods_list.append({
+        'sheet': sheet_excel,
+        'date': sat_date,
+        'original_name': name,
+        'new_name': name,
+        'row': row_excel,
+        'col': col_excel,
+        'type': 'REEMPLAZAR',
+        'observaciones': nueva_obs.strip(),
+        'clasificacion': nueva_clasif
+    })
+
+    dp.save_modifications_batch(excel_path, mods_list)
+
+    # 3. Guardar acción en session_state para Deshacer
+    st.session_state.last_action = {
+        'action': 'REPLACE',
+        'excel_path': excel_path,
+        'sheet': sheet_excel,
+        'row': row_excel,
+        'col': col_excel,
+        'date': sat_date,
+        'old_doc': name,
+        'new_doc': name,
+        'old_obs': obs_actual,
+        'new_obs': nueva_obs.strip(),
+        'old_clasif': clasif_actual,
+        'new_clasif': nueva_clasif
+    }
+
+    # 4. Actualización optimista instantánea en memoria
+    try:
+        date_check = sat_date if isinstance(sat_date, datetime.date) else pd.to_datetime(sat_date).date()
+        df_upd = st.session_state.shifts_df.copy()
+        df_dates = pd.to_datetime(df_upd['Date'], errors='coerce').dt.date
+        mask = (
+            (df_upd['Sheet'] == sheet_excel) &
+            (df_upd['Excel_Row'] == row_excel) &
+            (df_upd['Excel_Col'] == col_excel) &
+            (df_dates == date_check)
+        ) if row_excel > 0 and col_excel > 0 else (
+            (df_upd['Sheet'] == sheet_excel) &
+            (df_dates == date_check) &
+            (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(name).strip().upper())
+        )
+        if "Cambio de turno con" in str(clasif_actual) and nueva_clasif != clasif_actual:
+            counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
+            mask_cp = (
+                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
+                (df_upd['Classification'].str.contains(name, na=False))
+            )
+            df_upd.loc[mask_cp, 'Classification'] = 'Secuencia Normal'
+
+        df_upd.loc[mask, 'Observation'] = nueva_obs.strip()
+        df_upd.loc[mask, 'Classification'] = nueva_clasif
+        st.session_state.shifts_df = df_upd
+        dp.load_modifications.clear()
+    except Exception as e_mem:
+        print("Aviso actualizando memoria tras guardar:", e_mem)
+
+    st.rerun()
+
+
+def _remover_turno_rapido(sat_date, name, clasif_actual, obs_actual, row_excel, col_excel, sheet_excel):
+    """Elimina el turno directamente desde el panel adyacente."""
+    excel_path = st.session_state.excel_path
+    mods_list = []
+
+    # 1. Si era cambio de turno con otro médico, restaurar la contraparte a Secuencia Normal
+    df_s = st.session_state.shifts_df
+    if "Cambio de turno con" in str(clasif_actual):
+        counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
+        cp_match = df_s[
+            (df_s['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
+            (df_s['Classification'].str.contains(name, na=False))
+        ]
+        for _, cp_r in cp_match.iterrows():
+            mods_list.append({
+                'sheet': cp_r['Sheet'],
+                'date': cp_r['Date'],
+                'original_name': cp_r['Supernumerary'],
+                'new_name': cp_r['Supernumerary'],
+                'row': int(cp_r['Excel_Row']),
+                'col': int(cp_r['Excel_Col']),
+                'type': 'REEMPLAZAR',
+                'observaciones': cp_r.get('Observation', ''),
+                'clasificacion': 'Secuencia Normal'
+            })
+
+    # 2. Registrar eliminación del turno
+    mods_list.append({
+        'sheet': sheet_excel,
+        'date': sat_date,
+        'original_name': name,
+        'new_name': '',
+        'row': row_excel,
+        'col': col_excel,
+        'type': 'ELIMINAR',
+        'observaciones': '',
+        'clasificacion': clasif_actual
+    })
+
+    dp.save_modifications_batch(excel_path, mods_list)
+
+    # 3. Guardar acción en session_state para Deshacer
+    st.session_state.last_action = {
+        'action': 'ELIMINAR_SIMPLE',
+        'excel_path': excel_path,
+        'sheet': sheet_excel,
+        'row': row_excel,
+        'col': col_excel,
+        'date': sat_date,
+        'doc': name,
+        'obs': obs_actual,
+        'clasificacion': clasif_actual,
+        'deleted_items': [{
+            'sheet': sheet_excel,
+            'date': sat_date,
+            'doc': name,
+            'obs': obs_actual,
+            'clasificacion': clasif_actual
+        }]
+    }
+
+    # 4. Actualización optimista instantánea en memoria
+    try:
+        date_check = sat_date if isinstance(sat_date, datetime.date) else pd.to_datetime(sat_date).date()
+        df_upd = st.session_state.shifts_df.copy()
+        df_dates = pd.to_datetime(df_upd['Date'], errors='coerce').dt.date
+        mask = (
+            (df_upd['Sheet'] == sheet_excel) &
+            (df_upd['Excel_Row'] == row_excel) &
+            (df_upd['Excel_Col'] == col_excel) &
+            (df_dates == date_check)
+        ) if row_excel > 0 and col_excel > 0 else (
+            (df_upd['Sheet'] == sheet_excel) &
+            (df_dates == date_check) &
+            (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(name).strip().upper())
+        )
+        if "Cambio de turno con" in str(clasif_actual):
+            counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
+            mask_cp = (
+                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
+                (df_upd['Classification'].str.contains(name, na=False))
+            )
+            df_upd.loc[mask_cp, 'Classification'] = 'Secuencia Normal'
+
+        st.session_state.shifts_df = df_upd.drop(index=df_upd[mask].index).reset_index(drop=True)
+        dp.load_modifications.clear()
+    except Exception as e_mem:
+        print("Aviso actualizando memoria tras eliminar:", e_mem)
+
+    st.rerun()
+
+
+def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_excel, col_excel, sheet_excel):
+    """Panel compacto adyacente (popover) para editar clasificación, observación y remover turno."""
+    st.markdown(f"""
+    <div style="margin-bottom: 0.6rem; padding-bottom: 0.4rem; border-bottom: 1px solid #e2e8f0;">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: #17243D; line-height: 1.2;">{name}</div>
+        <div style="font-size: 0.78rem; color: #64748b; margin-top: 3px;">📅 {sat_date.strftime('%d/%m/%Y')}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    clasif_options = ["Secuencia Normal", "Compensación / Pago de turno", "Cambio de turno"]
+    clasif_idx = 0
+    if "Compensación" in str(clasif):
+        clasif_idx = 1
+    elif "Cambio" in str(clasif):
+        clasif_idx = 2
+
+    k_clasif = f"pop_rad_clasif_{sat_date}_{s_idx}"
+    k_obs = f"pop_txt_obs_{sat_date}_{s_idx}"
+    k_save = f"btn_save_pop_{sat_date}_{s_idx}"
+    k_del = f"btn_del_pop_{sat_date}_{s_idx}"
+
+    nueva_clasif = st.radio(
+        "Clasificación del turno:",
+        clasif_options,
+        index=clasif_idx,
+        key=k_clasif
+    )
+
+    nueva_obs = st.text_input(
+        "Observaciones:",
+        value=shift_obs,
+        key=k_obs,
+        placeholder="Observación..."
+    )
+
+    st.markdown("<div style='margin-top: 0.6rem;'></div>", unsafe_allow_html=True)
+    col_save, col_del = st.columns([1.3, 1.0])
+    with col_save:
+        if st.button("Guardar Cambios", key=k_save, type="primary", use_container_width=True, icon=":material/save:"):
+            _guardar_edicion_rapida(
+                sat_date=sat_date,
+                name=name,
+                nueva_clasif=nueva_clasif,
+                nueva_obs=nueva_obs,
+                clasif_actual=clasif,
+                obs_actual=shift_obs,
+                row_excel=row_excel,
+                col_excel=col_excel,
+                sheet_excel=sheet_excel
+            )
+    with col_del:
+        if st.button("Remover Turno", key=k_del, type="secondary", use_container_width=True, icon=":material/delete:"):
+            _remover_turno_rapido(
+                sat_date=sat_date,
+                name=name,
+                clasif_actual=clasif,
+                obs_actual=shift_obs,
+                row_excel=row_excel,
+                col_excel=col_excel,
+                sheet_excel=sheet_excel
+            )
+
+
 
 def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, search_query: str, cargar_datos_fn):
     """
@@ -469,10 +714,6 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
             payload = st.session_state.pop("active_drag_drop_payload")
             dialogos.show_drag_drop_action_dialog(payload, cargar_datos_fn)
 
-        if st.session_state.get("modal_shift_action_details"):
-            details = st.session_state.pop("modal_shift_action_details")
-            dialogos.show_shift_dialog(details, cargar_datos_fn)
-
         if st.session_state.get("modal_add_action_details"):
             add_info = st.session_state.pop("modal_add_action_details")
             dialogos.show_add_dialog(add_info['sat_date'], add_info['sheet'], cargar_datos_fn)
@@ -536,17 +777,18 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     help_text = "\n".join(help_lines).strip()
                     
                     st.markdown(f"<div class='doc-admin-card-wrap' data-doc='{name}' data-date='{sat_date}' data-row='{row_excel}' data-col='{col_excel}' data-sheet=\"{sheet_excel}\" data-clasif=\"{clasif}\"></div>", unsafe_allow_html=True)
-                    if st.button(display_name, key=f"btn_turno_admin_{sat_date}_{s_idx}", use_container_width=True, help=help_text if help_text else None):
-                        st.session_state["modal_shift_action_details"] = {
-                            'date': sat_date,
-                            'doctor': name,
-                            'row': row_excel,
-                            'col': col_excel,
-                            'sheet': sheet_excel,
-                            'observation': shift_obs,
-                            'classification': clasif
-                        }
-                        st.rerun()
+                    pop_turn_key = f"pop_turno_{sat_date}_{s_idx}"
+                    with st.popover(display_name, use_container_width=True, key=pop_turn_key, help=help_text if help_text else None):
+                        _render_panel_edicion_rapida(
+                            sat_date=sat_date,
+                            s_idx=s_idx,
+                            name=name,
+                            shift_obs=shift_obs,
+                            clasif=clasif,
+                            row_excel=row_excel,
+                            col_excel=col_excel,
+                            sheet_excel=sheet_excel
+                        )
                     
                 st.markdown("<div style='margin-top: 0.8rem;'></div>", unsafe_allow_html=True)
                 

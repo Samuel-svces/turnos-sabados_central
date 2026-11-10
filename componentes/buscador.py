@@ -52,7 +52,7 @@ def renderizar_buscador():
     // Controles del filtro/orden por columna: no se ocultan ni se estilizan como médicos
     function esControlFiltro(el) {
         if (!el || !el.closest) return false;
-        if (el.closest('[data-testid="stPopover"]')) return true;
+        if (el.closest('[class*="st-key-popover_filtro"]')) return true;
         if (el.closest('[data-testid="stPopoverBody"]')) return true;
         if (el.closest('[data-testid="stVerticalBlockBorderWrapper"]')) return true;
         if (el.closest('.excel-menu-btn') || el.closest('.excel-apply-btn')) return true;
@@ -266,7 +266,11 @@ def renderizar_buscador():
                 btn.setAttribute('draggable', 'true');
                 btn.classList.add('doc-draggable-card');
 
+                let isDraggingCard = false;
+
                 btn.addEventListener('dragstart', (e) => {
+                    isDraggingCard = true;
+                    btn.dataset.isDragging = "true";
                     const data = {
                         doctor: wrap.getAttribute('data-doc'),
                         source_date: wrap.getAttribute('data-date') || colDate,
@@ -297,7 +301,19 @@ def renderizar_buscador():
                     colMarkers.forEach(c => {
                         c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active', 'saturday-col-blocked-sequence');
                     });
+                    setTimeout(() => {
+                        isDraggingCard = false;
+                        btn.dataset.isDragging = "false";
+                    }, 150);
                 });
+
+                btn.addEventListener('click', (e) => {
+                    if (isDraggingCard || btn.dataset.isDragging === "true") {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+                }, true);
             });
 
             // 2. Configurar columna como zona de soltado (Drop Target)
