@@ -797,6 +797,17 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
         st.error("Acceso denegado: Se requieren permisos de administrador.")
         st.stop()
 
+    # Remover inmediatamente cualquier indicador de carga restante en el documento padre
+    st.components.v1.html("""
+    <script>
+        try {
+            const pd = window.parent.document;
+            const pills = pd.querySelectorAll('.drag-drop-loading-pill');
+            pills.forEach(p => { if (p && p.parentNode) p.parentNode.removeChild(p); });
+        } catch(e) {}
+    </script>
+    """, height=0)
+
     if not payload or not isinstance(payload, dict):
         st.session_state["active_drag_drop_payload"] = None
         st.rerun()

@@ -365,7 +365,7 @@ def renderizar_buscador(cargar_datos_fn=None):
         }
         setTimeout(() => {
             if (pill && pill.parentNode) pill.parentNode.removeChild(pill);
-        }, 3500);
+        }, 1800);
     }
 
     function vincularFiltrosExcel() {
@@ -577,17 +577,31 @@ def renderizar_buscador(cargar_datos_fn=None):
                             }
                         }
 
-                        // Asignar el payload al input puente
+                        // Asignar el payload al input puente y comprometer el valor en el estado de Streamlit
                         if (targetInput) {
                             const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
                             nativeInputValueSetter.call(targetInput, JSON.stringify(data));
                             targetInput.dispatchEvent(new Event('input', { bubbles: true }));
                             targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+                            // Disparar Enter para que el componente React de Streamlit registre y transmita el valor
+                            targetInput.focus();
+                            targetInput.dispatchEvent(new KeyboardEvent('keydown', {
+                                bubbles: true,
+                                cancelable: true,
+                                key: 'Enter',
+                                code: 'Enter',
+                                keyCode: 13,
+                                which: 13
+                            }));
+                            targetInput.blur();
                         }
 
-                        // Ejecutar ÚNICAMENTE el botón de trigger (evita doble ejecución concurrente y retrasos)
+                        // Respaldo de activación para garantizar la apertura inmediata del panel
                         if (targetBtn) {
-                            setTimeout(() => targetBtn.click(), 30);
+                            setTimeout(() => {
+                                targetBtn.click();
+                            }, 50);
                         }
                     } catch (err) {
                         console.error("Error al procesar drop:", err);

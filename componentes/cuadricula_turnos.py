@@ -694,6 +694,7 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         st.text_input(
             "dd_bridge_input",
             key="bridge_drag_drop_payload",
+            on_change=_cb_on_drag_drop,
             label_visibility="collapsed"
         )
         st.button(
@@ -701,6 +702,16 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
             key="btn_trigger_drag_drop",
             on_click=_cb_on_drag_drop
         )
+
+        # Doble verificación de respaldo: si el payload llegó directo a session_state, procesarlo
+        raw_payload = st.session_state.get("bridge_drag_drop_payload", "")
+        if raw_payload:
+            import json
+            try:
+                st.session_state["active_drag_drop_payload"] = json.loads(raw_payload)
+            except Exception as e_json:
+                print("Error deserializando drag drop payload directo:", e_json)
+            st.session_state["bridge_drag_drop_payload"] = ""
 
         # Invocación de diálogos modales en el contenedor raíz principal (evita StreamlitInvalidLayoutContextError)
         if st.session_state.get("active_drag_drop_payload"):
