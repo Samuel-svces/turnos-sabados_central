@@ -147,58 +147,45 @@ def renderizar_buscador(cargar_datos_fn=None):
         const cols = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)');
 
         cols.forEach(col => {
-            // MODO ADMINISTRADOR: Botones de turno
-            const adminButtons = col.querySelectorAll('button');
-            adminButtons.forEach(btn => {
-                if (esControlFiltro(btn)) return;
-                const rawText = (btn.innerText || btn.textContent || "").trim();
-                if (!rawText) return;
-
-                // Encabezados de fecha: SIEMPRE visibles
-                if (/^\d/.test(rawText) || btn.classList.contains('custom-header-btn')) {
-                    return;
-                }
-
-                // Botones de acción (Agregar Médico, Duplicar): ocultar durante búsqueda activa
-                if (rawText.includes("Agregar Médico") || rawText.includes("Duplicar") || rawText.includes("⚙️")) {
-                    const cont = btn.closest('div[data-testid="stElementContainer"]') || btn.parentElement;
-                    if (cont) {
-                        if (cleanTerm) {
-                            cont.style.setProperty('display', 'none', 'important');
-                        } else {
-                            cont.style.removeProperty('display');
-                        }
-                    }
-                    return;
-                }
-
-                // Botón de médico individual
-                const cont = btn.closest('div[data-testid="stElementContainer"]') || btn;
-                const docText = normalizarTexto(rawText);
+            // MODO ADMINISTRADOR: Filtrado de tarjetas de turno a través de metadatos rápidos
+            const cardWraps = col.querySelectorAll('.doc-admin-card-wrap');
+            cardWraps.forEach(wrap => {
+                const docName = normalizarTexto(wrap.getAttribute('data-doc') || '');
+                const metaContainer = wrap.closest('div[data-testid="stElementContainer"]') || wrap.parentElement;
+                const cardContainer = metaContainer ? metaContainer.nextElementSibling : null;
+                const btn = cardContainer ? cardContainer.querySelector('button') : null;
+                if (!cardContainer || !btn) return;
 
                 if (!cleanTerm) {
-                    // Sin búsqueda: restaurar todo visible y limpio
-                    if (cont) cont.style.removeProperty('display');
-                    btn.style.removeProperty('display');
+                    cardContainer.classList.remove('search-card-hidden');
+                    cardContainer.style.removeProperty('display');
                     btn.classList.remove('search-highlight-active', 'search-dimmed');
                     return;
                 }
 
-                if (docText.includes(cleanTerm)) {
-                    // Coincide: mostrar inmediatamente y resaltar para que se vea apenas se escribe
-                    if (cont) cont.style.removeProperty('display');
-                    btn.style.removeProperty('display');
+                if (docName.includes(cleanTerm)) {
+                    cardContainer.classList.remove('search-card-hidden');
+                    cardContainer.style.removeProperty('display');
                     btn.classList.remove('search-dimmed');
                     btn.classList.add('search-highlight-active');
                 } else {
-                    // No coincide: ocultar por completo para que los que coinciden suban y se vean al instante
-                    if (cont) {
-                        cont.style.setProperty('display', 'none', 'important');
-                    } else {
-                        btn.style.setProperty('display', 'none', 'important');
-                    }
+                    cardContainer.classList.add('search-card-hidden');
+                    cardContainer.style.setProperty('display', 'none', 'important');
                     btn.classList.remove('search-highlight-active');
                     btn.classList.add('search-dimmed');
+                }
+            });
+
+            // Ocultar botones de acción en búsqueda activa
+            const actionBtns = col.querySelectorAll('button[data-testid*="btn_agregar_medico"], button[data-testid*="btn_duplicar"]');
+            actionBtns.forEach(abtn => {
+                const acont = abtn.closest('div[data-testid="stElementContainer"]') || abtn.parentElement;
+                if (acont) {
+                    if (cleanTerm) {
+                        acont.style.setProperty('display', 'none', 'important');
+                    } else {
+                        acont.style.removeProperty('display');
+                    }
                 }
             });
 
@@ -211,24 +198,25 @@ def renderizar_buscador(cargar_datos_fn=None):
                 const cont = wrap.closest('div[data-testid="stElementContainer"]') || wrap;
 
                 if (!cleanTerm) {
-                    if (cont) cont.style.removeProperty('display');
-                    wrap.style.removeProperty('display');
+                    if (cont) {
+                        cont.classList.remove('search-card-hidden');
+                        cont.style.removeProperty('display');
+                    }
                     badge.classList.remove('search-highlight-active', 'search-dimmed');
                     return;
                 }
 
                 if (docText.includes(cleanTerm)) {
-                    // Coincide: mostrar inmediatamente
-                    if (cont) cont.style.removeProperty('display');
-                    wrap.style.removeProperty('display');
+                    if (cont) {
+                        cont.classList.remove('search-card-hidden');
+                        cont.style.removeProperty('display');
+                    }
                     badge.classList.remove('search-dimmed');
                     badge.classList.add('search-highlight-active');
                 } else {
-                    // No coincide: ocultar
                     if (cont) {
+                        cont.classList.add('search-card-hidden');
                         cont.style.setProperty('display', 'none', 'important');
-                    } else {
-                        wrap.style.setProperty('display', 'none', 'important');
                     }
                     badge.classList.remove('search-highlight-active');
                     badge.classList.add('search-dimmed');
@@ -238,6 +226,34 @@ def renderizar_buscador(cargar_datos_fn=None):
     }
 
     const aplicarBusquedaEnVivo = aplicarResaltadoEnVivo;
+
+    let searchDebounceTimer = null;
+    let rafSearchId = null;
+    let lastSyncedVal = null;
+
+    function sincronizarBusquedaConStreamlit(val) {
+        const parentDoc = window.parent.document;
+        const clean = (val || "").trim();
+        if (clean === lastSyncedVal) return;
+        lastSyncedVal = clean;
+
+        let inputEl = parentDoc.querySelector('input[aria-label="Buscador"], div[data-testid="stTextInput"] input');
+        if (!inputEl) return;
+
+        // Disparar Enter de manera limpia para sincronizar el estado global en Streamlit
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+        nativeSetter.call(inputEl, clean);
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+        inputEl.dispatchEvent(new KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13
+        }));
+    }
 
     function vincularBuscadorReactivo() {
         const parentDoc = window.parent.document;
@@ -254,7 +270,6 @@ def renderizar_buscador(cargar_datos_fn=None):
         }
         if (!inputBuscador) return false;
 
-        // Limpiar placeholder y evitar cualquier autofill o tooltip emergente nativo
         inputBuscador.placeholder = "";
         inputBuscador.setAttribute("placeholder", "");
         inputBuscador.setAttribute("autocomplete", "off");
@@ -263,7 +278,6 @@ def renderizar_buscador(cargar_datos_fn=None):
         inputBuscador.setAttribute("spellcheck", "false");
         inputBuscador.setAttribute("name", "filtro_vivo_medicos");
 
-        // Ocultar cualquier tooltip de instrucciones de Streamlit adyacente
         const containerInput = inputBuscador.closest('div[data-testid="stTextInput"]');
         if (containerInput) {
             const tooltips = containerInput.querySelectorAll('[data-testid="stTextInputInstructions"], [data-testid="InputInstructions"], .stTextInputInstructions');
@@ -273,9 +287,19 @@ def renderizar_buscador(cargar_datos_fn=None):
         if (!inputBuscador.dataset.liveSearchBound) {
             inputBuscador.dataset.liveSearchBound = "true";
             
-            // Filtrado reactivo inmediato con cada letra pulsada
+            // 1. Filtrado instantáneo a 60fps con requestAnimationFrame (0ms de retraso al teclear)
             inputBuscador.addEventListener('input', (e) => {
-                aplicarBusquedaEnVivo(e.target.value);
+                const val = e.target.value;
+                if (rafSearchId) cancelAnimationFrame(rafSearchId);
+                rafSearchId = requestAnimationFrame(() => {
+                    aplicarBusquedaEnVivo(val);
+                });
+
+                // 2. Búsqueda automática entre columnas sin requerir presionar Enter obligatoriamente
+                if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => {
+                    sincronizarBusquedaConStreamlit(val);
+                }, 400);
             });
 
             inputBuscador.addEventListener('focus', () => {
@@ -283,19 +307,25 @@ def renderizar_buscador(cargar_datos_fn=None):
             });
 
             inputBuscador.addEventListener('paste', () => {
-                setTimeout(() => aplicarBusquedaEnVivo(inputBuscador.value), 20);
+                setTimeout(() => {
+                    aplicarBusquedaEnVivo(inputBuscador.value);
+                    sincronizarBusquedaConStreamlit(inputBuscador.value);
+                }, 20);
             });
 
-            // Tecla Escape para restablecer instantáneamente
             inputBuscador.addEventListener('keydown', (e) => {
-                if (e.key === "Escape") {
+                if (e.key === "Enter") {
+                    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                    sincronizarBusquedaConStreamlit(e.target.value);
+                } else if (e.key === "Escape") {
                     inputBuscador.value = "";
                     aplicarBusquedaEnVivo("");
+                    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                    sincronizarBusquedaConStreamlit("");
                 }
             });
         }
 
-        // Si ya hay un valor cargado, aplicar el filtrado de inmediato
         if (inputBuscador.value) {
             aplicarBusquedaEnVivo(inputBuscador.value);
         }
@@ -315,6 +345,54 @@ def renderizar_buscador(cargar_datos_fn=None):
         }
     }
 
+    function mostrarIndicadorCargaPanel() {
+        const parentDoc = window.parent.document;
+        let pill = parentDoc.querySelector('.drag-drop-loading-pill');
+        if (!pill) {
+            pill = parentDoc.createElement('div');
+            pill.className = 'drag-drop-loading-pill';
+            pill.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f9a9b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spinPill 0.8s linear infinite;">
+                    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0 1 10 10"></path>
+                </svg>
+                <span>Abriendo panel de traslado...</span>
+                <style>
+                    @keyframes spinPill { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                </style>
+            `;
+            parentDoc.body.appendChild(pill);
+        }
+        setTimeout(() => {
+            if (pill && pill.parentNode) pill.parentNode.removeChild(pill);
+        }, 3500);
+    }
+
+    function vincularFiltrosExcel() {
+        const parentDoc = window.parent.document;
+        const popoverSearchInputs = parentDoc.querySelectorAll('[data-testid="stPopoverBody"] input[placeholder="Buscar..."]');
+        popoverSearchInputs.forEach(input => {
+            if (input.dataset.excelFilterBound) return;
+            input.dataset.excelFilterBound = "true";
+            input.addEventListener('input', (e) => {
+                const query = normalizarTexto(e.target.value);
+                const popover = input.closest('[data-testid="stPopoverBody"]');
+                if (!popover) return;
+                const labels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+                labels.forEach((lbl, idx) => {
+                    if (idx === 0 && lbl.textContent.includes("Seleccionar")) return;
+                    const txt = normalizarTexto(lbl.textContent);
+                    const cont = lbl.closest('div[data-testid="stElementContainer"]') || lbl;
+                    if (!query || txt.includes(query)) {
+                        cont.style.removeProperty('display');
+                    } else {
+                        cont.style.setProperty('display', 'none', 'important');
+                    }
+                });
+            });
+        });
+    }
+
     function inicializarDragAndDrop() {
         const parentDoc = window.parent.document;
 
@@ -327,6 +405,7 @@ def renderizar_buscador(cargar_datos_fn=None):
         });
 
         const colMarkers = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)');
+        let currentDropCol = null;
 
         colMarkers.forEach(col => {
             const marker = col.querySelector('.saturday-col-marker');
@@ -377,6 +456,10 @@ def renderizar_buscador(cargar_datos_fn=None):
 
                 btn.addEventListener('dragend', () => {
                     btn.classList.remove('doc-card-dragging');
+                    if (currentDropCol) {
+                        currentDropCol.classList.remove('saturday-col-drop-active');
+                        currentDropCol = null;
+                    }
                     colMarkers.forEach(c => {
                         c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active', 'saturday-col-blocked-sequence');
                     });
@@ -395,7 +478,7 @@ def renderizar_buscador(cargar_datos_fn=None):
                 }, true);
             });
 
-            // 2. Configurar columna como zona de soltado (Drop Target)
+            // 2. Configurar columna como zona de soltado (Drop Target optimizado sin sobrecarga)
             if (!col.dataset.dropTargetBound) {
                 col.dataset.dropTargetBound = "true";
 
@@ -406,7 +489,9 @@ def renderizar_buscador(cargar_datos_fn=None):
                         return;
                     }
                     e.dataTransfer.dropEffect = 'move';
-                    if (!col.classList.contains('saturday-col-drop-active')) {
+                    if (currentDropCol !== col) {
+                        if (currentDropCol) currentDropCol.classList.remove('saturday-col-drop-active');
+                        currentDropCol = col;
                         col.classList.add('saturday-col-drop-active');
                     }
                 });
@@ -414,12 +499,16 @@ def renderizar_buscador(cargar_datos_fn=None):
                 col.addEventListener('dragleave', (e) => {
                     if (!col.contains(e.relatedTarget)) {
                         col.classList.remove('saturday-col-drop-active');
+                        if (currentDropCol === col) currentDropCol = null;
                     }
                 });
 
                 col.addEventListener('drop', (e) => {
                     e.preventDefault();
-                    col.classList.remove('saturday-col-drop-active');
+                    if (currentDropCol) {
+                        currentDropCol.classList.remove('saturday-col-drop-active');
+                        currentDropCol = null;
+                    }
                     colMarkers.forEach(c => c.classList.remove('saturday-col-droppable-hint', 'saturday-col-blocked-sequence'));
 
                     const jsonStr = e.dataTransfer.getData('text/plain');
@@ -462,6 +551,9 @@ def renderizar_buscador(cargar_datos_fn=None):
 
                         data.target_date = targetDate;
 
+                        // Notificación visual inmediata
+                        mostrarIndicadorCargaPanel();
+
                         let targetInput = parentDoc.querySelector('div[class*="st-key-bridge_drag_drop_payload"] input, input[aria-label="dd_bridge_input"]');
                         if (!targetInput) {
                             const allInputs = parentDoc.querySelectorAll('input');
@@ -485,37 +577,17 @@ def renderizar_buscador(cargar_datos_fn=None):
                             }
                         }
 
-                        // Ocultar preventivamente los contenedores
-                        if (targetInput) {
-                            const cont = targetInput.closest('div[data-testid="stElementContainer"]') || targetInput.parentElement;
-                            if (cont) cont.style.setProperty('display', 'none', 'important');
-                        }
-                        if (targetBtn) {
-                            const cont = targetBtn.closest('div[data-testid="stElementContainer"]') || targetBtn.parentElement;
-                            if (cont) cont.style.setProperty('display', 'none', 'important');
-                        }
-
+                        // Asignar el payload al input puente
                         if (targetInput) {
                             const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
                             nativeInputValueSetter.call(targetInput, JSON.stringify(data));
                             targetInput.dispatchEvent(new Event('input', { bubbles: true }));
                             targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-                            // Disparar Enter para que Streamlit capture el evento directamente
-                            targetInput.focus();
-                            targetInput.dispatchEvent(new KeyboardEvent('keydown', {
-                                bubbles: true,
-                                cancelable: true,
-                                key: 'Enter',
-                                code: 'Enter',
-                                keyCode: 13,
-                                which: 13
-                            }));
-                            targetInput.blur();
                         }
 
+                        // Ejecutar ÚNICAMENTE el botón de trigger (evita doble ejecución concurrente y retrasos)
                         if (targetBtn) {
-                            setTimeout(() => targetBtn.click(), 40);
+                            setTimeout(() => targetBtn.click(), 30);
                         }
                     } catch (err) {
                         console.error("Error al procesar drop:", err);
@@ -525,14 +597,16 @@ def renderizar_buscador(cargar_datos_fn=None):
         });
     }
 
-    // Inicialización rápida y reintentos periódicos
+    // Inicialización rápida y sincronización de eventos
     vincularBuscadorReactivo();
     inicializarDragAndDrop();
-    const timers = [50, 150, 300, 600, 1200];
+    vincularFiltrosExcel();
+    const timers = [60, 200, 500, 1000];
     timers.forEach(ms => {
         setTimeout(() => {
             vincularBuscadorReactivo();
             inicializarDragAndDrop();
+            vincularFiltrosExcel();
         }, ms);
     });
     </script>

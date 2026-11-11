@@ -1226,13 +1226,66 @@ def apply_styles():
         cursor: grabbing !important;
     }
 
-    /* Estado visual mientras la tarjeta se está arrastrando */
+    /* Estado visual mientras la tarjeta se está arrastrando (optimizado sin transform para evitar tirones) */
     .doc-card-dragging,
     button.doc-card-dragging {
-        opacity: 0.35 !important;
-        border: 1.5px dashed #0f9a9b !important;
-        background-color: #f0fbfb !important;
-        transform: scale(0.97) !important;
+        opacity: 0.45 !important;
+        border: 2px dashed #0f9a9b !important;
+        background-color: #e6f7f6 !important;
+        box-shadow: 0 4px 14px rgba(15, 154, 155, 0.2) !important;
+    }
+
+    /* Clase para ocultar elementos instantáneamente en la búsqueda reactiva sin recalcular layouts pesados */
+    .search-card-hidden {
+        display: none !important;
+    }
+
+    /* Ocultar botón 'Manage app' de Streamlit Cloud y elementos de hosting */
+    [data-testid="manage-app-button"],
+    .stAppDeployButton,
+    div[class*="manageApp"],
+    div[class*="ManageApp"],
+    div[class*="manage-app"],
+    div[class*="floatingMenu"],
+    div[data-testid="stStatusWidget"],
+    #manage-app-button,
+    button[aria-label="Manage app"],
+    a[href*="streamlit.io/cloud"],
+    .viewerBadge_container,
+    [data-testid="viewerBadge"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Indicador flotante inmediato al soltar una tarjeta */
+    .drag-drop-loading-pill {
+        position: fixed !important;
+        bottom: 28px !important;
+        right: 28px !important;
+        z-index: 99999 !important;
+        background: #17243D !important;
+        color: #ffffff !important;
+        padding: 10px 18px !important;
+        border-radius: 24px !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        pointer-events: none !important;
+        animation: fadeInPill 0.18s ease-out !important;
+    }
+    @keyframes fadeInPill {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     /* Indicador sutil de columnas destino disponibles (secuencia contraria válida) */

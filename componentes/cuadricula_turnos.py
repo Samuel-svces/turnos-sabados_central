@@ -159,68 +159,62 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
 
     st.markdown("<hr class='excel-menu-divider' />", unsafe_allow_html=True)
 
-    # 2. Buscador interactivo de texto
-    consulta = st.text_input(
-        "Buscar",
-        key=txt_key,
-        placeholder="Buscar...",
-        label_visibility="collapsed",
-    )
-    consulta_norm = dp.normalize_name_no_accents(consulta or "").upper().strip()
-    filtrados = [n for n in nombres if consulta_norm in dp.normalize_name_no_accents(n).upper()]
+    # Formulario atómico para selección de filtros sin recarga por cada casilla (evita lentitud extrema)
+    with st.form(key=f"form_filtro_{sat_date}_{prefijo}", border=False):
+        # 2. Buscador interactivo de texto
+        consulta = st.text_input(
+            "Buscar",
+            key=txt_key,
+            placeholder="Buscar...",
+            label_visibility="collapsed",
+        )
+        consulta_norm = dp.normalize_name_no_accents(consulta or "").upper().strip()
+        filtrados = [n for n in nombres if consulta_norm in dp.normalize_name_no_accents(n).upper()]
 
-    # 3. Checkbox Seleccionar todo
-    visibles_guardados = _seleccion_actual(sat_date, nombres)
+        # 3. Checkbox Seleccionar todo
+        visibles_guardados = _seleccion_actual(sat_date, nombres)
 
-    # Inicializar estado de checkboxes individuales si aún no existen
-    for idx, nombre in enumerate(nombres):
-        chk_key = _clave_checkbox(sat_date, prefijo, idx)
-        if chk_key not in st.session_state:
-            st.session_state[chk_key] = (nombre in visibles_guardados)
+        # Inicializar estado de checkboxes individuales si aún no existen
+        for idx, nombre in enumerate(nombres):
+            chk_key = _clave_checkbox(sat_date, prefijo, idx)
+            if chk_key not in st.session_state:
+                st.session_state[chk_key] = (nombre in visibles_guardados)
 
-    chk_all_key = f"filtro_chk_all_{sat_date}_{prefijo}"
+        chk_all_key = f"filtro_chk_all_{sat_date}_{prefijo}"
+        todos_marcados = all(st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False) for n in filtrados) if filtrados else False
 
-    def _cb_toggle_all():
-        nuevo_val = bool(st.session_state.get(chk_all_key, False))
-        for n in filtrados:
-            idx = nombres.index(n)
-            st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = nuevo_val
+        etiqueta_todo = "(Seleccionar todos los resultados)" if consulta_norm else "(Seleccionar todo)"
+        st.checkbox(
+            etiqueta_todo,
+            value=todos_marcados,
+            key=chk_all_key,
+        )
 
-    todos_marcados = all(st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False) for n in filtrados) if filtrados else False
+        # 4. Lista con scroll de casillas individuales
+        if not nombres:
+            st.caption("Sin médicos programados.")
+        elif not filtrados:
+            st.caption("Sin coincidencias.")
+        else:
+            alto_lista = min(175, max(38, 28 * len(filtrados)))
+            with st.container(height=alto_lista, border=False):
+                for nombre in filtrados:
+                    idx = nombres.index(nombre)
+                    chk_k = _clave_checkbox(sat_date, prefijo, idx)
+                    st.checkbox(nombre, key=chk_k)
 
-    etiqueta_todo = "(Seleccionar todos los resultados)" if consulta_norm else "(Seleccionar todo)"
-    st.checkbox(
-        etiqueta_todo,
-        value=todos_marcados,
-        key=chk_all_key,
-        on_change=_cb_toggle_all,
-    )
+        st.markdown("<hr class='excel-menu-divider' />", unsafe_allow_html=True)
 
-    # 4. Lista con scroll de casillas individuales
-    if not nombres:
-        st.caption("Sin médicos programados.")
-    elif not filtrados:
-        st.caption("Sin coincidencias.")
-    else:
-        alto_lista = min(175, max(38, 28 * len(filtrados)))
-        with st.container(height=alto_lista, border=False):
-            for nombre in filtrados:
-                idx = nombres.index(nombre)
-                chk_k = _clave_checkbox(sat_date, prefijo, idx)
-                st.checkbox(nombre, key=chk_k)
-
-    st.markdown("<hr class='excel-menu-divider' />", unsafe_allow_html=True)
-
-    # 5. Botón Aplicar
-    st.markdown("<div class='excel-apply-btn'>", unsafe_allow_html=True)
-    st.button(
-        "Aplicar",
-        key=f"btn_aplicar_{sat_date}_{prefijo}",
-        use_container_width=True,
-        type="primary",
-        on_click=_cb_aplicar
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+        # 5. Botón Aplicar (procesamiento en lote único al confirmar)
+        st.markdown("<div class='excel-apply-btn'>", unsafe_allow_html=True)
+        st.form_submit_button(
+            "Aplicar",
+            key=f"btn_aplicar_{sat_date}_{prefijo}",
+            use_container_width=True,
+            type="primary",
+            on_click=_cb_aplicar
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: bool, prefijo: str, nombres: list):
@@ -700,7 +694,6 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         st.text_input(
             "dd_bridge_input",
             key="bridge_drag_drop_payload",
-            on_change=_cb_on_drag_drop,
             label_visibility="collapsed"
         )
         st.button(

@@ -187,6 +187,36 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('btn_deshacer_ultimo_cambio', contenido_s, "Estilo de btn_deshacer_ultimo_cambio no encontrado en styles.py")
         self.assertIn('%230f9a9b', contenido_s, "Flecha SVG no configurada para botón deshacer")
 
+    def test_13_supresion_manage_app_cloud(self):
+        """Verifica que estilos/styles.py y app.py contengan reglas para ocultar 'Manage app' de Streamlit Cloud."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('manage-app-button', contenido_s, "Falta selector manage-app-button en styles.py")
+        self.assertIn('stAppDeployButton', contenido_s, "Falta selector stAppDeployButton en styles.py")
+
+        app_path = os.path.join(PROJECT_DIR, "app.py")
+        with open(app_path, "r", encoding="utf-8") as f:
+            contenido_a = f.read()
+        self.assertIn('manage-app-button', contenido_a, "Falta supresión activa de manage-app-button en app.py")
+
+    def test_14_filtro_excel_atomico_form(self):
+        """Verifica que el menú Excel use st.form para evitar reejecuciones lentas por cada casilla pulsada."""
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn('form_filtro_', contenido_c, "El menú de filtro Excel debe usar st.form para evitar lentitud por cada checkbox")
+        self.assertIn('st.form_submit_button', contenido_c, "El menú de filtro Excel debe usar st.form_submit_button para aplicar en un lote único")
+
+    def test_15_optimizacion_drag_drop_y_busqueda(self):
+        """Verifica la eliminación de doble ejecución en Drag & Drop y el filtrado suave a 60fps."""
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn('requestAnimationFrame', contenido_b, "El buscador reactivo debe usar requestAnimationFrame para escritura instantánea")
+        self.assertIn('sincronizarBusquedaConStreamlit', contenido_b, "El buscador debe sincronizar automáticamente sin obligar al usuario a presionar Enter")
+        self.assertIn('mostrarIndicadorCargaPanel', contenido_b, "Drag & Drop debe tener indicador visual inmediato para evitar sensación de congelamiento")
+
 
 if __name__ == "__main__":
     unittest.main()

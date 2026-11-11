@@ -175,6 +175,13 @@ st.components.v1.html("""
                     .viewerBadge_container,
                     [data-testid="viewerBadge"],
                     [data-testid="stAppDeployButton"],
+                    [data-testid="manage-app-button"],
+                    #manage-app-button,
+                    div[class*="manageApp"],
+                    div[class*="ManageApp"],
+                    div[class*="manage-app"],
+                    div[class*="floatingMenu"],
+                    div[data-testid="stStatusWidget"],
                     [data-testid="stSidebar"],
                     section[data-testid="stSidebar"],
                     [data-testid="collapsedControl"] {
@@ -182,10 +189,30 @@ st.components.v1.html("""
                         visibility: hidden !important;
                         opacity: 0 !important;
                         width: 0px !important;
+                        height: 0px !important;
+                        pointer-events: none !important;
                     }
                 `;
                 parentHead.appendChild(style);
             }
+
+            // Supresión activa periódica en el documento padre para botones inyectados dinámicamente
+            const suprimirManageApp = () => {
+                const pd = window.parent.document;
+                const targets = pd.querySelectorAll('[data-testid="manage-app-button"], #manage-app-button, [data-testid="stAppDeployButton"]');
+                targets.forEach(el => el.style.setProperty('display', 'none', 'important'));
+                pd.querySelectorAll('button, a, div').forEach(el => {
+                    const txt = (el.innerText || el.textContent || "").trim();
+                    if (txt === "Manage app" || txt === "< Manage app") {
+                        const cont = el.closest('div[class*="viewerBadge"], div[class*="manage"]') || el;
+                        cont.style.setProperty('display', 'none', 'important');
+                    }
+                });
+            };
+            suprimirManageApp();
+            setTimeout(suprimirManageApp, 300);
+            setTimeout(suprimirManageApp, 1000);
+            setTimeout(suprimirManageApp, 2500);
         } catch (e) {
             console.error("Parent override failed:", e);
         }
