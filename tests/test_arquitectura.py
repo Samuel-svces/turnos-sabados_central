@@ -217,6 +217,15 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('sincronizarBusquedaConStreamlit', contenido_b, "El buscador debe sincronizar automáticamente sin obligar al usuario a presionar Enter")
         self.assertIn('mostrarIndicadorCargaPanel', contenido_b, "Drag & Drop debe tener indicador visual inmediato para evitar sensación de congelamiento")
 
+    def test_16_estilos_login_admin(self):
+        """Verifica que el botón de Iniciar Sesión tenga el color #1F5FD1 y el campo de contraseña tenga borde limpio."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('#1F5FD1', contenido_s, "Falta el color azul #1F5FD1 en styles.py")
+        self.assertIn('btn_admin_iniciar_sesion', contenido_s, "Falta selector btn_admin_iniciar_sesion en styles.py")
+        self.assertIn('admin_pwd_popover', contenido_s, "Falta selector admin_pwd_popover en styles.py")
+
 
 if __name__ == "__main__":
     unittest.main()

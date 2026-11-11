@@ -2924,20 +2924,110 @@ def apply_styles():
         padding: 0 !important;
     }
 
-    /* Buscador interno del popover */
-    div[data-testid="stPopoverBody"] div[data-testid="stTextInput"] input {
-        font-size: 0.82rem !important;
-        padding: 0.35rem 0.6rem !important;
+    /* Buscador interno del popover de Excel */
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[data-testid="stTextInput"] div[data-baseweb="input"] {
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
         background: #f8fafc !important;
-        color: #1e293b !important;
     }
 
-    div[data-testid="stPopoverBody"] div[data-testid="stTextInput"] input:focus {
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
         border-color: #107c41 !important;
         box-shadow: 0 0 0 2px rgba(16, 124, 65, 0.15) !important;
         background: #ffffff !important;
+    }
+
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[data-testid="stTextInput"] input {
+        font-size: 0.82rem !important;
+        padding: 0.35rem 0.6rem !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        color: #1e293b !important;
+    }
+
+    /* Campo de contraseña en popover de inicio de sesión de Administrador */
+    div[class*="st-key-admin_pwd_popover"] div[data-baseweb="input"],
+    div[data-testid="stTextInput"]:has(input[type="password"]) div[data-baseweb="input"] {
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        background-color: #ffffff !important;
+        padding: 2px 4px !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-shadow: none !important;
+    }
+
+    div[class*="st-key-admin_pwd_popover"] div[data-baseweb="input"]:hover,
+    div[data-testid="stTextInput"]:has(input[type="password"]) div[data-baseweb="input"]:hover {
+        border-color: #94a3b8 !important;
+    }
+
+    div[class*="st-key-admin_pwd_popover"] div[data-baseweb="input"]:focus-within,
+    div[data-testid="stTextInput"]:has(input[type="password"]) div[data-baseweb="input"]:focus-within {
+        border-color: #1F5FD1 !important;
+        box-shadow: 0 0 0 3px rgba(31, 95, 209, 0.18) !important;
+    }
+
+    div[class*="st-key-admin_pwd_popover"] input,
+    div[data-testid="stTextInput"]:has(input[type="password"]) input {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        font-size: 0.92rem !important;
+        color: #17243D !important;
+        padding: 6px 8px !important;
+    }
+
+    div[class*="st-key-admin_pwd_popover"] button,
+    div[data-testid="stTextInput"]:has(input[type="password"]) button {
+        border: none !important;
+        background: transparent !important;
+        color: #64748b !important;
+    }
+
+    /* Botón 'Iniciar Sesión' en Popover de Administrador (#1F5FD1) */
+    div[class*="st-key-btn_admin_iniciar_sesion"] button,
+    div.st-key-btn_admin_iniciar_sesion button,
+    button[data-testid*="btn_admin_iniciar_sesion"] {
+        background-color: #1F5FD1 !important;
+        background: #1F5FD1 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        padding: 0.5rem 1rem !important;
+        box-shadow: 0 2px 6px rgba(31, 95, 209, 0.25) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
+    div.st-key-btn_admin_iniciar_sesion button:hover,
+    button[data-testid*="btn_admin_iniciar_sesion"]:hover {
+        background-color: #184eb0 !important;
+        background: #184eb0 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
+    div.st-key-btn_admin_iniciar_sesion button:active,
+    button[data-testid*="btn_admin_iniciar_sesion"]:active {
+        background-color: #133f91 !important;
+        background: #133f91 !important;
+        color: #ffffff !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+    }
+
+    div[class*="st-key-btn_admin_iniciar_sesion"] button p,
+    div.st-key-btn_admin_iniciar_sesion button p {
+        color: #ffffff !important;
+        font-weight: 600 !important;
     }
 
     /* Casillas de verificación del menú */

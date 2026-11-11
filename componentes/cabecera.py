@@ -159,6 +159,7 @@ def renderizar_cabecera(logo_b64: str, cargar_datos_fn):
                 st.button(
                     "Iniciar Sesión", 
                     use_container_width=True, 
+                    type="primary",
                     key="btn_admin_iniciar_sesion",
                     on_click=on_pwd_enter
                 )
