@@ -156,6 +156,7 @@ def renderizar_cabecera(logo_b64: str, cargar_datos_fn):
                     on_change=on_pwd_enter
                 )
                 
+                st.markdown("<div class='admin-login-btn-wrap'></div>", unsafe_allow_html=True)
                 st.button(
                     "Iniciar Sesión", 
                     use_container_width=True, 

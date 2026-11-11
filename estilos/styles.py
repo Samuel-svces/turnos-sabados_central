@@ -3055,11 +3055,11 @@ def apply_styles():
         background: #94a3b8 !important;
     }
 
-    /* Botón verde "Aplicar" estilo Excel */
+    /* Botón verde "Aplicar" estilo Excel (estrictamente exclusivo del popover de filtro Excel) */
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"],
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button,
-    div[data-testid="stPopoverBody"] button[kind="primary"],
-    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"],
-    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"],
+    div[class*="st-key-btn_aplicar"] button,
     .excel-apply-btn button {
         background-color: #107c41 !important;
         background: #107c41 !important;
@@ -3076,12 +3076,12 @@ def apply_styles():
         transition: background-color 0.15s ease, transform 0.1s ease !important;
     }
 
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button p,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button span,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button p,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button span,
-    div[data-testid="stPopoverBody"] button[kind="primary"] p,
-    div[data-testid="stPopoverBody"] button[kind="primary"] span,
-    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"] p,
-    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"] p,
+    div[class*="st-key-btn_aplicar"] button p,
+    div[class*="st-key-btn_aplicar"] button span,
     .excel-apply-btn button p,
     .excel-apply-btn button span {
         color: #ffffff !important;
@@ -3089,10 +3089,10 @@ def apply_styles():
         font-size: 0.84rem !important;
     }
 
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:hover,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover,
-    div[data-testid="stPopoverBody"] button[kind="primary"]:hover,
-    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"]:hover,
-    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"]:hover,
+    div[class*="st-key-btn_aplicar"] button:hover,
     .excel-apply-btn button:hover {
         background-color: #0d6535 !important;
         background: #0d6535 !important;
@@ -3102,14 +3102,69 @@ def apply_styles():
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
     }
 
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:active,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active,
-    div[data-testid="stPopoverBody"] button[kind="primary"]:active,
-    div[data-testid="stPopoverBody"] button[data-testid="stBaseButton-primary"]:active,
-    div[data-testid="stPopoverBody"] button[data-testid="baseButton-primary"]:active,
+    div[class*="st-key-btn_aplicar"] button:active,
     .excel-apply-btn button:active {
         background-color: #094725 !important;
         background: #094725 !important;
         transform: translateY(0px) !important;
+    }
+
+    /* Botón 'Iniciar Sesión' en Popover de Administrador (#1F5FD1 Azul Cobalto Institucional) */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"],
+    div[class*="st-key-btn_admin_iniciar_sesion"] button,
+    div.st-key-btn_admin_iniciar_sesion button,
+    button[data-testid*="btn_admin_iniciar_sesion"],
+    .admin-login-btn-wrap + div button,
+    div:has(.admin-login-btn-wrap) button {
+        background-color: #1F5FD1 !important;
+        background: #1F5FD1 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        padding: 0.5rem 1rem !important;
+        box-shadow: 0 2px 8px rgba(31, 95, 209, 0.3) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:hover,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
+    button[data-testid*="btn_admin_iniciar_sesion"]:hover,
+    .admin-login-btn-wrap + div button:hover {
+        background-color: #184eb0 !important;
+        background: #184eb0 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(31, 95, 209, 0.45) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:active,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
+    button[data-testid*="btn_admin_iniciar_sesion"]:active,
+    .admin-login-btn-wrap + div button:active {
+        background-color: #133f91 !important;
+        background: #133f91 !important;
+        color: #ffffff !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button span,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button p,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button span,
+    button[data-testid*="btn_admin_iniciar_sesion"] p,
+    button[data-testid*="btn_admin_iniciar_sesion"] span {
+        color: #ffffff !important;
+        font-weight: 700 !important;
     }
 
     </style>
