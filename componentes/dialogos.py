@@ -1288,12 +1288,13 @@ def show_remover_turno_dialog(rem_info, load_app_data_func=None):
     num_futuros = len(shifts_futuros)
     num_posteriores = max(0, num_futuros - 1)
 
+    # Encabezado minimalista con la información del turno
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #fef2f2 0%, #fff1f2 100%); border: 1.5px solid #f87171; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
-        <div style="font-size: 0.75rem; color: #991b1b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Confirmación de Remoción de Turno</div>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;">
+        <div style="font-size: 0.72rem; color: #dc2626; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Confirmación de remoción</div>
         <div style="font-size: 1.15rem; color: #17243D; font-weight: 800; font-family: Outfit, sans-serif; margin-top: 2px; margin-bottom: 4px;">{name}</div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.86rem; color: #475569; font-weight: 500;">
-            <span>📅 {fecha_str}</span>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #475569; font-weight: 500;">
+            <span>{fecha_str}</span>
             <span>•</span>
             <span style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 8px; font-weight: 600; color: #1e293b; font-size: 0.78rem;">{clasif_actual}</span>
         </div>
@@ -1301,44 +1302,37 @@ def show_remover_turno_dialog(rem_info, load_app_data_func=None):
     """, unsafe_allow_html=True)
 
     st.markdown(
-        "<p style='font-size: 0.92rem; color: #334155; margin-bottom: 1rem;'>"
-        "¿Cómo desea proceder con la remoción del turno? Seleccione una de las siguientes opciones:"
+        "<p style='font-size: 0.90rem; color: #334155; margin-bottom: 0.6rem; font-weight: 500;'>"
+        "Seleccione el alcance para remover el turno:"
         "</p>",
         unsafe_allow_html=True
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 12px; min-height: 105px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 10px;">
-            <div>
-                <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem; margin-bottom: 4px;">🗑️ Solo este turno</div>
-                <div style="font-size: 0.78rem; color: #64748b; line-height: 1.35;">
-                    Elimina <b>únicamente</b> la asignación del sábado <b>{fecha_corta}</b>. Sus turnos posteriores se conservan intactos.
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Remover solo este turno", key="btn_rem_solo_este", use_container_width=True, type="secondary", icon=":material/delete:"):
-            ejecutar_remocion_turno(rem_info, "SOLO_ESTE", load_app_data_func)
+    texto_futuros = (
+        f"Desprograma a este médico eliminando este sábado y los {num_futuros} turnos programados ({num_posteriores} posteriores) de su secuencia hacia adelante."
+        if num_futuros > 1
+        else f"Desprograma a este médico eliminando este sábado (1 turno programado de su secuencia)."
+    )
 
-    with col2:
-        texto_futuros = f"este sábado y los <b>{num_futuros} turnos programados</b> ({num_posteriores} posteriores)" if num_futuros > 1 else f"este sábado (1 turno programado)"
-        st.markdown(f"""
-        <div style="background: #fff5f5; border: 1.5px solid #fecaca; border-radius: 10px; padding: 12px; min-height: 105px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 10px;">
-            <div>
-                <div style="font-weight: 700; color: #991b1b; font-size: 0.9rem; margin-bottom: 4px;">🗓️ De aquí en adelante</div>
-                <div style="font-size: 0.78rem; color: #b91c1c; line-height: 1.35;">
-                    Desprograma a este médico eliminando {texto_futuros} de su secuencia hacia adelante.
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Remover de aquí en adelante", key="btn_rem_de_aqui_adelante", use_container_width=True, type="primary", icon=":material/delete_forever:"):
-            ejecutar_remocion_turno(rem_info, "DE_AQUI_EN_ADELANTE", load_app_data_func)
+    opciones = ["Solo este turno", "De aquí en adelante"]
+    captions = [
+        f"Elimina únicamente la asignación del sábado {fecha_corta}. Sus demás turnos programados se conservan intactos.",
+        texto_futuros
+    ]
 
-    st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
-    if st.button("Cancelar", key="btn_cancelar_rem_dialog", use_container_width=True):
-        st.rerun()
+    alcance_sel = st.radio(
+        "Alcance de remoción",
+        options=opciones,
+        captions=captions,
+        index=0,
+        key="radio_rem_alcance",
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
+    if st.button("Eliminar", key="btn_confirmar_eliminar_turno", type="primary", use_container_width=True, icon=":material/delete_outline:"):
+        scope = "SOLO_ESTE" if alcance_sel == "Solo este turno" else "DE_AQUI_EN_ADELANTE"
+        ejecutar_remocion_turno(rem_info, scope, load_app_data_func)
 
 

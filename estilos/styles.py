@@ -2440,21 +2440,63 @@ def apply_styles():
         fill: #ffffff !important;
     }
 
-    /* Bloqueo y eliminación del botón X de los diálogos para impedir cierres */
-    button[aria-label="Close"],
-    button[aria-label="Cerrar"],
-    button[title="Close"],
-    button[title="Cerrar"],
+    /* Botón X minimalista de cierre en la esquina superior derecha de los diálogos */
     div[data-testid="stDialog"] button[aria-label="Close"],
     div[data-testid="stDialog"] button[aria-label="Cerrar"],
-    div[data-testid="stDialog"] button,
+    div[data-testid="stDialog"] button[title="Close"],
+    div[data-testid="stDialog"] button[title="Cerrar"],
+    div[data-testid="stDialog"] button[kind="header-close"],
+    div[data-testid="stDialog"] header button,
     div[role="dialog"] button[aria-label="Close"],
-    div[role="dialog"] header + button,
-    button[kind="header-close"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
+    div[role="dialog"] header + button {
+        display: inline-flex !important;
+        visibility: visible !important;
+        opacity: 0.65 !important;
+        pointer-events: auto !important;
+        position: absolute !important;
+        top: 1rem !important;
+        right: 1.25rem !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #f8fafc !important;
+        color: #475569 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        z-index: 9999 !important;
+    }
+
+    div[data-testid="stDialog"] button[aria-label="Close"]:hover,
+    div[data-testid="stDialog"] button[aria-label="Cerrar"]:hover,
+    div[data-testid="stDialog"] button[kind="header-close"]:hover,
+    div[data-testid="stDialog"] header button:hover,
+    div[role="dialog"] button[aria-label="Close"]:hover {
+        opacity: 1 !important;
+        background: #fee2e2 !important;
+        border-color: #fca5a5 !important;
+        color: #ef4444 !important;
+        transform: scale(1.05);
+    }
+
+    div[data-testid="stDialog"] button[aria-label="Close"] svg,
+    div[data-testid="stDialog"] button[aria-label="Cerrar"] svg,
+    div[data-testid="stDialog"] header button svg {
+        display: block !important;
+        visibility: visible !important;
+        width: 15px !important;
+        height: 15px !important;
+        fill: currentColor !important;
+    }
+
+    div[data-testid="stDialog"] button[aria-label="Close"]:empty::after,
+    div[data-testid="stDialog"] button[aria-label="Cerrar"]:empty::after {
+        content: "✕";
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1;
     }
 
     /* Regla especifica para mantener visibles solo los botones del formulario interno */
@@ -2464,6 +2506,90 @@ def apply_styles():
         visibility: visible !important;
         opacity: 1 !important;
         pointer-events: auto !important;
+    }
+
+    /* Tarjetas elegibles para el alcance de eliminación en el diálogo de remoción */
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 12px !important;
+        margin-top: 4px !important;
+        margin-bottom: 6px !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label {
+        flex: 1 !important;
+        background: #ffffff !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 14px 16px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        min-height: 105px !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        margin: 0 !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label:hover {
+        border-color: #cbd5e1 !important;
+        background: #f8fafc !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label:has(input:checked) {
+        border-color: #ef4444 !important;
+        background: #fff8f8 !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08) !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label div[data-testid="stMarkdownContainer"] p {
+        font-weight: 700 !important;
+        font-size: 0.92rem !important;
+        color: #1e293b !important;
+        margin-bottom: 2px !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+        color: #991b1b !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label div[data-testid="stCaptionContainer"] p {
+        font-size: 0.78rem !important;
+        color: #64748b !important;
+        line-height: 1.35 !important;
+    }
+
+    div[class*="st-key-radio_rem_alcance"] div[role="radiogroup"] > label:has(input:checked) div[data-testid="stCaptionContainer"] p {
+        color: #7f1d1d !important;
+    }
+
+    /* Botón único de confirmación 'Eliminar' */
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button {
+        background: #dc2626 !important;
+        background-color: #dc2626 !important;
+        border: 1px solid #b91c1c !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        padding: 0.6rem 1rem !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+        letter-spacing: 0.3px !important;
+    }
+
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button:hover {
+        background: #b91c1c !important;
+        background-color: #b91c1c !important;
+        border-color: #991b1b !important;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
+        transform: translateY(-1px);
+    }
+
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button p,
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button span,
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
     
     div[data-testid="stModalBackdrop"],

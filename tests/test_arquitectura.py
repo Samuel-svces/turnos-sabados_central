@@ -252,12 +252,25 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertTrue(callable(show_remover_turno_dialog))
         self.assertTrue(callable(ejecutar_remocion_turno))
 
-        # 1. Verificar presencia de claves en cuadricula_turnos.py
+        # 1. Verificar presencia de claves en cuadricula_turnos.py y dialogos.py
         cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
         with open(cuadricula_path, "r", encoding="utf-8") as f:
             contenido_c = f.read()
         self.assertIn('modal_remover_turno', contenido_c, "Falta cola modal_remover_turno en cuadricula_turnos.py")
         self.assertIn('show_remover_turno_dialog', contenido_c, "Falta llamada a show_remover_turno_dialog en cuadricula_turnos.py")
+
+        dialogos_path = os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
+        with open(dialogos_path, "r", encoding="utf-8") as f:
+            contenido_d = f.read()
+        self.assertIn('radio_rem_alcance', contenido_d, "Falta el radio selector elegible radio_rem_alcance en dialogos.py")
+        self.assertIn('btn_confirmar_eliminar_turno', contenido_d, "Falta el botón único btn_confirmar_eliminar_turno en dialogos.py")
+        self.assertNotIn('btn_cancelar_rem_dialog', contenido_d, "El botón cancelar no debe estar en dialogos.py")
+
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('radio_rem_alcance', contenido_s, "Faltan estilos para radio_rem_alcance en styles.py")
+        self.assertIn('btn_confirmar_eliminar_turno', contenido_s, "Faltan estilos para btn_confirmar_eliminar_turno en styles.py")
 
         # 2. Configurar mock de session_state con 3 sábados para un médico (pasado, actual, futuro)
         date_past = datetime.date(2026, 11, 7)
