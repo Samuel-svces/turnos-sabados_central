@@ -852,7 +852,9 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                     if is_holiday:
                         texto_header += " (FESTIVO)"
                     if sort_type == "asc":
-                        texto_header += " 🔤"
+                        texto_header += " ▲"
+                    elif sort_type == "desc":
+                        texto_header += " ▼"
 
                     st.markdown("<div class='date-header-marker sat-header-pub-marker'></div>", unsafe_allow_html=True)
                     if st.button(texto_header, key=f"btn_ordenar_pub_{sat_date}", use_container_width=True):
