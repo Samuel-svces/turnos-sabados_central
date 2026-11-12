@@ -178,6 +178,7 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
             value=todos_marcados,
             key=chk_all_key,
         )
+        st.markdown("<hr class='excel-menu-divider' style='margin: 0.2rem 0 !important;' />", unsafe_allow_html=True)
 
         # 4. Lista con scroll de casillas individuales
         if not nombres:

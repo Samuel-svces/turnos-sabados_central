@@ -399,6 +399,7 @@ def renderizar_buscador(cargar_datos_fn=None):
 
             // 1. Función para refrescar si el botón 'Aplicar' debe estar habilitado o deshabilitado
             function refrescarEstadoAplicar() {
+                const applyBtn = popover.querySelector('.excel-apply-btn button, div[class*="st-key-btn_aplicar"] button, button[data-testid="stBaseButton-primary"]');
                 if (!applyBtn) return;
                 const doctorCheckboxes = popover.querySelectorAll('[data-testid="stCheckbox"]');
                 let countChecked = 0;
@@ -425,27 +426,34 @@ def renderizar_buscador(cargar_datos_fn=None):
                 if (!inp) return;
                 if (inp.checked === targetChecked) return;
 
-                // Click directo sobre el input HTML de la casilla
-                inp.click();
+                const label = chkCont.querySelector('label') || chkCont;
 
-                // Verificación de respaldo si el click no conmutó el estado
-                if (inp.checked !== targetChecked) {
-                    const label = chkCont.querySelector('label');
-                    if (label) label.click();
-                }
+                // 1. Simular click directo sobre el elemento label (dispara el SyntheticEvent oficial de BaseWeb / React)
+                label.click();
 
+                // 2. Verificación y respaldo a bajo nivel si el click no conmutó el estado
                 if (inp.checked !== targetChecked) {
                     try {
-                        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "checked")?.set;
+                        const ownerWin = inp.ownerDocument.defaultView || window.parent || window;
+                        const setter = Object.getOwnPropertyDescriptor(ownerWin.HTMLInputElement.prototype, "checked")?.set;
                         if (setter) setter.call(inp, targetChecked);
                         else inp.checked = targetChecked;
                         if (inp._valueTracker) inp._valueTracker.setValue(!targetChecked);
-                        inp.dispatchEvent(new Event('input', { bubbles: true }));
-                        inp.dispatchEvent(new Event('change', { bubbles: true }));
+                        inp.dispatchEvent(new ownerWin.Event('input', { bubbles: true, cancelable: true }));
+                        inp.dispatchEvent(new ownerWin.Event('change', { bubbles: true, cancelable: true }));
                     } catch (err) {
                         console.error("Error al forzar checkbox:", err);
                     }
                 }
+
+                // 3. Sincronización visual forzada de atributos BaseWeb
+                try {
+                    inp.setAttribute('aria-checked', targetChecked ? 'true' : 'false');
+                    const baseBox = chkCont.querySelector('[data-baseweb="checkbox"]');
+                    if (baseBox) {
+                        baseBox.setAttribute('aria-checked', targetChecked ? 'true' : 'false');
+                    }
+                } catch (e) {}
             }
 
             // 3. Vincular buscador reactivo dentro del popover
@@ -513,11 +521,11 @@ def renderizar_buscador(cargar_datos_fn=None):
                     selectAllCont.dataset.excelSelectAllBound = "true";
                     const chkAllInput = selectAllCont.querySelector('input[type="checkbox"]');
 
-                    const ejecutarAccionSelectAll = () => {
+                    const ejecutarAccionSelectAll = (forzadoTarget) => {
                         if (isBatchUpdating) return;
                         isBatchUpdating = true;
                         try {
-                            const targetChecked = chkAllInput ? chkAllInput.checked : false;
+                            const targetChecked = (typeof forzadoTarget === 'boolean') ? forzadoTarget : (chkAllInput ? chkAllInput.checked : false);
                             const doctorCheckboxes = popover.querySelectorAll('[data-testid="stCheckbox"]');
                             doctorCheckboxes.forEach((chk, idx) => {
                                 if (idx === 0 || chk.textContent.includes("Seleccionar")) return;
@@ -528,18 +536,22 @@ def renderizar_buscador(cargar_datos_fn=None):
                             });
                             refrescarEstadoAplicar();
                         } finally {
-                            setTimeout(() => { isBatchUpdating = false; }, 60);
+                            setTimeout(() => { isBatchUpdating = false; }, 80);
                         }
                     };
 
-                    selectAllCont.addEventListener('click', () => {
-                        setTimeout(ejecutarAccionSelectAll, 20);
-                    });
                     if (chkAllInput) {
-                        chkAllInput.addEventListener('change', () => {
-                            setTimeout(ejecutarAccionSelectAll, 20);
+                        chkAllInput.addEventListener('change', (e) => {
+                            ejecutarAccionSelectAll(e.target.checked);
                         });
                     }
+                    selectAllCont.addEventListener('click', () => {
+                        setTimeout(() => {
+                            if (!isBatchUpdating && chkAllInput) {
+                                ejecutarAccionSelectAll(chkAllInput.checked);
+                            }
+                        }, 15);
+                    });
                 }
             }
 
@@ -556,7 +568,7 @@ def renderizar_buscador(cargar_datos_fn=None):
                         if (isBatchUpdating) return;
                         refrescarEstadoAplicar();
 
-                        // Actualizar estado de (Seleccionar todo) según los médicos visibles
+                        // Actualizar estado de (Seleccionar todo) según los médicos visibles sin bucle recursivo
                         const firstChk = popover.querySelectorAll('[data-testid="stCheckbox"]')[0];
                         if (firstChk && firstChk.textContent.includes("Seleccionar")) {
                             const firstInp = firstChk.querySelector('input[type="checkbox"]');
@@ -574,7 +586,18 @@ def renderizar_buscador(cargar_datos_fn=None):
                             });
                             const allChecked = totalVis > 0 && (checkedVis === totalVis);
                             if (firstInp && firstInp.checked !== allChecked) {
-                                forzarEstadoCheckbox(firstChk, allChecked);
+                                try {
+                                    const ownerWin = firstInp.ownerDocument.defaultView || window.parent || window;
+                                    const setter = Object.getOwnPropertyDescriptor(ownerWin.HTMLInputElement.prototype, "checked")?.set;
+                                    if (setter) setter.call(firstInp, allChecked);
+                                    else firstInp.checked = allChecked;
+                                    if (firstInp._valueTracker) firstInp._valueTracker.setValue(!allChecked);
+                                    firstInp.dispatchEvent(new ownerWin.Event('input', { bubbles: true }));
+                                    firstInp.dispatchEvent(new ownerWin.Event('change', { bubbles: true }));
+                                    firstInp.setAttribute('aria-checked', allChecked ? 'true' : 'false');
+                                    const firstBaseBox = firstChk.querySelector('[data-baseweb="checkbox"]');
+                                    if (firstBaseBox) firstBaseBox.setAttribute('aria-checked', allChecked ? 'true' : 'false');
+                                } catch (e) {}
                             }
                         }
                     }, 20);

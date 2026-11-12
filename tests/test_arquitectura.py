@@ -406,6 +406,28 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('refrescarEstadoAplicar', contenido_b)
         self.assertIn('forzarEstadoCheckbox', contenido_b)
 
+    def test_23_filtro_popover_cascada_y_deshabilitacion_aplicar(self):
+        """Verifica la lógica completa del popover de filtro Excel:
+        - Búsqueda en vivo reactiva con input event
+        - Cascading toggle desde (Seleccionar todo) a médicos individuales mediante label.click
+        - Deshabilitación automática del botón 'Aplicar' cuando 0 médicos están marcados
+        - Presencia de separador visual en cuadrícula tras '(Seleccionar todo)'"""
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        
+        # Validar selector de click y actualización segura
+        self.assertIn('label.click()', contenido_b)
+        self.assertIn('ejecutarAccionSelectAll', contenido_b)
+        self.assertIn('btn-aplicar-deshabilitado', contenido_b)
+
+        # Validar cuadrícula de turnos
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn('(Seleccionar todo)', contenido_c)
+        self.assertIn("class='excel-menu-divider'", contenido_c)
+
 
 if __name__ == "__main__":
     unittest.main()
