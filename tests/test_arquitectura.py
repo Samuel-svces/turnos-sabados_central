@@ -579,6 +579,30 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn("btn_agregar_medico_dialog", contenido_b)
         self.assertIn("btn_confirmar_eliminar_turno", contenido_b)
 
+    def test_28_estilos_botones_confirmar_cancelar_admin(self):
+        """Verifica la estilización unificada de los botones:
+        - 'Confirmar' (en modal Drag & Drop) con el estilo de 'Agregar Médico' (#1D88F3)
+        - 'Cancelar' con borde rojo (#ef4444), fondo blanco y hover rojo
+        - 'Cerrar Sesión' y 'Sincronizar con SharePoint' con el estilo de 'Agregar Médico' (#1D88F3)
+        - 'Iniciar Sesión' mantiene azul cobalto institucional (#1F5FD1)"""
+        dialogos_path = os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
+        with open(dialogos_path, "r", encoding="utf-8") as f:
+            contenido_d = f.read()
+        self.assertIn('st.button("Confirmar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop"', contenido_d)
+        self.assertIn('st.button("Cancelar", type="secondary", use_container_width=True, key="btn_cancelar_drag_drop"', contenido_d)
+        self.assertNotIn('"Confirmar y Aplicar"', contenido_d)
+
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn("btn_confirmar_drag_drop", contenido_s)
+        self.assertIn("btn_cancelar_drag_drop", contenido_s)
+        self.assertIn("btn_admin_cerrar_sesion", contenido_s)
+        self.assertIn("btn_admin_sincronizar_sp", contenido_s)
+        self.assertIn("#ef4444", contenido_s)
+        self.assertIn("#1D88F3", contenido_s)
+        self.assertIn("#1F5FD1", contenido_s)
+
 
 if __name__ == "__main__":
     unittest.main()

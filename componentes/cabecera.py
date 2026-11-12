@@ -47,7 +47,6 @@ def renderizar_cabecera(logo_b64: str, cargar_datos_fn):
 
             if st.session_state.is_admin:
                 st.success("Sesión Iniciada (Admin)", icon=":material/verified_user:")
-                st.markdown("<div class='admin-login-btn-wrap'></div>", unsafe_allow_html=True)
                 if st.button("Cerrar Sesión", use_container_width=True, type="primary", key="btn_admin_cerrar_sesion"):
                     st.session_state.is_admin = False
                     if 'saturday_offset' in st.session_state:
@@ -55,7 +54,6 @@ def renderizar_cabecera(logo_b64: str, cargar_datos_fn):
                     st.rerun()
 
                 st.markdown("<div style='margin-top:0.8rem; margin-bottom:0.8rem; border-top:1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
-                st.markdown("<div class='admin-login-btn-wrap'></div>", unsafe_allow_html=True)
                 if st.button("Sincronizar con SharePoint", use_container_width=True, type="primary", key="btn_admin_sincronizar_sp"):
                     st.session_state["force_refresh_personal"] = True
                     c_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".cache")

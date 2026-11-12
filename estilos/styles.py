@@ -3218,16 +3218,10 @@ def apply_styles():
         color: #64748b !important;
     }
 
-    /* Botones de Administrador (#1F5FD1): Iniciar Sesión, Cerrar Sesión, Sincronizar */
+    /* Botón de Inicio de Sesión Administrador (#1F5FD1) */
     div[class*="st-key-btn_admin_iniciar_sesion"] button,
     div.st-key-btn_admin_iniciar_sesion button,
-    button[data-testid*="btn_admin_iniciar_sesion"],
-    div[class*="st-key-btn_admin_cerrar_sesion"] button,
-    div.st-key-btn_admin_cerrar_sesion button,
-    button[data-testid*="btn_admin_cerrar_sesion"],
-    div[class*="st-key-btn_admin_sincronizar_sp"] button,
-    div.st-key-btn_admin_sincronizar_sp button,
-    button[data-testid*="btn_admin_sincronizar_sp"] {
+    button[data-testid*="btn_admin_iniciar_sesion"] {
         background-color: #1F5FD1 !important;
         background: #1F5FD1 !important;
         color: #ffffff !important;
@@ -3243,13 +3237,7 @@ def apply_styles():
 
     div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
     div.st-key-btn_admin_iniciar_sesion button:hover,
-    button[data-testid*="btn_admin_iniciar_sesion"]:hover,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button:hover,
-    div.st-key-btn_admin_cerrar_sesion button:hover,
-    button[data-testid*="btn_admin_cerrar_sesion"]:hover,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button:hover,
-    div.st-key-btn_admin_sincronizar_sp button:hover,
-    button[data-testid*="btn_admin_sincronizar_sp"]:hover {
+    button[data-testid*="btn_admin_iniciar_sesion"]:hover {
         background-color: #184eb0 !important;
         background: #184eb0 !important;
         color: #ffffff !important;
@@ -3259,13 +3247,7 @@ def apply_styles():
 
     div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
     div.st-key-btn_admin_iniciar_sesion button:active,
-    button[data-testid*="btn_admin_iniciar_sesion"]:active,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button:active,
-    div.st-key-btn_admin_cerrar_sesion button:active,
-    button[data-testid*="btn_admin_cerrar_sesion"]:active,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button:active,
-    div.st-key-btn_admin_sincronizar_sp button:active,
-    button[data-testid*="btn_admin_sincronizar_sp"]:active {
+    button[data-testid*="btn_admin_iniciar_sesion"]:active {
         background-color: #133f91 !important;
         background: #133f91 !important;
         color: #ffffff !important;
@@ -3274,11 +3256,7 @@ def apply_styles():
     }
 
     div[class*="st-key-btn_admin_iniciar_sesion"] button p,
-    div.st-key-btn_admin_iniciar_sesion button p,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button p,
-    div.st-key-btn_admin_cerrar_sesion button p,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button p,
-    div.st-key-btn_admin_sincronizar_sp button p {
+    div.st-key-btn_admin_iniciar_sesion button p {
         color: #ffffff !important;
         font-weight: 600 !important;
     }
@@ -3438,22 +3416,12 @@ def apply_styles():
         fill: #94a3b8 !important;
     }
 
-    /* Botones de Administrador en Popover (#1F5FD1 Azul Cobalto Institucional) */
+    /* Botones de Inicio de Sesión Administrador en Popover (#1F5FD1 Azul Cobalto Institucional) */
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button,
     div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"],
     div[class*="st-key-btn_admin_iniciar_sesion"] button,
     div.st-key-btn_admin_iniciar_sesion button,
     button[data-testid*="btn_admin_iniciar_sesion"],
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_cerrar_sesion"],
-    div[class*="st-key-btn_admin_cerrar_sesion"] button,
-    div.st-key-btn_admin_cerrar_sesion button,
-    button[data-testid*="btn_admin_cerrar_sesion"],
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_sincronizar_sp"],
-    div[class*="st-key-btn_admin_sincronizar_sp"] button,
-    div.st-key-btn_admin_sincronizar_sp button,
-    button[data-testid*="btn_admin_sincronizar_sp"],
     .admin-login-btn-wrap + div button,
     div:has(.admin-login-btn-wrap) button {
         background-color: #1F5FD1 !important;
@@ -3473,14 +3441,6 @@ def apply_styles():
     div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:hover,
     div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
     button[data-testid*="btn_admin_iniciar_sesion"]:hover,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:hover,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_cerrar_sesion"]:hover,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button:hover,
-    button[data-testid*="btn_admin_cerrar_sesion"]:hover,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:hover,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_sincronizar_sp"]:hover,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button:hover,
-    button[data-testid*="btn_admin_sincronizar_sp"]:hover,
     .admin-login-btn-wrap + div button:hover {
         background-color: #184eb0 !important;
         background: #184eb0 !important;
@@ -3493,14 +3453,6 @@ def apply_styles():
     div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:active,
     div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
     button[data-testid*="btn_admin_iniciar_sesion"]:active,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:active,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_cerrar_sesion"]:active,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button:active,
-    button[data-testid*="btn_admin_cerrar_sesion"]:active,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:active,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_sincronizar_sp"]:active,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button:active,
-    button[data-testid*="btn_admin_sincronizar_sp"]:active,
     .admin-login-btn-wrap + div button:active {
         background-color: #133f91 !important;
         background: #133f91 !important;
@@ -3514,45 +3466,69 @@ def apply_styles():
     div[class*="st-key-btn_admin_iniciar_sesion"] button p,
     div[class*="st-key-btn_admin_iniciar_sesion"] button span,
     button[data-testid*="btn_admin_iniciar_sesion"] p,
-    button[data-testid*="btn_admin_iniciar_sesion"] span,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button p,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button span,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button p,
-    div[class*="st-key-btn_admin_cerrar_sesion"] button span,
-    button[data-testid*="btn_admin_cerrar_sesion"] p,
-    button[data-testid*="btn_admin_cerrar_sesion"] span,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button p,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button span,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button p,
-    div[class*="st-key-btn_admin_sincronizar_sp"] button span,
-    button[data-testid*="btn_admin_sincronizar_sp"] p,
-    button[data-testid*="btn_admin_sincronizar_sp"] span {
+    button[data-testid*="btn_admin_iniciar_sesion"] span {
         color: #ffffff !important;
         font-weight: 700 !important;
     }
 
     /* ========================================================= */
-    /* BOTÓN "AGREGAR MÉDICO" (Borde azul, fondo blanco, hover #1D88F3) */
+    /* BOTONES ESTILO "AGREGAR MÉDICO" (Borde azul #1D88F3, fondo blanco, hover sólido #1D88F3) */
+    /* Aplica a: Agregar Médico, Confirmar (Modal Drag & Drop), Cerrar Sesión, Sincronizar */
     /* ========================================================= */
-    div[class*="st-key-btn_agregar_medico"] button {
+    div[class*="st-key-btn_agregar_medico"] button,
+    div[class*="st-key-btn_confirmar_drag_drop"] button,
+    div[class*="st-key-btn_confirmar_drag_drop"] button[data-testid="stBaseButton-primary"],
+    button[data-testid*="btn_confirmar_drag_drop"],
+    div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button,
+    div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button,
+    button[data-testid*="btn_admin_cerrar_sesion"],
+    div[class*="st-key-btn_admin_sincronizar_sp"] button,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button,
+    button[data-testid*="btn_admin_sincronizar_sp"] {
         background: #ffffff !important;
         background-color: #ffffff !important;
         color: #1D88F3 !important;
         border: 1.5px solid #1D88F3 !important;
+        border-color: #1D88F3 !important;
         border-radius: 8px !important;
         box-shadow: 0 1px 4px rgba(29, 136, 243, 0.12) !important;
+        font-family: 'Outfit', sans-serif !important;
         font-weight: 600 !important;
-        font-size: 0.82rem !important;
+        font-size: 0.85rem !important;
         transition: all 0.2s ease !important;
     }
-    div[class*="st-key-btn_agregar_medico"] button * {
+
+    div[class*="st-key-btn_agregar_medico"] button *,
+    div[class*="st-key-btn_confirmar_drag_drop"] button *,
+    button[data-testid*="btn_confirmar_drag_drop"] *,
+    div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button *,
+    div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button *,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button *,
+    button[data-testid*="btn_admin_cerrar_sesion"] *,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button *,
+    button[data-testid*="btn_admin_sincronizar_sp"] * {
         color: #1D88F3 !important;
         fill: #1D88F3 !important;
         background-color: transparent !important;
         font-weight: 600 !important;
         text-shadow: none !important;
     }
-    div[class*="st-key-btn_agregar_medico"] button:hover {
+
+    div[class*="st-key-btn_agregar_medico"] button:hover:not(:disabled),
+    div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled),
+    button[data-testid*="btn_confirmar_drag_drop"]:hover:not(:disabled),
+    div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled),
+    div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled),
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled),
+    button[data-testid*="btn_admin_cerrar_sesion"]:hover:not(:disabled),
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:hover:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:hover:not(:disabled),
+    button[data-testid*="btn_admin_sincronizar_sp"]:hover:not(:disabled) {
         background: #1D88F3 !important;
         background-color: #1D88F3 !important;
         border-color: #1D88F3 !important;
@@ -3560,18 +3536,154 @@ def apply_styles():
         box-shadow: 0 4px 12px rgba(29, 136, 243, 0.35) !important;
         transform: translateY(-1px) !important;
     }
-    div[class*="st-key-btn_agregar_medico"] button:hover * {
+
+    div[class*="st-key-btn_agregar_medico"] button:hover:not(:disabled) *,
+    div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled) *,
+    button[data-testid*="btn_confirmar_drag_drop"]:hover:not(:disabled) *,
+    div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled) *,
+    div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled) *,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled) *,
+    button[data-testid*="btn_admin_cerrar_sesion"]:hover:not(:disabled) *,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:hover:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:hover:not(:disabled) *,
+    button[data-testid*="btn_admin_sincronizar_sp"]:hover:not(:disabled) * {
         color: #ffffff !important;
         fill: #ffffff !important;
     }
-    div[class*="st-key-btn_agregar_medico"] button:active {
+
+    div[class*="st-key-btn_agregar_medico"] button:active:not(:disabled),
+    div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled),
+    button[data-testid*="btn_confirmar_drag_drop"]:active:not(:disabled),
+    div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled),
+    div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled),
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled),
+    button[data-testid*="btn_admin_cerrar_sesion"]:active:not(:disabled),
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:active:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:active:not(:disabled),
+    button[data-testid*="btn_admin_sincronizar_sp"]:active:not(:disabled) {
         background: #1670cb !important;
         background-color: #1670cb !important;
         border-color: #1670cb !important;
         transform: translateY(0px) !important;
         box-shadow: 0 1px 3px rgba(29, 136, 243, 0.2) !important;
     }
-    div[class*="st-key-btn_agregar_medico"] button:active * {
+
+    div[class*="st-key-btn_agregar_medico"] button:active:not(:disabled) *,
+    div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled) *,
+    button[data-testid*="btn_confirmar_drag_drop"]:active:not(:disabled) *,
+    div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled) *,
+    div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled) *,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled) *,
+    button[data-testid*="btn_admin_cerrar_sesion"]:active:not(:disabled) *,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:active:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:active:not(:disabled) *,
+    button[data-testid*="btn_admin_sincronizar_sp"]:active:not(:disabled) * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+    /* Estado Deshabilitado para botón Confirmar */
+    div[class*="st-key-btn_confirmar_drag_drop"] button:disabled,
+    button[data-testid*="btn_confirmar_drag_drop"]:disabled {
+        background-color: #f8fafc !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-color: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    div[class*="st-key-btn_confirmar_drag_drop"] button:disabled *,
+    button[data-testid*="btn_confirmar_drag_drop"]:disabled * {
+        color: #94a3b8 !important;
+        fill: #94a3b8 !important;
+    }
+
+    /* ========================================================= */
+    /* BOTÓN "CANCELAR" (Borde rojo #ef4444, fondo blanco, hover rojo sólido #ef4444) */
+    /* ========================================================= */
+    div[class*="st-key-btn_cancelar_drag_drop"] button,
+    div[class*="st-key-btn_cancelar_drag_drop"] button[data-testid="stBaseButton-secondary"],
+    button[data-testid*="btn_cancelar_drag_drop"],
+    div[data-testid="stDialog"] div[class*="st-key-btn_cancelar_drag_drop"] button,
+    div[role="dialog"] div[class*="st-key-btn_cancelar_drag_drop"] button,
+    div[class*="st-key-btn_cancel_delete_action"] button,
+    button[data-testid*="btn_cancel_delete_action"] {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #ef4444 !important;
+        border: 1.5px solid #ef4444 !important;
+        border-color: #ef4444 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 1px 4px rgba(239, 68, 68, 0.12) !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div[class*="st-key-btn_cancelar_drag_drop"] button *,
+    button[data-testid*="btn_cancelar_drag_drop"] *,
+    div[data-testid="stDialog"] div[class*="st-key-btn_cancelar_drag_drop"] button *,
+    div[role="dialog"] div[class*="st-key-btn_cancelar_drag_drop"] button *,
+    div[class*="st-key-btn_cancel_delete_action"] button *,
+    button[data-testid*="btn_cancel_delete_action"] * {
+        color: #ef4444 !important;
+        fill: #ef4444 !important;
+        background-color: transparent !important;
+        font-weight: 600 !important;
+        text-shadow: none !important;
+    }
+
+    div[class*="st-key-btn_cancelar_drag_drop"] button:hover:not(:disabled),
+    button[data-testid*="btn_cancelar_drag_drop"]:hover:not(:disabled),
+    div[data-testid="stDialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:hover:not(:disabled),
+    div[role="dialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:hover:not(:disabled),
+    div[class*="st-key-btn_cancel_delete_action"] button:hover:not(:disabled),
+    button[data-testid*="btn_cancel_delete_action"]:hover:not(:disabled) {
+        background: #ef4444 !important;
+        background-color: #ef4444 !important;
+        border-color: #ef4444 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[class*="st-key-btn_cancelar_drag_drop"] button:hover:not(:disabled) *,
+    button[data-testid*="btn_cancelar_drag_drop"]:hover:not(:disabled) *,
+    div[data-testid="stDialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:hover:not(:disabled) *,
+    div[role="dialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:hover:not(:disabled) *,
+    div[class*="st-key-btn_cancel_delete_action"] button:hover:not(:disabled) *,
+    button[data-testid*="btn_cancel_delete_action"]:hover:not(:disabled) * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+    div[class*="st-key-btn_cancelar_drag_drop"] button:active:not(:disabled),
+    button[data-testid*="btn_cancelar_drag_drop"]:active:not(:disabled),
+    div[data-testid="stDialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:active:not(:disabled),
+    div[role="dialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:active:not(:disabled),
+    div[class*="st-key-btn_cancel_delete_action"] button:active:not(:disabled),
+    button[data-testid*="btn_cancel_delete_action"]:active:not(:disabled) {
+        background: #dc2626 !important;
+        background-color: #dc2626 !important;
+        border-color: #dc2626 !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    div[class*="st-key-btn_cancelar_drag_drop"] button:active:not(:disabled) *,
+    button[data-testid*="btn_cancelar_drag_drop"]:active:not(:disabled) *,
+    div[data-testid="stDialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:active:not(:disabled) *,
+    div[role="dialog"] div[class*="st-key-btn_cancelar_drag_drop"] button:active:not(:disabled) *,
+    div[class*="st-key-btn_cancel_delete_action"] button:active:not(:disabled) *,
+    button[data-testid*="btn_cancel_delete_action"]:active:not(:disabled) * {
         color: #ffffff !important;
         fill: #ffffff !important;
     }

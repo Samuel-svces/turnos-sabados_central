@@ -949,7 +949,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
 
     btn_disabled = bool(misma_secuencia or ya_trabaja_destino or (accion_sel == "Cambio de turno" and not swap_peer))
     with c_btn1:
-        if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop", disabled=btn_disabled):
+        if st.button("Confirmar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop", disabled=btn_disabled):
             try:
                 sheet_orig = payload.get('sheet') or f"SABADOS {source_date.year}"
                 sheet_dest = f"SABADOS {target_date.year}"
