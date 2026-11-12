@@ -446,17 +446,6 @@ def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_e
 
     swap_target_pop = None
     if nueva_clasif == "Cambio de turno":
-        st.markdown("""
-        <div class="modal-skeleton-card" style="padding: 6px 10px; margin: 4px 0 8px 0;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.72rem; font-weight: 700; color: #0f9a9b; text-transform: uppercase;">
-                    🔄 Intercambio de Turno
-                </span>
-                <span class="skeleton-shimmer-box" style="display: inline-block; width: 45px; height: 12px; border-radius: 6px;"></span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
         df_s = st.session_state.get('shifts_df', pd.DataFrame())
         today = datetime.date.today()
         current_week_parity = sat_date.isocalendar()[1] % 2

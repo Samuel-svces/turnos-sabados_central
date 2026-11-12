@@ -560,15 +560,14 @@ class TestArquitecturaModular(unittest.TestCase):
         dialogos_path = os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
         with open(dialogos_path, "r", encoding="utf-8") as f:
             contenido_d = f.read()
-        self.assertIn("modal-skeleton-card", contenido_d)
         self.assertIn("swap-summary-card", contenido_d)
-        self.assertIn("Intercambio de Turno Quincenal", contenido_d)
+        self.assertIn("Turno Original", contenido_d)
+        self.assertIn("Contraparte", contenido_d)
 
         cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
         with open(cuadricula_path, "r", encoding="utf-8") as f:
             contenido_c = f.read()
-        self.assertIn("modal-skeleton-card", contenido_c)
-        self.assertIn("Intercambio de Turno", contenido_c)
+        self.assertIn("btn_save_pop_", contenido_c)
 
         buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
         with open(buscador_path, "r", encoding="utf-8") as f:

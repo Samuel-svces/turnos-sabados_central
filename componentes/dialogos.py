@@ -409,20 +409,6 @@ def show_shift_dialog(action_details, load_app_data_func):
     
     swap_target = None
     if new_clasif == "Cambio de turno":
-        st.markdown("""
-        <div class="modal-skeleton-card">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-                <span style="font-size: 0.74rem; font-weight: 700; color: #0f9a9b; text-transform: uppercase; letter-spacing: 0.5px;">
-                    🔄 Intercambio de Turno Quincenal
-                </span>
-                <span class="skeleton-shimmer-box" style="display: inline-block; width: 55px; height: 14px; border-radius: 8px;"></span>
-            </div>
-            <div style="font-size: 0.82rem; color: #475569; font-weight: 500;">
-                Seleccione el médico contraparte en sábados futuros de secuencia opuesta:
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
         df_s = st.session_state.shifts_df
         current_date = action_details['date']
         today = datetime.date.today()
@@ -480,36 +466,32 @@ def show_shift_dialog(action_details, load_app_data_func):
                     dest_d_str = swap_target['date'].strftime('%d/%m/%Y') if hasattr(swap_target['date'], 'strftime') else str(swap_target['date'])
                     st.markdown(f"""
                     <div class="swap-summary-card">
-                        <div class="swap-summary-node">
-                            <span class="swap-node-role">Turno Original ({orig_d_str})</span>
-                            <span class="swap-node-name" title="{current_doc}">{current_doc}</span>
-                            <span class="swap-node-date">➔ Pasa a {dest_d_str}</span>
+                        <div class="swap-row">
+                            <div class="swap-row-icon">👤</div>
+                            <div class="swap-row-content">
+                                <span class="swap-node-role">Turno Original ({orig_d_str})</span>
+                                <div class="swap-node-name">{current_doc}</div>
+                                <div class="swap-node-date">➔ Pasa a <strong>{dest_d_str}</strong></div>
+                            </div>
                         </div>
-                        <div class="swap-summary-arrow">⇄</div>
-                        <div class="swap-summary-node">
-                            <span class="swap-node-role">Contraparte ({dest_d_str})</span>
-                            <span class="swap-node-name" title="{swap_target['doctor']}">{swap_target['doctor']}</span>
-                            <span class="swap-node-date">➔ Pasa a {orig_d_str}</span>
+                        <div class="swap-divider">
+                            <span class="swap-divider-line"></span>
+                            <span class="swap-divider-badge">⇄</span>
+                            <span class="swap-divider-line"></span>
+                        </div>
+                        <div class="swap-row">
+                            <div class="swap-row-icon counterpart">🔄</div>
+                            <div class="swap-row-content">
+                                <span class="swap-node-role counterpart">Contraparte ({dest_d_str})</span>
+                                <div class="swap-node-name">{swap_target['doctor']}</div>
+                                <div class="swap-node-date">➔ Pasa a <strong>{orig_d_str}</strong></div>
+                            </div>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
             else:
-                st.markdown("""
-                <div class="modal-skeleton-card">
-                    <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-header"></div>
-                    <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-input"></div>
-                    <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-caption"></div>
-                </div>
-                """, unsafe_allow_html=True)
                 st.info("No hay médicos en sábados futuros de la secuencia contraria disponibles para el cambio.")
         else:
-            st.markdown("""
-            <div class="modal-skeleton-card">
-                <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-header"></div>
-                <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-input"></div>
-                <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-caption"></div>
-            </div>
-            """, unsafe_allow_html=True)
             st.info("No hay médicos en sábados futuros de la secuencia contraria disponibles para el cambio.")
             
     # Gestión del estado de la confirmación de eliminación
@@ -918,20 +900,6 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     # 1. OPCIÓN CAMBIO DE TURNO (Solo supernumerarios en su secuencia normal para ese sábado)
     swap_peer = None
     if accion_sel == "Cambio de turno":
-        st.markdown(f"""
-        <div class="modal-skeleton-card">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-                <span style="font-size: 0.74rem; font-weight: 700; color: #0f9a9b; text-transform: uppercase; letter-spacing: 0.5px;">
-                    🔄 Intercambio de Turno Quincenal
-                </span>
-                <span class="skeleton-shimmer-box" style="display: inline-block; width: 55px; height: 14px; border-radius: 8px;"></span>
-            </div>
-            <div style="font-size: 0.82rem; color: #475569; font-weight: 500;">
-                Médico contraparte del sábado destino ({target_str}):
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
         target_docs = get_candidatos_intercambio(df_s, target_date, doctor_name)
 
         if target_docs:
@@ -939,27 +907,30 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
             if swap_peer:
                 st.markdown(f"""
                 <div class="swap-summary-card">
-                    <div class="swap-summary-node">
-                        <span class="swap-node-role">Turno Original ({source_str})</span>
-                        <span class="swap-node-name" title="{doctor_name}">{doctor_name}</span>
-                        <span class="swap-node-date">➔ Pasa a {target_str}</span>
+                    <div class="swap-row">
+                        <div class="swap-row-icon">👤</div>
+                        <div class="swap-row-content">
+                            <span class="swap-node-role">Turno Original ({source_str})</span>
+                            <div class="swap-node-name">{doctor_name}</div>
+                            <div class="swap-node-date">➔ Pasa a <strong>{target_str}</strong></div>
+                        </div>
                     </div>
-                    <div class="swap-summary-arrow">⇄</div>
-                    <div class="swap-summary-node">
-                        <span class="swap-node-role">Contraparte ({target_str})</span>
-                        <span class="swap-node-name" title="{swap_peer}">{swap_peer}</span>
-                        <span class="swap-node-date">➔ Pasa a {source_str}</span>
+                    <div class="swap-divider">
+                        <span class="swap-divider-line"></span>
+                        <span class="swap-divider-badge">⇄</span>
+                        <span class="swap-divider-line"></span>
+                    </div>
+                    <div class="swap-row">
+                        <div class="swap-row-icon counterpart">🔄</div>
+                        <div class="swap-row-content">
+                            <span class="swap-node-role counterpart">Contraparte ({target_str})</span>
+                            <div class="swap-node-name">{swap_peer}</div>
+                            <div class="swap-node-date">➔ Pasa a <strong>{source_str}</strong></div>
+                        </div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
         else:
-            st.markdown("""
-            <div class="modal-skeleton-card">
-                <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-header"></div>
-                <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-input"></div>
-                <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-caption"></div>
-            </div>
-            """, unsafe_allow_html=True)
             st.warning(f"No hay supernumerarios de secuencia normal programados el {target_str} disponibles para realizar el cambio.")
             swap_peer = None
 

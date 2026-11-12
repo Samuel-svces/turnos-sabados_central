@@ -3859,22 +3859,50 @@ def apply_styles():
 
     /* Intercambio / Swap Preview Card */
     .swap-summary-card {
-        background: #f8fafc !important;
-        border: 1.5px dashed #0f9a9b !important;
+        background: linear-gradient(135deg, #f8fafc 0%, #f0fbfb 100%) !important;
+        border: 1.5px solid #0f9a9b !important;
         border-radius: 12px !important;
         padding: 12px 14px !important;
-        margin: 10px 0 !important;
+        margin: 12px 0 !important;
         display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 12px !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        box-shadow: 0 2px 6px rgba(15, 154, 155, 0.06) !important;
     }
 
-    .swap-summary-node {
+    .swap-row {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .swap-row-icon {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        border-radius: 8px !important;
+        background: #e6f7f6 !important;
+        color: #0f9a9b !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        margin-top: 2px !important;
+    }
+
+    .swap-row-icon.counterpart {
+        background: #e0f2fe !important;
+        color: #0284c7 !important;
+    }
+
+    .swap-row-content {
         flex: 1 !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 3px !important;
+        gap: 2px !important;
+        min-width: 0 !important;
     }
 
     .swap-node-role {
@@ -3885,27 +3913,55 @@ def apply_styles():
         color: #0f9a9b !important;
     }
 
+    .swap-node-role.counterpart {
+        color: #0284c7 !important;
+    }
+
     .swap-node-name {
         font-family: 'Outfit', sans-serif !important;
-        font-size: 0.95rem !important;
-        font-weight: 700 !important;
+        font-size: 0.98rem !important;
+        font-weight: 800 !important;
         color: #17243D !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+        word-break: break-word !important;
+        line-height: 1.3 !important;
     }
 
     .swap-node-date {
-        font-size: 0.78rem !important;
+        font-size: 0.82rem !important;
         font-weight: 600 !important;
-        color: #64748b !important;
+        color: #475569 !important;
+        margin-top: 1px !important;
     }
 
-    .swap-summary-arrow {
-        font-size: 1.3rem !important;
-        color: #0f9a9b !important;
+    .swap-node-date strong {
+        color: #0f4c4c !important;
+    }
+
+    .swap-divider {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin: 2px 0 !important;
+    }
+
+    .swap-divider-line {
+        flex: 1 !important;
+        height: 1px !important;
+        background: #cbd5e1 !important;
+    }
+
+    .swap-divider-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 26px !important;
+        height: 26px !important;
+        border-radius: 50% !important;
+        background: #0f9a9b !important;
+        color: #ffffff !important;
+        font-size: 0.95rem !important;
         font-weight: 800 !important;
-        padding: 0 4px !important;
+        box-shadow: 0 1px 4px rgba(15, 154, 155, 0.25) !important;
     }
 
     /* Botón con spinner integrado durante procesamiento */
