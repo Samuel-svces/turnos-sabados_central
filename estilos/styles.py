@@ -3218,49 +3218,6 @@ def apply_styles():
         color: #64748b !important;
     }
 
-    /* Botón de Inicio de Sesión Administrador (#1F5FD1) */
-    div[class*="st-key-btn_admin_iniciar_sesion"] button,
-    div.st-key-btn_admin_iniciar_sesion button,
-    button[data-testid*="btn_admin_iniciar_sesion"] {
-        background-color: #1F5FD1 !important;
-        background: #1F5FD1 !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 600 !important;
-        font-size: 0.95rem !important;
-        padding: 0.5rem 1rem !important;
-        box-shadow: 0 2px 6px rgba(31, 95, 209, 0.25) !important;
-        transition: all 0.2s ease !important;
-    }
-
-    div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
-    div.st-key-btn_admin_iniciar_sesion button:hover,
-    button[data-testid*="btn_admin_iniciar_sesion"]:hover {
-        background-color: #184eb0 !important;
-        background: #184eb0 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.35) !important;
-        transform: translateY(-1px) !important;
-    }
-
-    div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
-    div.st-key-btn_admin_iniciar_sesion button:active,
-    button[data-testid*="btn_admin_iniciar_sesion"]:active {
-        background-color: #133f91 !important;
-        background: #133f91 !important;
-        color: #ffffff !important;
-        transform: translateY(0px) !important;
-        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
-    }
-
-    div[class*="st-key-btn_admin_iniciar_sesion"] button p,
-    div.st-key-btn_admin_iniciar_sesion button p {
-        color: #ffffff !important;
-        font-weight: 600 !important;
-    }
-
     /* Casillas de verificación del menú ceñidas y compactas */
     div[data-testid="stPopoverBody"] div[data-testid="stElementContainer"]:has(div[data-testid="stCheckbox"]) {
         margin: 0 !important;
@@ -3416,64 +3373,10 @@ def apply_styles():
         fill: #94a3b8 !important;
     }
 
-    /* Botones de Inicio de Sesión Administrador en Popover (#1F5FD1 Azul Cobalto Institucional) */
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"],
-    div[class*="st-key-btn_admin_iniciar_sesion"] button,
-    div.st-key-btn_admin_iniciar_sesion button,
-    button[data-testid*="btn_admin_iniciar_sesion"],
-    .admin-login-btn-wrap + div button,
-    div:has(.admin-login-btn-wrap) button {
-        background-color: #1F5FD1 !important;
-        background: #1F5FD1 !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-family: 'Outfit', sans-serif !important;
-        font-weight: 700 !important;
-        font-size: 0.95rem !important;
-        padding: 0.5rem 1rem !important;
-        box-shadow: 0 2px 8px rgba(31, 95, 209, 0.3) !important;
-        transition: all 0.2s ease !important;
-    }
-
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:hover,
-    div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
-    button[data-testid*="btn_admin_iniciar_sesion"]:hover,
-    .admin-login-btn-wrap + div button:hover {
-        background-color: #184eb0 !important;
-        background: #184eb0 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(31, 95, 209, 0.45) !important;
-        transform: translateY(-1px) !important;
-    }
-
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
-    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:active,
-    div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
-    button[data-testid*="btn_admin_iniciar_sesion"]:active,
-    .admin-login-btn-wrap + div button:active {
-        background-color: #133f91 !important;
-        background: #133f91 !important;
-        color: #ffffff !important;
-        transform: translateY(0px) !important;
-        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
-    }
-
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button p,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button span,
-    div[class*="st-key-btn_admin_iniciar_sesion"] button p,
-    div[class*="st-key-btn_admin_iniciar_sesion"] button span,
-    button[data-testid*="btn_admin_iniciar_sesion"] p,
-    button[data-testid*="btn_admin_iniciar_sesion"] span {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-    }
 
     /* ========================================================= */
     /* BOTONES ESTILO "AGREGAR MÉDICO" (Borde azul #1D88F3, fondo blanco, hover sólido #1D88F3) */
-    /* Aplica a: Agregar Médico, Confirmar (Modal Drag & Drop), Cerrar Sesión, Sincronizar */
+    /* Aplica a: Agregar Médico, Confirmar (Modal Drag & Drop), Iniciar Sesión, Cerrar Sesión, Sincronizar */
     /* ========================================================= */
     div[class*="st-key-btn_agregar_medico"] button,
     div[class*="st-key-btn_confirmar_drag_drop"] button,
@@ -3481,6 +3384,13 @@ def apply_styles():
     button[data-testid*="btn_confirmar_drag_drop"],
     div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button,
     div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button,
+    div.st-key-btn_admin_iniciar_sesion button,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"],
+    button[data-testid*="btn_admin_iniciar_sesion"],
+    .admin-login-btn-wrap + div button,
+    div:has(.admin-login-btn-wrap) button,
     div[class*="st-key-btn_admin_cerrar_sesion"] button,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button,
     button[data-testid*="btn_admin_cerrar_sesion"],
@@ -3505,6 +3415,11 @@ def apply_styles():
     button[data-testid*="btn_confirmar_drag_drop"] *,
     div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button *,
     div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button *,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button *,
+    button[data-testid*="btn_admin_iniciar_sesion"] *,
+    .admin-login-btn-wrap + div button *,
+    div:has(.admin-login-btn-wrap) button *,
     div[class*="st-key-btn_admin_cerrar_sesion"] button *,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button *,
     button[data-testid*="btn_admin_cerrar_sesion"] *,
@@ -3523,6 +3438,13 @@ def apply_styles():
     button[data-testid*="btn_confirmar_drag_drop"]:hover:not(:disabled),
     div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled),
     div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled),
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:hover:not(:disabled),
+    div.st-key-btn_admin_iniciar_sesion button:hover:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:hover:not(:disabled),
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:hover:not(:disabled),
+    button[data-testid*="btn_admin_iniciar_sesion"]:hover:not(:disabled),
+    .admin-login-btn-wrap + div button:hover:not(:disabled),
+    div:has(.admin-login-btn-wrap) button:hover:not(:disabled),
     div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled),
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled),
     button[data-testid*="btn_admin_cerrar_sesion"]:hover:not(:disabled),
@@ -3542,6 +3464,11 @@ def apply_styles():
     button[data-testid*="btn_confirmar_drag_drop"]:hover:not(:disabled) *,
     div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled) *,
     div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:hover:not(:disabled) *,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:hover:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:hover:not(:disabled) *,
+    button[data-testid*="btn_admin_iniciar_sesion"]:hover:not(:disabled) *,
+    .admin-login-btn-wrap + div button:hover:not(:disabled) *,
+    div:has(.admin-login-btn-wrap) button:hover:not(:disabled) *,
     div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled) *,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:hover:not(:disabled) *,
     button[data-testid*="btn_admin_cerrar_sesion"]:hover:not(:disabled) *,
@@ -3557,6 +3484,13 @@ def apply_styles():
     button[data-testid*="btn_confirmar_drag_drop"]:active:not(:disabled),
     div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled),
     div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled),
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:active:not(:disabled),
+    div.st-key-btn_admin_iniciar_sesion button:active:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:active:not(:disabled),
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:active:not(:disabled),
+    button[data-testid*="btn_admin_iniciar_sesion"]:active:not(:disabled),
+    .admin-login-btn-wrap + div button:active:not(:disabled),
+    div:has(.admin-login-btn-wrap) button:active:not(:disabled),
     div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled),
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled),
     button[data-testid*="btn_admin_cerrar_sesion"]:active:not(:disabled),
@@ -3575,6 +3509,11 @@ def apply_styles():
     button[data-testid*="btn_confirmar_drag_drop"]:active:not(:disabled) *,
     div[data-testid="stDialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled) *,
     div[role="dialog"] div[class*="st-key-btn_confirmar_drag_drop"] button:active:not(:disabled) *,
+    div[class*="st-key-btn_admin_iniciar_sesion"] button:active:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button:active:not(:disabled) *,
+    button[data-testid*="btn_admin_iniciar_sesion"]:active:not(:disabled) *,
+    .admin-login-btn-wrap + div button:active:not(:disabled) *,
+    div:has(.admin-login-btn-wrap) button:active:not(:disabled) *,
     div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled) *,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:active:not(:disabled) *,
     button[data-testid*="btn_admin_cerrar_sesion"]:active:not(:disabled) *,
