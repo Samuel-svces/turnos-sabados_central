@@ -347,6 +347,24 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('#fff5f5', contenido_s, "Falta el color rojo suave #fff5f5 para botones de eliminar en styles.py")
         self.assertIn('#0f9a9b', contenido_s, "Falta el color institucional #0f9a9b para botones de guardar/acción en styles.py")
 
+    def test_20_estilos_agregar_medico_y_duplicar(self):
+        """Verifica que el botón de agregar médico tenga borde azul, fondo blanco y hover #1D88F3,
+        y el botón de duplicar tenga borde #F0FBFB, fondo blanco y hover #F0FBFB."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido = f.read()
+        
+        self.assertIn('btn_agregar_medico', contenido)
+        self.assertIn('#1D88F3', contenido)
+        self.assertIn('btn_duplicar', contenido)
+        self.assertIn('#F0FBFB', contenido)
+        
+        # Validar bloques específicos
+        self.assertIn('div[class*="st-key-btn_agregar_medico"] button', contenido)
+        self.assertIn('border: 1.5px solid #1D88F3', contenido)
+        self.assertIn('div[class*="st-key-btn_duplicar"] button', contenido)
+        self.assertIn('border: 1.5px solid #F0FBFB', contenido)
+
 
 if __name__ == "__main__":
     unittest.main()

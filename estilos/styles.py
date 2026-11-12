@@ -1802,48 +1802,52 @@ def apply_styles():
         text-shadow: none !important;
     }
 
-    /* 9. Botón Duplicar en Modo Editor (Admin) - Fondo Azul #1F5FD1 */
+    /* 9. Botón Duplicar en Modo Editor (Admin) - Borde #F0FBFB / #ccebee, fondo blanco, hover #F0FBFB */
     div[class*="st-key-btn_duplicar"] button,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button {
-        background: #1F5FD1 !important;
-        background-color: #1F5FD1 !important;
-        color: #ffffff !important;
-        border: 1px solid #1F5FD1 !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #17243D !important;
+        border: 1.5px solid #F0FBFB !important;
+        border-color: #ccebee !important;
         border-radius: 8px !important;
-        box-shadow: 0 2px 7px rgba(31, 95, 209, 0.28) !important;
+        box-shadow: 0 1px 4px rgba(23, 36, 61, 0.05) !important;
         font-weight: 600 !important;
         font-size: 0.8rem !important;
         padding: 0.22rem 0.5rem !important;
         line-height: 1.25 !important;
         text-shadow: none !important;
+        transition: all 0.2s ease !important;
     }
     div[class*="st-key-btn_duplicar"] button *,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button * {
-        color: #ffffff !important;
+        color: #17243D !important;
+        fill: #17243D !important;
         background-color: transparent !important;
         font-weight: 600 !important;
         text-shadow: none !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:hover {
-        background: #184eb0 !important;
-        background-color: #184eb0 !important;
-        border-color: #184eb0 !important;
-        color: #ffffff !important;
+        background: #F0FBFB !important;
+        background-color: #F0FBFB !important;
+        border-color: #ccebee !important;
+        color: #17243D !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.45) !important;
+        box-shadow: 0 3px 8px rgba(23, 36, 61, 0.1) !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover *,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:hover * {
-        color: #ffffff !important;
+        color: #17243D !important;
+        fill: #17243D !important;
     }
     div[class*="st-key-btn_duplicar"] button:active,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:active {
-        background: #133f91 !important;
-        background-color: #133f91 !important;
-        border-color: #133f91 !important;
+        background: #e0f4f4 !important;
+        background-color: #e0f4f4 !important;
+        border-color: #b5e4e7 !important;
         transform: translateY(0px) !important;
-        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+        box-shadow: 0 1px 3px rgba(23, 36, 61, 0.08) !important;
     }
     
 
@@ -3404,42 +3408,48 @@ def apply_styles():
     }
 
     /* ========================================================= */
-    /* BOTÓN "AGREGAR MÉDICO" (#1F5FD1) — grilla y diálogo        */
+    /* BOTÓN "AGREGAR MÉDICO" (Borde azul, fondo blanco, hover #1D88F3) */
     /* ========================================================= */
     div[class*="st-key-btn_agregar_medico"] button {
-        background: #1F5FD1 !important;
-        background-color: #1F5FD1 !important;
-        color: #ffffff !important;
-        border: 1px solid #1F5FD1 !important;
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #1D88F3 !important;
+        border: 1.5px solid #1D88F3 !important;
         border-radius: 8px !important;
-        box-shadow: 0 2px 7px rgba(31, 95, 209, 0.28) !important;
+        box-shadow: 0 1px 4px rgba(29, 136, 243, 0.12) !important;
         font-weight: 600 !important;
+        font-size: 0.82rem !important;
         transition: all 0.2s ease !important;
     }
     div[class*="st-key-btn_agregar_medico"] button * {
-        color: #ffffff !important;
-        fill: #ffffff !important;
+        color: #1D88F3 !important;
+        fill: #1D88F3 !important;
         background-color: transparent !important;
         font-weight: 600 !important;
         text-shadow: none !important;
     }
     div[class*="st-key-btn_agregar_medico"] button:hover {
-        background: #184eb0 !important;
-        background-color: #184eb0 !important;
-        border-color: #184eb0 !important;
+        background: #1D88F3 !important;
+        background-color: #1D88F3 !important;
+        border-color: #1D88F3 !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.45) !important;
+        box-shadow: 0 4px 12px rgba(29, 136, 243, 0.35) !important;
         transform: translateY(-1px) !important;
     }
     div[class*="st-key-btn_agregar_medico"] button:hover * {
         color: #ffffff !important;
+        fill: #ffffff !important;
     }
     div[class*="st-key-btn_agregar_medico"] button:active {
-        background: #133f91 !important;
-        background-color: #133f91 !important;
-        border-color: #133f91 !important;
+        background: #1670cb !important;
+        background-color: #1670cb !important;
+        border-color: #1670cb !important;
         transform: translateY(0px) !important;
-        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+        box-shadow: 0 1px 3px rgba(29, 136, 243, 0.2) !important;
+    }
+    div[class*="st-key-btn_agregar_medico"] button:active * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
 
     /* ========================================================= */
