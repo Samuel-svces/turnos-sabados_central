@@ -192,10 +192,9 @@ def renderizar_buscador(cargar_datos_fn=None):
             // MODO PÚBLICO: Badges (.doc-btn-wrap)
             const docWraps = col.querySelectorAll('.doc-btn-wrap');
             docWraps.forEach(wrap => {
-                const badge = wrap.querySelector('.doc-name-badge') || wrap;
-                const rawText = (badge.innerText || badge.textContent || "").trim();
-                const docText = normalizarTexto(rawText);
+                const docText = normalizarTexto(wrap.getAttribute('data-doc') || wrap.textContent || '');
                 const cont = wrap.closest('div[data-testid="stElementContainer"]') || wrap;
+                const badge = wrap.querySelector('.doc-name-badge') || wrap;
 
                 if (!cleanTerm) {
                     if (cont) {
@@ -230,8 +229,10 @@ def renderizar_buscador(cargar_datos_fn=None):
     let searchDebounceTimer = null;
     let rafSearchId = null;
     let lastSyncedVal = null;
+    let isSyncingSearch = false;
 
     function sincronizarBusquedaConStreamlit(val) {
+        if (isSyncingSearch) return;
         const parentDoc = window.parent.document;
         const clean = (val || "").trim();
         if (clean === lastSyncedVal) return;
@@ -240,19 +241,25 @@ def renderizar_buscador(cargar_datos_fn=None):
         let inputEl = parentDoc.querySelector('input[aria-label="Buscador"], div[data-testid="stTextInput"] input');
         if (!inputEl) return;
 
-        // Disparar Enter de manera limpia para sincronizar el estado global en Streamlit
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-        nativeSetter.call(inputEl, clean);
-        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-        inputEl.dispatchEvent(new KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'Enter',
-            code: 'Enter',
-            keyCode: 13,
-            which: 13
-        }));
+        isSyncingSearch = true;
+        try {
+            // Sincronizar el valor hacia el componente React de Streamlit
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            nativeSetter.call(inputEl, clean);
+            inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+            inputEl.dispatchEvent(new KeyboardEvent('keydown', {
+                bubbles: true,
+                cancelable: true,
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13
+            }));
+        } catch (e) {
+            console.error("Error al sincronizar buscador:", e);
+        } finally {
+            setTimeout(() => { isSyncingSearch = false; }, 300);
+        }
     }
 
     function vincularBuscadorReactivo() {
@@ -289,17 +296,20 @@ def renderizar_buscador(cargar_datos_fn=None):
             
             // 1. Filtrado instantáneo a 60fps con requestAnimationFrame (0ms de retraso al teclear)
             inputBuscador.addEventListener('input', (e) => {
+                if (isSyncingSearch) return;
                 const val = e.target.value;
                 if (rafSearchId) cancelAnimationFrame(rafSearchId);
                 rafSearchId = requestAnimationFrame(() => {
                     aplicarBusquedaEnVivo(val);
                 });
 
-                // 2. Búsqueda automática entre columnas sin requerir presionar Enter obligatoriamente
+                // 2. Sincronización con el servidor Streamlit solo tras pausa prolongada (1200ms)
+                // para que NUNCA interrumpa ni bloquee mientras el usuario está escribiendo
                 if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                const debounceMs = val.length === 0 ? 300 : 1200;
                 searchDebounceTimer = setTimeout(() => {
                     sincronizarBusquedaConStreamlit(val);
-                }, 400);
+                }, debounceMs);
             });
 
             inputBuscador.addEventListener('focus', () => {

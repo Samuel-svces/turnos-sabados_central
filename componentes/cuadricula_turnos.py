@@ -651,10 +651,11 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                         st.session_state.saturday_offset = (target_idx // 4) * 4
                         st.rerun()
         else:
-            # El nombre no existe en ninguna fecha
-            st.session_state["clear_search_flag"] = True
-            st.session_state["show_error_alert"] = True
-            st.rerun()
+            # En modo admin, si un término completo no existe en ninguna fecha, alertar y limpiar
+            if st.session_state.is_admin and len(search_query) >= 3:
+                st.session_state["clear_search_flag"] = True
+                st.session_state["show_error_alert"] = True
+                st.rerun()
     
     if st.session_state.is_admin:
         # Callback para procesar Drag & Drop antes de instanciar widgets
@@ -963,6 +964,6 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                         if "Cambio" in str(clasif):
                             display_name += f" ({clasif})"
                         
-                        st.markdown(f"<div class='doc-btn-wrap'><div class='{badge_classes}'>{obs_dot}{display_name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='doc-btn-wrap' data-doc='{name}'><div class='{badge_classes}'>{obs_dot}{display_name}</div>{tooltip_html}</div>", unsafe_allow_html=True)
                         
             st.markdown("</div>", unsafe_allow_html=True)
