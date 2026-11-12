@@ -349,7 +349,7 @@ class TestArquitecturaModular(unittest.TestCase):
 
     def test_20_estilos_agregar_medico_y_duplicar(self):
         """Verifica que el botón de agregar médico tenga borde azul, fondo blanco y hover #1D88F3,
-        y el botón de duplicar tenga borde #F0FBFB, fondo blanco y hover #F0FBFB."""
+        y el botón de duplicar tenga borde más oscuro #0f9a9b, fondo blanco y hover #F0FBFB."""
         styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
         with open(styles_path, "r", encoding="utf-8") as f:
             contenido = f.read()
@@ -357,13 +357,13 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('btn_agregar_medico', contenido)
         self.assertIn('#1D88F3', contenido)
         self.assertIn('btn_duplicar', contenido)
-        self.assertIn('#F0FBFB', contenido)
+        self.assertIn('#0f9a9b', contenido)
         
         # Validar bloques específicos
         self.assertIn('div[class*="st-key-btn_agregar_medico"] button', contenido)
         self.assertIn('border: 1.5px solid #1D88F3', contenido)
         self.assertIn('div[class*="st-key-btn_duplicar"] button', contenido)
-        self.assertIn('border: 1.5px solid #F0FBFB', contenido)
+        self.assertIn('border: 1.5px solid #0f9a9b', contenido)
 
     def test_21_estilos_boton_aplicar_filtro_y_reactividad(self):
         """Verifica que el botón 'Aplicar' del filtro de sábados esté normalizado al azul institucional #1F5FD1

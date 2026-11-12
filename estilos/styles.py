@@ -1813,16 +1813,16 @@ def apply_styles():
         text-shadow: none !important;
     }
 
-    /* 9. Botón Duplicar en Modo Editor (Admin) - Borde #F0FBFB / #ccebee, fondo blanco, hover #F0FBFB */
+    /* 9. Botón Duplicar en Modo Editor (Admin) - Borde más oscuro #0f9a9b, fondo blanco, hover #F0FBFB */
     div[class*="st-key-btn_duplicar"] button,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button {
         background: #ffffff !important;
         background-color: #ffffff !important;
         color: #17243D !important;
-        border: 1.5px solid #F0FBFB !important;
-        border-color: #ccebee !important;
+        border: 1.5px solid #0f9a9b !important;
+        border-color: #0f9a9b !important;
         border-radius: 8px !important;
-        box-shadow: 0 1px 4px rgba(23, 36, 61, 0.05) !important;
+        box-shadow: 0 1px 4px rgba(15, 154, 155, 0.1) !important;
         font-weight: 600 !important;
         font-size: 0.8rem !important;
         padding: 0.22rem 0.5rem !important;
@@ -1842,10 +1842,10 @@ def apply_styles():
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:hover {
         background: #F0FBFB !important;
         background-color: #F0FBFB !important;
-        border-color: #ccebee !important;
+        border-color: #0d8283 !important;
         color: #17243D !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 3px 8px rgba(23, 36, 61, 0.1) !important;
+        box-shadow: 0 3px 8px rgba(15, 154, 155, 0.2) !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover *,
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:hover * {
@@ -1856,9 +1856,9 @@ def apply_styles():
     div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:active {
         background: #e0f4f4 !important;
         background-color: #e0f4f4 !important;
-        border-color: #b5e4e7 !important;
+        border-color: #0a6566 !important;
         transform: translateY(0px) !important;
-        box-shadow: 0 1px 3px rgba(23, 36, 61, 0.08) !important;
+        box-shadow: 0 1px 3px rgba(15, 154, 155, 0.15) !important;
     }
     
 
@@ -2413,7 +2413,7 @@ def apply_styles():
         font-size: 1.15rem;
         vertical-align: middle;
         font-weight: 800;
-        color: #ffffff;
+        color: #0f9a9b !important;
         display: inline-block;
     }
     
