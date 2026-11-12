@@ -3004,10 +3004,16 @@ def apply_styles():
         color: #64748b !important;
     }
 
-    /* Botón 'Iniciar Sesión' en Popover de Administrador (#1F5FD1) */
+    /* Botones de Administrador (#1F5FD1): Iniciar Sesión, Cerrar Sesión, Sincronizar */
     div[class*="st-key-btn_admin_iniciar_sesion"] button,
     div.st-key-btn_admin_iniciar_sesion button,
-    button[data-testid*="btn_admin_iniciar_sesion"] {
+    button[data-testid*="btn_admin_iniciar_sesion"],
+    div[class*="st-key-btn_admin_cerrar_sesion"] button,
+    div.st-key-btn_admin_cerrar_sesion button,
+    button[data-testid*="btn_admin_cerrar_sesion"],
+    div[class*="st-key-btn_admin_sincronizar_sp"] button,
+    div.st-key-btn_admin_sincronizar_sp button,
+    button[data-testid*="btn_admin_sincronizar_sp"] {
         background-color: #1F5FD1 !important;
         background: #1F5FD1 !important;
         color: #ffffff !important;
@@ -3023,7 +3029,13 @@ def apply_styles():
 
     div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
     div.st-key-btn_admin_iniciar_sesion button:hover,
-    button[data-testid*="btn_admin_iniciar_sesion"]:hover {
+    button[data-testid*="btn_admin_iniciar_sesion"]:hover,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:hover,
+    div.st-key-btn_admin_cerrar_sesion button:hover,
+    button[data-testid*="btn_admin_cerrar_sesion"]:hover,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:hover,
+    div.st-key-btn_admin_sincronizar_sp button:hover,
+    button[data-testid*="btn_admin_sincronizar_sp"]:hover {
         background-color: #184eb0 !important;
         background: #184eb0 !important;
         color: #ffffff !important;
@@ -3033,7 +3045,13 @@ def apply_styles():
 
     div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
     div.st-key-btn_admin_iniciar_sesion button:active,
-    button[data-testid*="btn_admin_iniciar_sesion"]:active {
+    button[data-testid*="btn_admin_iniciar_sesion"]:active,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:active,
+    div.st-key-btn_admin_cerrar_sesion button:active,
+    button[data-testid*="btn_admin_cerrar_sesion"]:active,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:active,
+    div.st-key-btn_admin_sincronizar_sp button:active,
+    button[data-testid*="btn_admin_sincronizar_sp"]:active {
         background-color: #133f91 !important;
         background: #133f91 !important;
         color: #ffffff !important;
@@ -3042,7 +3060,11 @@ def apply_styles():
     }
 
     div[class*="st-key-btn_admin_iniciar_sesion"] button p,
-    div.st-key-btn_admin_iniciar_sesion button p {
+    div.st-key-btn_admin_iniciar_sesion button p,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button p,
+    div.st-key-btn_admin_cerrar_sesion button p,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button p,
+    div.st-key-btn_admin_sincronizar_sp button p {
         color: #ffffff !important;
         font-weight: 600 !important;
     }
@@ -3129,12 +3151,22 @@ def apply_styles():
         transform: translateY(0px) !important;
     }
 
-    /* Botón 'Iniciar Sesión' en Popover de Administrador (#1F5FD1 Azul Cobalto Institucional) */
+    /* Botones de Administrador en Popover (#1F5FD1 Azul Cobalto Institucional) */
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button,
     div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"],
     div[class*="st-key-btn_admin_iniciar_sesion"] button,
     div.st-key-btn_admin_iniciar_sesion button,
     button[data-testid*="btn_admin_iniciar_sesion"],
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_cerrar_sesion"],
+    div[class*="st-key-btn_admin_cerrar_sesion"] button,
+    div.st-key-btn_admin_cerrar_sesion button,
+    button[data-testid*="btn_admin_cerrar_sesion"],
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_sincronizar_sp"],
+    div[class*="st-key-btn_admin_sincronizar_sp"] button,
+    div.st-key-btn_admin_sincronizar_sp button,
+    button[data-testid*="btn_admin_sincronizar_sp"],
     .admin-login-btn-wrap + div button,
     div:has(.admin-login-btn-wrap) button {
         background-color: #1F5FD1 !important;
@@ -3154,6 +3186,14 @@ def apply_styles():
     div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:hover,
     div[class*="st-key-btn_admin_iniciar_sesion"] button:hover,
     button[data-testid*="btn_admin_iniciar_sesion"]:hover,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:hover,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_cerrar_sesion"]:hover,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:hover,
+    button[data-testid*="btn_admin_cerrar_sesion"]:hover,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:hover,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_sincronizar_sp"]:hover,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:hover,
+    button[data-testid*="btn_admin_sincronizar_sp"]:hover,
     .admin-login-btn-wrap + div button:hover {
         background-color: #184eb0 !important;
         background: #184eb0 !important;
@@ -3166,6 +3206,14 @@ def apply_styles():
     div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_iniciar_sesion"]:active,
     div[class*="st-key-btn_admin_iniciar_sesion"] button:active,
     button[data-testid*="btn_admin_iniciar_sesion"]:active,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button:active,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_cerrar_sesion"]:active,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button:active,
+    button[data-testid*="btn_admin_cerrar_sesion"]:active,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button:active,
+    div[data-testid="stPopoverBody"] button[data-testid*="btn_admin_sincronizar_sp"]:active,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button:active,
+    button[data-testid*="btn_admin_sincronizar_sp"]:active,
     .admin-login-btn-wrap + div button:active {
         background-color: #133f91 !important;
         background: #133f91 !important;
@@ -3179,7 +3227,19 @@ def apply_styles():
     div[class*="st-key-btn_admin_iniciar_sesion"] button p,
     div[class*="st-key-btn_admin_iniciar_sesion"] button span,
     button[data-testid*="btn_admin_iniciar_sesion"] p,
-    button[data-testid*="btn_admin_iniciar_sesion"] span {
+    button[data-testid*="btn_admin_iniciar_sesion"] span,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_cerrar_sesion"] button span,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button p,
+    div[class*="st-key-btn_admin_cerrar_sesion"] button span,
+    button[data-testid*="btn_admin_cerrar_sesion"] p,
+    button[data-testid*="btn_admin_cerrar_sesion"] span,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button p,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_sincronizar_sp"] button span,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button p,
+    div[class*="st-key-btn_admin_sincronizar_sp"] button span,
+    button[data-testid*="btn_admin_sincronizar_sp"] p,
+    button[data-testid*="btn_admin_sincronizar_sp"] span {
         color: #ffffff !important;
         font-weight: 700 !important;
     }

@@ -47,14 +47,16 @@ def renderizar_cabecera(logo_b64: str, cargar_datos_fn):
 
             if st.session_state.is_admin:
                 st.success("Sesión Iniciada (Admin)", icon=":material/verified_user:")
-                if st.button("Cerrar Sesión", use_container_width=True, key="btn_admin_cerrar_sesion"):
+                st.markdown("<div class='admin-login-btn-wrap'></div>", unsafe_allow_html=True)
+                if st.button("Cerrar Sesión", use_container_width=True, type="primary", key="btn_admin_cerrar_sesion"):
                     st.session_state.is_admin = False
                     if 'saturday_offset' in st.session_state:
                         del st.session_state.saturday_offset
                     st.rerun()
 
                 st.markdown("<div style='margin-top:0.8rem; margin-bottom:0.8rem; border-top:1px solid #e2e8f0;'></div>", unsafe_allow_html=True)
-                if st.button("Sincronizar con SharePoint", use_container_width=True, key="btn_admin_sincronizar_sp"):
+                st.markdown("<div class='admin-login-btn-wrap'></div>", unsafe_allow_html=True)
+                if st.button("Sincronizar con SharePoint", use_container_width=True, type="primary", key="btn_admin_sincronizar_sp"):
                     st.session_state["force_refresh_personal"] = True
                     c_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".cache")
                     if os.path.exists(c_dir):
@@ -73,58 +75,6 @@ def renderizar_cabecera(logo_b64: str, cargar_datos_fn):
                     cargar_datos_fn(reload_personal=True)
                     st.success("Datos resincronizados directamente con SharePoint.", icon=":material/check_circle:")
                     st.rerun()
-
-                with st.expander("🛠️ Purgar Modificaciones en SharePoint", expanded=False):
-                    st.markdown("Vaciar las modificaciones acumuladas en la Lista de SharePoint (`MODIFICACIONES_SABADOS`).")
-                    if gc.is_sharepoint_configured():
-                        try:
-                            current_items = gc.get_sharepoint_list_items("modificaciones_sabados")
-                            total_items = len(current_items)
-                        except Exception:
-                            current_items = []
-                            total_items = 0
-
-                        st.info(f"Modificaciones acumuladas: **{total_items}**")
-                        if total_items > 0:
-                            json_bytes = json.dumps(current_items, ensure_ascii=False, indent=2).encode('utf-8')
-                            timestamp_now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-                            st.download_button(
-                                label="📥 Descargar Respaldo JSON",
-                                data=json_bytes,
-                                file_name=f"sharepoint_modificaciones_backup_{timestamp_now}.json",
-                                mime="application/json",
-                                use_container_width=True,
-                                key="btn_descargar_respaldo_json"
-                            )
-
-                        confirm_purge = st.checkbox("Confirmar purga completa", key="chk_confirmar_purga_sp")
-                        if st.button("🧹 Purgar y Reiniciar", type="primary", disabled=(not confirm_purge or total_items == 0), use_container_width=True, key="btn_confirmar_purga_sp"):
-                            with st.spinner("Purgando en SharePoint..."):
-                                item_ids = [str(it.get("_item_id", it.get("id"))) for it in current_items if it.get("_item_id", it.get("id"))]
-                                deleted_count = 0
-                                if item_ids:
-                                    deleted_count = gc.delete_sharepoint_list_items_batch("modificaciones_sabados", item_ids)
-
-                                c_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".cache")
-                                if os.path.exists(c_dir):
-                                    for f_name in os.listdir(c_dir):
-                                        try:
-                                            os.remove(os.path.join(c_dir, f_name))
-                                        except Exception:
-                                            pass
-
-                                dp._open_consolidado_conexion.clear()
-                                dp._get_base_shifts_df.clear()
-                                dp._open_consolidado_personal.clear()
-                                dp.load_supernumeraries.clear()
-                                dp.load_modifications.clear()
-                                st.cache_data.clear()
-                                st.cache_resource.clear()
-                                cargar_datos_fn(reload_personal=True)
-                                st.success(f"{deleted_count} modificaciones eliminadas de SharePoint.", icon=":material/check_circle:")
-                                st.rerun()
-                    else:
-                        st.warning("SharePoint no configurado.")
             else:
                 admin_password = "C3ntr4l1234.*"
                 try:
