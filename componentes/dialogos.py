@@ -481,12 +481,12 @@ def show_shift_dialog(action_details, load_app_data_func):
         col_confirm, col_cancel = st.columns(2)
         with col_confirm:
             st.button(
-                "Confirmar Eliminación", 
+                "Eliminar", 
                 use_container_width=True, 
                 type="primary", 
                 key="btn_confirm_delete_action",
                 on_click=delete_shift_callback,
-                icon=":material/check_circle:",
+                icon=":material/delete_outline:",
                 args=(
                     st.session_state.excel_path,
                     action_details['sheet'],
@@ -510,7 +510,7 @@ def show_shift_dialog(action_details, load_app_data_func):
         col_save, col_delete = st.columns([2, 1])
         with col_save:
             st.button(
-                "Guardar Cambios", 
+                "Guardar", 
                 use_container_width=True, 
                 type="primary", 
                 key="btn_save_changes_action",
@@ -534,12 +534,12 @@ def show_shift_dialog(action_details, load_app_data_func):
             )
         with col_delete:
             st.button(
-                "Remover Turno", 
+                "Eliminar", 
                 use_container_width=True, 
                 type="secondary", 
                 key="btn_show_delete_options_action",
                 on_click=show_delete_options_callback,
-                icon=":material/delete:"
+                icon=":material/delete_outline:"
             )
 
 @st.dialog("Agregar Médico Adicional")
@@ -1244,13 +1244,16 @@ def ejecutar_remocion_turno(rem_info, scope="SOLO_ESTE", load_app_data_func=None
     st.rerun()
 
 
-@st.dialog("Remover Turno")
+@st.dialog("Eliminar Turno")
 def show_remover_turno_dialog(rem_info, load_app_data_func=None):
     """
-    Diálogo modal de confirmación al pulsar 'Remover Turno'.
-    Ofrece dos funciones claras e independientes:
-      1. 'Remover solo este turno': elimina únicamente el sábado actual.
-      2. 'Remover de aquí en adelante': elimina este sábado y todas las secuencias futuras del médico.
+    Diálogo modal de confirmación al pulsar 'Eliminar'.
+    Ofrece selección elegible (radio cards) entre:
+      1. 'Solo este turno': elimina únicamente el sábado actual.
+      2. 'De aquí en adelante': elimina este sábado y todas las secuencias futuras del médico.
+    Controles:
+      - X en la esquina superior derecha para salir del panel sin cambios.
+      - Un solo botón 'Eliminar' al pie del modal para ejecutar la acción elegida.
     """
     if not st.session_state.get("is_admin", False):
         st.error("Acceso denegado: Se requieren permisos de administrador.")

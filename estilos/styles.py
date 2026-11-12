@@ -2411,12 +2411,16 @@ def apply_styles():
         padding: 0 !important;
     }
 
-    /* Estilo premium para botones primarios (Lighter Red) */
+    /* Estilo premium normalizado para botones primarios / acción general (Como Guardar Cambios) */
     button[data-testid="stBaseButton-primary"],
     button[data-testid="baseButton-primary"] {
-        background-color: #ef5350 !important; /* Lighter/soft red */
-        border-color: #ef5350 !important;
+        background: linear-gradient(135deg, #0f9a9b 0%, #0d8283 100%) !important;
+        background-color: #0f9a9b !important;
+        border: 1px solid #0f9a9b !important;
         color: #ffffff !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 5px rgba(15, 154, 155, 0.22) !important;
         transition: all 0.2s ease !important;
     }
     button[data-testid="stBaseButton-primary"]:hover,
@@ -2425,10 +2429,11 @@ def apply_styles():
     button[data-testid="baseButton-primary"]:hover,
     button[data-testid="baseButton-primary"]:active,
     button[data-testid="baseButton-primary"]:focus {
-        background-color: #e53935 !important; /* Slightly darker on hover */
-        border-color: #e53935 !important;
+        background: linear-gradient(135deg, #0d8283 0%, #0b6c6d 100%) !important;
+        background-color: #0d8283 !important;
+        border-color: #0b6c6d !important;
         color: #ffffff !important;
-        box-shadow: 0 4px 12px rgba(239, 83, 80, 0.3) !important;
+        box-shadow: 0 4px 10px rgba(15, 154, 155, 0.32) !important;
     }
     button[data-testid="stBaseButton-primary"] p,
     button[data-testid="stBaseButton-primary"] span,
@@ -2563,12 +2568,12 @@ def apply_styles():
         color: #7f1d1d !important;
     }
 
-    /* Botón único de confirmación 'Eliminar' */
+    /* Botón único de confirmación 'Eliminar' (Rojo como remover turno) */
     div[class*="st-key-btn_confirmar_eliminar_turno"] button {
-        background: #dc2626 !important;
-        background-color: #dc2626 !important;
-        border: 1px solid #b91c1c !important;
-        color: #ffffff !important;
+        background: #fff5f5 !important;
+        background-color: #fff5f5 !important;
+        border: 1.5px solid #fca5a5 !important;
+        color: #b91c1c !important;
         font-weight: 700 !important;
         font-size: 0.95rem !important;
         padding: 0.6rem 1rem !important;
@@ -2578,18 +2583,26 @@ def apply_styles():
     }
 
     div[class*="st-key-btn_confirmar_eliminar_turno"] button:hover {
-        background: #b91c1c !important;
-        background-color: #b91c1c !important;
-        border-color: #991b1b !important;
-        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3) !important;
+        background: #fee2e2 !important;
+        background-color: #fee2e2 !important;
+        border-color: #ef4444 !important;
+        color: #991b1b !important;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.18) !important;
         transform: translateY(-1px);
     }
 
     div[class*="st-key-btn_confirmar_eliminar_turno"] button p,
     div[class*="st-key-btn_confirmar_eliminar_turno"] button span,
     div[class*="st-key-btn_confirmar_eliminar_turno"] button svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
+        color: #b91c1c !important;
+        fill: #b91c1c !important;
+    }
+
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button:hover p,
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button:hover span,
+    div[class*="st-key-btn_confirmar_eliminar_turno"] button:hover svg {
+        color: #991b1b !important;
+        fill: #991b1b !important;
     }
     
     div[data-testid="stModalBackdrop"],
@@ -2782,49 +2795,74 @@ def apply_styles():
         border-radius: 6px !important;
     }
 
-    /* Botón Remover Turno */
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button {
+    /* Botón Eliminar (Rojo suave como remover turno) */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button,
+    div[class*="st-key-btn_del_pop"] button,
+    div[class*="st-key-btn_show_delete_options"] button,
+    div[class*="st-key-btn_show_delete_options_action"] button,
+    div[class*="st-key-btn_confirm_delete_action"] button {
         background: #fff5f5 !important;
         background-color: #fff5f5 !important;
         border: 1px solid #fca5a5 !important;
         color: #b91c1c !important;
         border-radius: 6px !important;
-        font-size: 0.8rem !important;
+        font-size: 0.82rem !important;
         font-weight: 600 !important;
         padding: 0.35rem 0.5rem !important;
         transition: all 0.15s ease !important;
     }
 
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button:hover {
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button:hover,
+    div[class*="st-key-btn_del_pop"] button:hover,
+    div[class*="st-key-btn_show_delete_options"] button:hover,
+    div[class*="st-key-btn_show_delete_options_action"] button:hover,
+    div[class*="st-key-btn_confirm_delete_action"] button:hover {
         background: #fee2e2 !important;
         background-color: #fee2e2 !important;
         border-color: #ef4444 !important;
         color: #991b1b !important;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18) !important;
     }
 
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button * {
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_del_pop"] button *,
+    div[class*="st-key-btn_del_pop"] button *,
+    div[class*="st-key-btn_show_delete_options"] button *,
+    div[class*="st-key-btn_show_delete_options_action"] button *,
+    div[class*="st-key-btn_confirm_delete_action"] button * {
         color: #b91c1c !important;
+        fill: #b91c1c !important;
     }
 
-    /* Botón Guardar Cambios */
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button {
+    /* Botón Guardar (Teal institucional) */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button,
+    div[class*="st-key-btn_save_pop"] button,
+    div[class*="st-key-btn_save_changes_action"] button {
         background: linear-gradient(135deg, #0f9a9b 0%, #0d8283 100%) !important;
+        background-color: #0f9a9b !important;
         border: 1px solid #0f9a9b !important;
         color: #ffffff !important;
         border-radius: 6px !important;
-        font-size: 0.8rem !important;
+        font-size: 0.82rem !important;
         font-weight: 600 !important;
         padding: 0.35rem 0.5rem !important;
         box-shadow: 0 2px 4px rgba(15, 154, 155, 0.2) !important;
+        transition: all 0.15s ease !important;
     }
 
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button:hover {
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button:hover,
+    div[class*="st-key-btn_save_pop"] button:hover,
+    div[class*="st-key-btn_save_changes_action"] button:hover {
         background: linear-gradient(135deg, #0d8283 0%, #0b6c6d 100%) !important;
+        background-color: #0d8283 !important;
+        border-color: #0b6c6d !important;
         box-shadow: 0 4px 8px rgba(15, 154, 155, 0.3) !important;
     }
 
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button * {
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_save_pop"] button *,
+    div[class*="st-key-btn_save_pop"] button *,
+    div[class*="st-key-btn_save_changes_action"] button * {
         color: #ffffff !important;
+        fill: #ffffff !important;
     }
 
     /* ---- Botones de Navegación de Sábados (Mismo color y estilo de los encabezados) ---- */

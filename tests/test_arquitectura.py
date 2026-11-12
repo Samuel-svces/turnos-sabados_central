@@ -323,6 +323,30 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertEqual(st.session_state.last_action['action'], 'ELIMINAR_LOTE')
         self.assertEqual(len(st.session_state.last_action['deleted_items']), 2)
 
+    def test_19_normalizacion_botones_guardar_eliminar(self):
+        """Verifica que 'Guardar Cambios' se haya normalizado a 'Guardar', 'Remover Turno' a 'Eliminar', y los estilos de color correspondan."""
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn('"Guardar"', contenido_c, "Falta botón 'Guardar' en cuadricula_turnos.py")
+        self.assertIn('"Eliminar"', contenido_c, "Falta botón 'Eliminar' en cuadricula_turnos.py")
+        self.assertNotIn('"Guardar Cambios"', contenido_c, "No debe existir 'Guardar Cambios' en cuadricula_turnos.py")
+        self.assertNotIn('"Remover Turno"', contenido_c, "No debe existir 'Remover Turno' en cuadricula_turnos.py")
+
+        dialogos_path = os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
+        with open(dialogos_path, "r", encoding="utf-8") as f:
+            contenido_d = f.read()
+        self.assertIn('"Guardar"', contenido_d, "Falta botón 'Guardar' en dialogos.py")
+        self.assertIn('"Eliminar"', contenido_d, "Falta botón 'Eliminar' en dialogos.py")
+        self.assertNotIn('"Guardar Cambios"', contenido_d, "No debe existir 'Guardar Cambios' en dialogos.py")
+        self.assertNotIn('"Remover Turno"', contenido_d, "No debe existir 'Remover Turno' en dialogos.py")
+
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('#fff5f5', contenido_s, "Falta el color rojo suave #fff5f5 para botones de eliminar en styles.py")
+        self.assertIn('#0f9a9b', contenido_s, "Falta el color institucional #0f9a9b para botones de guardar/acción en styles.py")
+
 
 if __name__ == "__main__":
     unittest.main()

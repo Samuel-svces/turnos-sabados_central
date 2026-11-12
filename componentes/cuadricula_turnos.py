@@ -389,9 +389,9 @@ def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_e
     )
 
     st.markdown("<div style='margin-top: 0.6rem;'></div>", unsafe_allow_html=True)
-    col_save, col_del = st.columns([1.3, 1.0])
+    col_save, col_del = st.columns([1.1, 1.0])
     with col_save:
-        if st.button("Guardar Cambios", key=k_save, type="primary", use_container_width=True, icon=":material/save:"):
+        if st.button("Guardar", key=k_save, type="primary", use_container_width=True, icon=":material/save:"):
             _guardar_edicion_rapida(
                 sat_date=sat_date,
                 name=name,
@@ -404,7 +404,7 @@ def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_e
                 sheet_excel=sheet_excel
             )
     with col_del:
-        if st.button("Remover Turno", key=k_del, type="secondary", use_container_width=True, icon=":material/delete:"):
+        if st.button("Eliminar", key=k_del, type="secondary", use_container_width=True, icon=":material/delete_outline:"):
             st.session_state["modal_remover_turno"] = {
                 'sat_date': sat_date,
                 'name': name,
