@@ -3635,6 +3635,138 @@ def apply_styles():
         z-index: 2 !important;
     }
 
+    /* ========================================================= */
+    /* SKELETON LOADER ANIMADO CON SHIMMER SUAVE                  */
+    /* ========================================================= */
+    .calendar-skeleton-overlay {
+        width: 100% !important;
+        margin-top: 0.5rem !important;
+        margin-bottom: 1.5rem !important;
+        box-sizing: border-box !important;
+        opacity: 1 !important;
+        transition: opacity 0.22s ease-out !important;
+        pointer-events: none !important;
+    }
+
+    .skeleton-nav-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        margin-bottom: 1.2rem !important;
+        width: 100% !important;
+    }
+
+    .skeleton-nav-btn {
+        height: 38px !important;
+        flex: 1.2 !important;
+        max-width: 220px !important;
+        border-radius: 8px !important;
+    }
+
+    .skeleton-nav-banner {
+        height: 34px !important;
+        flex: 2 !important;
+        max-width: 380px !important;
+        border-radius: 20px !important;
+    }
+
+    .skeleton-cols-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    @media (max-width: 992px) {
+        .skeleton-cols-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .skeleton-cols-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    .skeleton-col {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 0.8rem !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.55rem !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .skeleton-col-header {
+        height: 38px !important;
+        border-radius: 8px !important;
+        margin-bottom: 0.3rem !important;
+    }
+
+    .skeleton-col-cards {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.45rem !important;
+        flex: 1 !important;
+    }
+
+    .skeleton-card {
+        height: 36px !important;
+        border-radius: 6px !important;
+    }
+
+    .skeleton-action-btn-1 {
+        height: 38px !important;
+        border-radius: 8px !important;
+        margin-top: 0.4rem !important;
+    }
+
+    .skeleton-action-btn-2 {
+        height: 38px !important;
+        border-radius: 8px !important;
+    }
+
+    @keyframes skeleton-shimmer-anim {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .skeleton-shimmer-box {
+        background: linear-gradient(
+            90deg,
+            #f1f5f9 0%,
+            #e2e8f0 35%,
+            #f8fafc 50%,
+            #e2e8f0 65%,
+            #f1f5f9 100%
+        ) !important;
+        background-size: 200% 100% !important;
+        animation: skeleton-shimmer-anim 1.4s ease-in-out infinite !important;
+    }
+
+    .skeleton-col-header.skeleton-shimmer-box {
+        background: linear-gradient(
+            90deg,
+            #e6f7f7 0%,
+            #d1f0f2 35%,
+            #f0fbfb 50%,
+            #d1f0f2 65%,
+            #e6f7f7 100%
+        ) !important;
+        background-size: 200% 100% !important;
+        animation: skeleton-shimmer-anim 1.4s ease-in-out infinite !important;
+    }
+
     </style>
     """)
     _CSS_BUILT = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])

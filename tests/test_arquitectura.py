@@ -513,6 +513,35 @@ class TestArquitecturaModular(unittest.TestCase):
         ]
         self.assertEqual(candidatos, ["ESTEFANIA ZAPATA ESCANDON"])
 
+    def test_26_skeleton_loader_shimmer_transicion(self):
+        """Verifica la arquitectura y estilos del Skeleton Loader con shimmer:
+        - Estilos CSS: overlay, layout de navegación y 4 columnas, keyframe animado
+        - Marcadores en cuadrícula: sat-nav-marker y columns-card-marker
+        - Funciones JS en buscador: crearSkeletonHTML, activar, desactivar y disparadores de login/paginación"""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn(".calendar-skeleton-overlay", contenido_s)
+        self.assertIn(".skeleton-shimmer-box", contenido_s)
+        self.assertIn("skeleton-shimmer-anim", contenido_s)
+        self.assertIn(".skeleton-cols-grid", contenido_s)
+
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn("class='sat-nav-marker'", contenido_c)
+        self.assertIn("class='columns-card-marker'", contenido_c)
+
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn("crearSkeletonHTML", contenido_b)
+        self.assertIn("activarSkeletonCarga", contenido_b)
+        self.assertIn("desactivarSkeletonCarga", contenido_b)
+        self.assertIn("vincularDisparadoresSkeleton", contenido_b)
+        self.assertIn("btn_admin_iniciar_sesion", contenido_b)
+        self.assertIn("btn_admin_sats_anteriores", contenido_b)
+
 
 if __name__ == "__main__":
     unittest.main()

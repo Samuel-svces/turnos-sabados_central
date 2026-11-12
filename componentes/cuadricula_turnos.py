@@ -531,6 +531,7 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         offset = st.session_state.saturday_offset
         saturdays = all_visible_saturdays[offset:offset+4]
         
+        st.markdown("<div class='sat-nav-marker'></div>", unsafe_allow_html=True)
         col_nav_prev, col_nav_info, col_nav_next = st.columns([1.2, 2, 1.2])
         with col_nav_prev:
             has_prev = offset > 0

@@ -919,13 +919,140 @@ def renderizar_buscador(cargar_datos_fn=None):
         });
     }
 
+    // =========================================================
+    // SKELETON LOADER ANIMADO CON SHIMMER EN CARGA Y PAGINACIÓN
+    // =========================================================
+    function crearSkeletonHTML() {
+        const skeletonCols = [1, 2, 3, 4].map(() => `
+            <div class="skeleton-col">
+                <div class="skeleton-shimmer-box skeleton-col-header"></div>
+                <div class="skeleton-col-cards">
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 95%;"></div>
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 88%;"></div>
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 92%;"></div>
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 84%;"></div>
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 90%;"></div>
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 86%;"></div>
+                    <div class="skeleton-shimmer-box skeleton-card" style="width: 93%;"></div>
+                </div>
+                <div class="skeleton-shimmer-box skeleton-action-btn-1"></div>
+                <div class="skeleton-shimmer-box skeleton-action-btn-2"></div>
+            </div>
+        `).join('');
+
+        return `
+        <div id="calendar-skeleton-overlay" class="calendar-skeleton-overlay">
+            <div class="skeleton-nav-row">
+                <div class="skeleton-shimmer-box skeleton-nav-btn"></div>
+                <div class="skeleton-shimmer-box skeleton-nav-banner"></div>
+                <div class="skeleton-shimmer-box skeleton-nav-btn"></div>
+            </div>
+            <div class="skeleton-cols-grid">
+                ${skeletonCols}
+            </div>
+        </div>
+        `;
+    }
+
+    function activarSkeletonCarga() {
+        const marker = parentDoc.querySelector('.columns-card-marker, .sat-nav-marker');
+        if (!marker) return;
+
+        const parentContainer = marker.closest('[data-testid="stVerticalBlock"]') || marker.parentElement;
+        if (!parentContainer) return;
+
+        let existing = parentDoc.getElementById('calendar-skeleton-overlay');
+        if (!existing) {
+            const wrap = parentDoc.createElement('div');
+            wrap.innerHTML = crearSkeletonHTML();
+            existing = wrap.firstElementChild;
+            parentContainer.insertBefore(existing, parentContainer.firstChild);
+        } else {
+            existing.style.display = 'block';
+            existing.style.opacity = '1';
+        }
+
+        // Atenuar visualmente los elementos reales mientras carga la nueva cuadrícula
+        const realCols = parentContainer.querySelectorAll('[data-testid="stColumn"], div[data-testid="column"]');
+        realCols.forEach(col => {
+            if (!col.closest('#calendar-skeleton-overlay')) {
+                col.style.opacity = '0';
+                col.style.pointerEvents = 'none';
+            }
+        });
+
+        // Timeout preventivo de seguridad
+        setTimeout(desactivarSkeletonCarga, 4500);
+    }
+
+    function desactivarSkeletonCarga() {
+        const existing = parentDoc.getElementById('calendar-skeleton-overlay');
+        if (existing) {
+            existing.style.opacity = '0';
+            setTimeout(() => {
+                if (existing && existing.parentElement) {
+                    existing.parentElement.removeChild(existing);
+                }
+            }, 220);
+        }
+        // Restaurar elementos reales
+        const hiddenCols = parentDoc.querySelectorAll('[data-testid="stColumn"], div[data-testid="column"]');
+        hiddenCols.forEach(col => {
+            if (!col.closest('#calendar-skeleton-overlay')) {
+                col.style.removeProperty('opacity');
+                col.style.removeProperty('pointer-events');
+            }
+        });
+    }
+
+    function vincularDisparadoresSkeleton() {
+        if (window._skeletonTriggersBound) return;
+        window._skeletonTriggersBound = true;
+
+        parentDoc.addEventListener('click', (e) => {
+            const target = e.target;
+            if (!target) return;
+
+            // 1. Iniciar sesión administrador
+            if (target.closest('div[class*="st-key-btn_admin_iniciar_sesion"] button, button[data-testid*="btn_admin_iniciar_sesion"]')) {
+                activarSkeletonCarga();
+                return;
+            }
+
+            // 2. Navegación de sábados (Sábados Anteriores / Siguientes Sábados)
+            if (target.closest('div[class*="st-key-btn_admin_sats_anteriores"] button, div[class*="st-key-btn_admin_sats_siguientes"] button')) {
+                activarSkeletonCarga();
+                return;
+            }
+
+            // 3. Cerrar sesión administrador
+            if (target.closest('div[class*="st-key-btn_admin_cerrar_sesion"] button, button[data-testid*="btn_admin_cerrar_sesion"]')) {
+                activarSkeletonCarga();
+                return;
+            }
+        }, true);
+
+        parentDoc.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const target = e.target;
+                if (target && target.matches && target.matches('div[class*="st-key-admin_pwd_popover"] input, input[type="password"]')) {
+                    activarSkeletonCarga();
+                }
+            }
+        }, true);
+    }
+
     // Inicialización rápida y sincronización de eventos
+    desactivarSkeletonCarga();
+    vincularDisparadoresSkeleton();
     vincularBuscadorReactivo();
     inicializarDragAndDrop();
     vincularFiltrosExcel();
     const timers = [100, 300, 1000];
     timers.forEach(ms => {
         setTimeout(() => {
+            desactivarSkeletonCarga();
+            vincularDisparadoresSkeleton();
             vincularBuscadorReactivo();
             inicializarDragAndDrop();
             vincularFiltrosExcel();
