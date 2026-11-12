@@ -152,27 +152,34 @@ def renderizar_buscador(cargar_datos_fn=None):
             cardWraps.forEach(wrap => {
                 const docName = normalizarTexto(wrap.getAttribute('data-doc') || '');
                 const metaContainer = wrap.closest('div[data-testid="stElementContainer"]') || wrap.parentElement;
-                const cardContainer = metaContainer ? metaContainer.nextElementSibling : null;
-                const btn = cardContainer ? cardContainer.querySelector('button') : null;
-                if (!cardContainer || !btn) return;
+                let cardContainer = metaContainer ? metaContainer.nextElementSibling : null;
+                if (cardContainer && !cardContainer.querySelector('button') && cardContainer.nextElementSibling) {
+                    cardContainer = cardContainer.nextElementSibling;
+                }
+                if (!cardContainer) return;
+                const btn = cardContainer.querySelector('button');
 
                 if (!cleanTerm) {
                     cardContainer.classList.remove('search-card-hidden');
                     cardContainer.style.removeProperty('display');
-                    btn.classList.remove('search-highlight-active', 'search-dimmed');
+                    if (btn) btn.classList.remove('search-highlight-active', 'search-dimmed');
                     return;
                 }
 
                 if (docName.includes(cleanTerm)) {
                     cardContainer.classList.remove('search-card-hidden');
                     cardContainer.style.removeProperty('display');
-                    btn.classList.remove('search-dimmed');
-                    btn.classList.add('search-highlight-active');
+                    if (btn) {
+                        btn.classList.remove('search-dimmed');
+                        btn.classList.add('search-highlight-active');
+                    }
                 } else {
                     cardContainer.classList.add('search-card-hidden');
                     cardContainer.style.setProperty('display', 'none', 'important');
-                    btn.classList.remove('search-highlight-active');
-                    btn.classList.add('search-dimmed');
+                    if (btn) {
+                        btn.classList.remove('search-highlight-active');
+                        btn.classList.add('search-dimmed');
+                    }
                 }
             });
 

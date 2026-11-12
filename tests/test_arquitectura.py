@@ -233,6 +233,14 @@ class TestArquitecturaModular(unittest.TestCase):
             contenido_c = f.read()
         self.assertNotIn('btn_confirmar_purga_sp', contenido_c, "El botón de purga no debe estar en cabecera.py")
 
+    def test_17_color_encabezados_unificado_f0fbfb(self):
+        """Verifica que todos los encabezados tengan el color institucional #F0FBFB y que el botón duplicar no afecte encabezados."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('#F0FBFB', contenido_s, "Falta el color #F0FBFB en styles.py")
+        self.assertNotIn('stColumn"]:has(.dup-btn-wrapper) button', contenido_s, "El botón duplicar no debe alterar los botones de toda la columna")
+
 
 if __name__ == "__main__":
     unittest.main()

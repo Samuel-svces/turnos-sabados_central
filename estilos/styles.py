@@ -1804,8 +1804,7 @@ def apply_styles():
 
     /* 9. Botón Duplicar en Modo Editor (Admin) - Fondo Azul #1F5FD1 */
     div[class*="st-key-btn_duplicar"] button,
-    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button,
-    div[data-testid="column"]:has(.dup-btn-wrapper) button {
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button {
         background: #1F5FD1 !important;
         background-color: #1F5FD1 !important;
         color: #ffffff !important;
@@ -1819,16 +1818,14 @@ def apply_styles():
         text-shadow: none !important;
     }
     div[class*="st-key-btn_duplicar"] button *,
-    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button *,
-    div[data-testid="column"]:has(.dup-btn-wrapper) button * {
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button * {
         color: #ffffff !important;
         background-color: transparent !important;
         font-weight: 600 !important;
         text-shadow: none !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover,
-    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:hover,
-    div[data-testid="column"]:has(.dup-btn-wrapper) button:hover {
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:hover {
         background: #184eb0 !important;
         background-color: #184eb0 !important;
         border-color: #184eb0 !important;
@@ -1837,13 +1834,11 @@ def apply_styles():
         box-shadow: 0 4px 12px rgba(31, 95, 209, 0.45) !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover *,
-    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:hover *,
-    div[data-testid="column"]:has(.dup-btn-wrapper) button:hover * {
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:hover * {
         color: #ffffff !important;
     }
     div[class*="st-key-btn_duplicar"] button:active,
-    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:active,
-    div[data-testid="column"]:has(.dup-btn-wrapper) button:active {
+    div[data-testid="stElementContainer"]:has(.dup-btn-wrapper) + div[data-testid="stElementContainer"] button:active {
         background: #133f91 !important;
         background-color: #133f91 !important;
         border-color: #133f91 !important;
@@ -3281,6 +3276,65 @@ def apply_styles():
         border-color: #133f91 !important;
         transform: translateY(0px) !important;
         box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+    }
+
+    /* ========================================================= */
+    /* ENCABEZADOS DE SÁBADOS: COLOR UNIFICADO #F0FBFB            */
+    /* ========================================================= */
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-popover_filtro"] button,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-popover_filtro"] button,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button,
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button,
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button,
+    div[class*="st-key-popover_filtro"] button,
+    div[class*="st-key-btn_ordenar_pub"] button {
+        background: #F0FBFB !important;
+        background-color: #F0FBFB !important;
+        color: #17243D !important;
+        border: 1.5px solid #ccebee !important;
+        box-shadow: 0 2px 6px rgba(23, 36, 61, 0.05) !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-popover_filtro"] button *,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-popover_filtro"] button *,
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-btn_ordenar_pub"] button *,
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button *,
+    div[data-testid="stElementContainer"]:has(.sat-header-pub-marker) + div[data-testid="stElementContainer"] button *,
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button *,
+    div[class*="st-key-popover_filtro"] button *,
+    div[class*="st-key-btn_ordenar_pub"] button * {
+        color: #17243D !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+    }
+
+    div[data-testid="stColumn"]:has(.saturday-col-marker) div[class*="st-key-popover_filtro"] button:hover,
+    div[data-testid="column"]:has(.saturday-col-marker) div[class*="st-key-popover_filtro"] button:hover,
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button:hover,
+    div[data-testid="stElementContainer"]:has(.date-header-marker) + div[data-testid="stElementContainer"] button:hover,
+    div[class*="st-key-popover_filtro"] button:hover,
+    div[class*="st-key-btn_ordenar_pub"] button:hover {
+        background: #e2f6f7 !important;
+        background-color: #e2f6f7 !important;
+        border-color: #0f9a9b !important;
+    }
+
+    div[class*="st-key-popover_filtro"] button::after,
+    div[data-testid="stElementContainer"]:has(.admin-filter-header-marker) + div[data-testid="stElementContainer"] button::after {
+        content: "" !important;
+        position: absolute !important;
+        right: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        width: 14px !important;
+        height: 14px !important;
+        background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f9a9b'><polygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'></polygon></svg>") no-repeat center !important;
+        background-size: contain !important;
+        pointer-events: none !important;
+        z-index: 2 !important;
     }
 
     </style>
