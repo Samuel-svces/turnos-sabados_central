@@ -615,7 +615,7 @@ def renderizar_buscador(cargar_datos_fn=None):
     vincularBuscadorReactivo();
     inicializarDragAndDrop();
     vincularFiltrosExcel();
-    const timers = [60, 200, 500, 1000];
+    const timers = [200, 1000];
     timers.forEach(ms => {
         setTimeout(() => {
             vincularBuscadorReactivo();

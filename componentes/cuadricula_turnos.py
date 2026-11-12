@@ -847,8 +847,44 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
                                     shifts_to_delete_list=shifts_to_delete_list,
                                     shifts_to_add_list=shifts_to_add_list
                                 )
+
+                                # Actualización optimista instantánea en memoria (evita recarga síncrona de SharePoint)
+                                try:
+                                    df_upd = st.session_state.shifts_df.copy() if not st.session_state.shifts_df.empty else pd.DataFrame()
+                                    if not df_upd.empty:
+                                        date_check = sat_date if isinstance(sat_date, datetime.date) else pd.to_datetime(sat_date).date()
+                                        df_dates = pd.to_datetime(df_upd['Date'], errors='coerce').dt.date
+                                        mask_date = (df_dates == date_check)
+                                        # Conservar solo los turnos condicionales (Compensación/Cambio) del día destino
+                                        cond_mask = df_upd['Classification'].astype(str).str.contains('Compensación|Cambio', na=False, regex=True)
+                                        df_upd = df_upd[~mask_date | cond_mask]
+                                    new_rows = []
+                                    for item in shifts_to_add_list:
+                                        new_rows.append({
+                                            'Sheet': target_sheet,
+                                            'Month_Header': dp.MONTH_NAMES_SP.get(sat_date.month, 'EXTRA'),
+                                            'Date': sat_date,
+                                            'Year': sat_date.year,
+                                            'Month': sat_date.month,
+                                            'Supernumerary': str(item['doctor']).strip().upper(),
+                                            'Excel_Row': 0,
+                                            'Excel_Col': 0,
+                                            'Header_Row': 0,
+                                            'Observation': str(item.get('observation', '')).strip(),
+                                            'Classification': str(item.get('classification', 'Secuencia Normal')).strip()
+                                        })
+                                    if new_rows:
+                                        st.session_state.shifts_df = pd.concat(
+                                            [df_upd, pd.DataFrame(new_rows)], ignore_index=True
+                                        )
+                                    else:
+                                        st.session_state.shifts_df = df_upd
+                                    dp.load_modifications.clear()
+                                except Exception as e_mem:
+                                    print("Aviso actualizando memoria tras duplicar:", e_mem)
+                                    cargar_datos_fn()
+
                                 st.success(f"Programación duplicada del {two_weeks_ago.day} de {dp.MONTH_NAMES_SP[two_weeks_ago.month]}")
-                                cargar_datos_fn()
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Error al duplicar: {e}")

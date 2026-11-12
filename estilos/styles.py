@@ -4,10 +4,17 @@
 import streamlit as st
 import textwrap
 
+_CSS_BUILT = None
+
+
 def apply_styles():
     """
     Injects custom CSS to give the application a premium, modern look.
     """
+    global _CSS_BUILT
+    if _CSS_BUILT is not None:
+        st.markdown(_CSS_BUILT, unsafe_allow_html=True)
+        return
     css_content = textwrap.dedent("""
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -1795,17 +1802,17 @@ def apply_styles():
         text-shadow: none !important;
     }
 
-    /* 9. Botón Duplicar en Modo Editor (Admin) - Fondo Blanco */
+    /* 9. Botón Duplicar en Modo Editor (Admin) - Fondo Azul #1F5FD1 */
     div[class*="st-key-btn_duplicar"] button,
     div[data-testid="stColumn"]:has(.dup-btn-wrapper) button,
     div[data-testid="column"]:has(.dup-btn-wrapper) button {
-        background: #ffffff !important;
-        background-color: #ffffff !important;
-        color: #262730 !important;
-        border: 1px solid rgba(49, 51, 63, 0.2) !important;
+        background: #1F5FD1 !important;
+        background-color: #1F5FD1 !important;
+        color: #ffffff !important;
+        border: 1px solid #1F5FD1 !important;
         border-radius: 8px !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-        font-weight: 500 !important;
+        box-shadow: 0 2px 7px rgba(31, 95, 209, 0.28) !important;
+        font-weight: 600 !important;
         font-size: 0.8rem !important;
         padding: 0.22rem 0.5rem !important;
         line-height: 1.25 !important;
@@ -1814,24 +1821,34 @@ def apply_styles():
     div[class*="st-key-btn_duplicar"] button *,
     div[data-testid="stColumn"]:has(.dup-btn-wrapper) button *,
     div[data-testid="column"]:has(.dup-btn-wrapper) button * {
-        color: #262730 !important;
+        color: #ffffff !important;
         background-color: transparent !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
         text-shadow: none !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover,
     div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:hover,
     div[data-testid="column"]:has(.dup-btn-wrapper) button:hover {
-        background: #f1f5f9 !important;
-        background-color: #f1f5f9 !important;
-        border-color: #cbd5e1 !important;
-        color: #1e293b !important;
-        transform: scale(1.01) !important;
+        background: #184eb0 !important;
+        background-color: #184eb0 !important;
+        border-color: #184eb0 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.45) !important;
     }
     div[class*="st-key-btn_duplicar"] button:hover *,
     div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:hover *,
     div[data-testid="column"]:has(.dup-btn-wrapper) button:hover * {
-        color: #1e293b !important;
+        color: #ffffff !important;
+    }
+    div[class*="st-key-btn_duplicar"] button:active,
+    div[data-testid="stColumn"]:has(.dup-btn-wrapper) button:active,
+    div[data-testid="column"]:has(.dup-btn-wrapper) button:active {
+        background: #133f91 !important;
+        background-color: #133f91 !important;
+        border-color: #133f91 !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
     }
     
 
@@ -2386,7 +2403,7 @@ def apply_styles():
         font-size: 1.15rem;
         vertical-align: middle;
         font-weight: 800;
-        color: #1e293b;
+        color: #ffffff;
         display: inline-block;
     }
     
@@ -3167,7 +3184,46 @@ def apply_styles():
         font-weight: 700 !important;
     }
 
+    /* ========================================================= */
+    /* BOTÓN "AGREGAR MÉDICO" (#1F5FD1) — grilla y diálogo        */
+    /* ========================================================= */
+    div[class*="st-key-btn_agregar_medico"] button {
+        background: #1F5FD1 !important;
+        background-color: #1F5FD1 !important;
+        color: #ffffff !important;
+        border: 1px solid #1F5FD1 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 7px rgba(31, 95, 209, 0.28) !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+    div[class*="st-key-btn_agregar_medico"] button * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        background-color: transparent !important;
+        font-weight: 600 !important;
+        text-shadow: none !important;
+    }
+    div[class*="st-key-btn_agregar_medico"] button:hover {
+        background: #184eb0 !important;
+        background-color: #184eb0 !important;
+        border-color: #184eb0 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.45) !important;
+        transform: translateY(-1px) !important;
+    }
+    div[class*="st-key-btn_agregar_medico"] button:hover * {
+        color: #ffffff !important;
+    }
+    div[class*="st-key-btn_agregar_medico"] button:active {
+        background: #133f91 !important;
+        background-color: #133f91 !important;
+        border-color: #133f91 !important;
+        transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+    }
+
     </style>
     """)
-    clean_css = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])
-    st.markdown(clean_css, unsafe_allow_html=True)
+    _CSS_BUILT = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])
+    st.markdown(_CSS_BUILT, unsafe_allow_html=True)

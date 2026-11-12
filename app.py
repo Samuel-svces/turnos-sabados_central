@@ -27,9 +27,7 @@ st.set_page_config(
 )
 
 # 2. Inyección de Estilos Centralizados (100% en estilos/styles.py)
-import importlib
 from estilos import styles
-importlib.reload(styles)
 styles.apply_styles()
 
 # Marcador para inicializar el Topbar sin saltos de layout
@@ -39,9 +37,6 @@ st.markdown('<div class="app-topbar-marker"></div>', unsafe_allow_html=True)
 from modulos import procesador_datos as dp
 from modulos import cliente_sharepoint as gc
 from componentes import cabecera, buscador, cuadricula_turnos
-importlib.reload(cabecera)
-importlib.reload(buscador)
-importlib.reload(cuadricula_turnos)
 from componentes.cabecera import renderizar_cabecera, renderizar_banner_titulo, renderizar_aviso_informativo
 from componentes.buscador import renderizar_buscador
 from componentes.cuadricula_turnos import renderizar_cuadricula
@@ -199,15 +194,8 @@ st.components.v1.html("""
             // Supresión activa periódica en el documento padre para botones inyectados dinámicamente
             const suprimirManageApp = () => {
                 const pd = window.parent.document;
-                const targets = pd.querySelectorAll('[data-testid="manage-app-button"], #manage-app-button, [data-testid="stAppDeployButton"]');
+                const targets = pd.querySelectorAll('[data-testid="manage-app-button"], #manage-app-button, [data-testid="stAppDeployButton"], div[class*="viewerBadge"], .viewerBadge_container');
                 targets.forEach(el => el.style.setProperty('display', 'none', 'important'));
-                pd.querySelectorAll('button, a, div').forEach(el => {
-                    const txt = (el.innerText || el.textContent || "").trim();
-                    if (txt === "Manage app" || txt === "< Manage app") {
-                        const cont = el.closest('div[class*="viewerBadge"], div[class*="manage"]') || el;
-                        cont.style.setProperty('display', 'none', 'important');
-                    }
-                });
             };
             suprimirManageApp();
             setTimeout(suprimirManageApp, 300);

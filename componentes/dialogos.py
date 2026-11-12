@@ -627,7 +627,7 @@ def show_add_dialog(sat_date, sheet, load_app_data_func):
     if new_doc and new_doc_norm in already_assigned:
         st.warning(f"**{new_doc}** ya está asignado a este sábado ({sat_date.strftime('%d/%m/%Y')}). No se pueden tener duplicados.", icon=":material/warning:")
     
-    if st.button("Agregar Médico", use_container_width=True, type="primary", icon=":material/person_add:"):
+    if st.button("Agregar Médico", key="btn_agregar_medico_dialog", use_container_width=True, type="primary", icon=":material/person_add:"):
         if new_doc and new_doc_norm in already_assigned:
             st.error(f"No se puede agregar: **{new_doc}** ya está programado para este sábado.", icon=":material/error:")
         else:
