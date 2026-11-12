@@ -120,6 +120,8 @@ def renderizar_buscador(cargar_datos_fn=None):
     # Inyección de script reactivo en tiempo real para filtrar y resaltar con cada pulsación de tecla
     st.components.v1.html(r"""
     <script>
+    const parentDoc = (window.parent && window.parent.document) ? window.parent.document : document;
+
     function normalizarTexto(txt) {
         return (txt || "")
             .normalize("NFD")
