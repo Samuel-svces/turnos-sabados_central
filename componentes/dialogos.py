@@ -849,15 +849,25 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     if misma_secuencia:
         st.error("⚠️ Restricción de secuencia: No es posible trasladar un médico a un sábado de su misma secuencia. Debe trasladarse a su secuencia contraria.")
 
+    df_s = st.session_state.get('shifts_df', pd.DataFrame())
+    excel_path = st.session_state.get('excel_path', '')
+
+    # Validar si el médico ya tiene un turno asignado en el sábado destino
+    ya_trabaja_destino = False
+    if not df_s.empty and 'Date' in df_s.columns and 'Supernumerary' in df_s.columns:
+        shifts_dest = df_s[df_s['Date'] == target_date]
+        if not shifts_dest.empty:
+            docs_dest = [dp.normalize_name_no_accents(str(d)).upper() for d in shifts_dest['Supernumerary']]
+            if dp.normalize_name_no_accents(doctor_name).upper() in docs_dest:
+                ya_trabaja_destino = True
+                st.error(f"⚠️ Restricción de programación: El médico {doctor_name} ya tiene un turno programado el {target_str}. No puede duplicarse ni trasladarse a este sábado.")
+
     opciones_accion = [
         "Cambio de turno",
         "Compensación de turno",
         "Cambia de secuencia"
     ]
     accion_sel = st.radio("Acción a realizar:", opciones_accion, index=0)
-
-    df_s = st.session_state.get('shifts_df', pd.DataFrame())
-    excel_path = st.session_state.get('excel_path', '')
 
     # 1. OPCIÓN CAMBIO DE TURNO (Solo supernumerarios en su secuencia normal para ese sábado)
     swap_peer = None
@@ -883,7 +893,7 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
     st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
     c_btn1, c_btn2 = st.columns([1, 1])
 
-    btn_disabled = bool(misma_secuencia or (accion_sel == "Cambio de turno" and not swap_peer))
+    btn_disabled = bool(misma_secuencia or ya_trabaja_destino or (accion_sel == "Cambio de turno" and not swap_peer))
     with c_btn1:
         if st.button("Confirmar y Aplicar", type="primary", use_container_width=True, key="btn_confirmar_drag_drop", disabled=btn_disabled):
             try:

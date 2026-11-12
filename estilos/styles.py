@@ -1305,18 +1305,27 @@ def apply_styles():
         transition: all 0.2s ease !important;
     }
 
-    /* Columna de sábado bloqueada porque pertenece a la misma secuencia quincenal */
+    /* Columna de sábado bloqueada porque pertenece a la misma secuencia quincenal o el médico ya trabaja allí */
     div[data-testid="stColumn"].saturday-col-blocked-sequence,
+    div[data-testid="column"].saturday-col-blocked-sequence,
     .saturday-col-blocked-sequence {
-        opacity: 0.5 !important;
+        opacity: 0.42 !important;
         border: 2px dashed #cbd5e1 !important;
+        background-color: #f1f5f9 !important;
         border-radius: 12px !important;
         cursor: not-allowed !important;
         transition: all 0.2s ease !important;
     }
 
-    /* Zona de soltado activa (cuando el cursor entra en la columna destino) */
-    div[data-testid="stColumn"].saturday-col-drop-active {
+    div[data-testid="stColumn"].saturday-col-blocked-sequence *,
+    div[data-testid="column"].saturday-col-blocked-sequence *,
+    .saturday-col-blocked-sequence * {
+        cursor: not-allowed !important;
+    }
+
+    /* Zona de soltado activa (cuando el cursor entra en una columna destino válida) */
+    div[data-testid="stColumn"].saturday-col-drop-active:not(.saturday-col-blocked-sequence),
+    div[data-testid="column"].saturday-col-drop-active:not(.saturday-col-blocked-sequence) {
         background-color: #e6f7f6 !important;
         border: 2px dashed #0f9a9b !important;
         border-radius: 12px !important;

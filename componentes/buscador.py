@@ -615,7 +615,7 @@ def renderizar_buscador(cargar_datos_fn=None):
     }
 
     function inicializarDragAndDrop() {
-        const parentDoc = window.parent.document;
+        const parentDoc = (window.parent && window.parent.document) ? window.parent.document : document;
 
         // Ocultar preventivamente los contenedores del puente en el DOM
         const bridgeElements = parentDoc.querySelectorAll('div[class*="st-key-bridge_drag_drop_payload"], div[class*="st-key-btn_trigger_drag_drop"], .drag-drop-bridge-container');
@@ -625,7 +625,37 @@ def renderizar_buscador(cargar_datos_fn=None):
             if (cont) cont.style.setProperty('display', 'none', 'important');
         });
 
-        const colMarkers = parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)');
+        // Función dinámica para obtener siempre las columnas vivas en el DOM
+        function obtenerColumnasSabados() {
+            const markers = parentDoc.querySelectorAll('.saturday-col-marker');
+            const cols = [];
+            markers.forEach(m => {
+                const c = m.closest('div[data-testid="stColumn"], div[data-testid="column"]');
+                if (c && !cols.includes(c)) cols.push(c);
+            });
+            if (cols.length === 0) {
+                return Array.from(parentDoc.querySelectorAll('div[data-testid="stColumn"]:has(.saturday-col-marker), div[data-testid="column"]:has(.saturday-col-marker)'));
+            }
+            return cols;
+        }
+
+        // Verifica si un médico ya tiene un turno en la columna de sábado indicada
+        function medicoTrabajaEnColumna(colEl, docBuscado) {
+            if (!colEl || !docBuscado) return false;
+            const normDoc = normalizarTexto(docBuscado);
+            const marker = colEl.querySelector('.saturday-col-marker');
+            if (marker && marker.hasAttribute('data-doctors')) {
+                const docsList = (marker.getAttribute('data-doctors') || '').split('|');
+                if (docsList.includes(normDoc)) return true;
+            }
+            const wraps = colEl.querySelectorAll('.doc-admin-card-wrap');
+            for (let w of wraps) {
+                if (normalizarTexto(w.getAttribute('data-doc')) === normDoc) return true;
+            }
+            return false;
+        }
+
+        const colMarkers = obtenerColumnasSabados();
         let currentDropCol = null;
 
         colMarkers.forEach(col => {
@@ -662,15 +692,25 @@ def renderizar_buscador(cargar_datos_fn=None):
                     e.dataTransfer.effectAllowed = 'move';
                     btn.classList.add('doc-card-dragging');
 
-                    colMarkers.forEach(targetCol => {
+                    // Consultar dinámicamente las columnas vivas para aplicar estilos de bloqueo y disponibilidad
+                    const liveCols = obtenerColumnasSabados();
+                    liveCols.forEach(targetCol => {
                         const targetMarker = targetCol.querySelector('.saturday-col-marker');
                         const targetDate = targetMarker ? targetMarker.getAttribute('data-sat-date') : null;
-                        if (targetDate && targetDate !== data.source_date) {
-                            if (sonMismaSecuencia(data.source_date, targetDate)) {
-                                targetCol.classList.add('saturday-col-blocked-sequence');
-                            } else {
-                                targetCol.classList.add('saturday-col-droppable-hint');
-                            }
+                        if (!targetDate) return;
+
+                        const esMismoSabado = (targetDate === data.source_date);
+                        const esMismaSec = sonMismaSecuencia(data.source_date, targetDate);
+                        const yaTrabaja = medicoTrabajaEnColumna(targetCol, data.doctor);
+
+                        const esInvalido = esMismoSabado || esMismaSec || yaTrabaja;
+
+                        if (esInvalido) {
+                            targetCol.classList.add('saturday-col-blocked-sequence');
+                            targetCol.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active');
+                        } else {
+                            targetCol.classList.add('saturday-col-droppable-hint');
+                            targetCol.classList.remove('saturday-col-blocked-sequence');
                         }
                     });
                 });
@@ -681,7 +721,8 @@ def renderizar_buscador(cargar_datos_fn=None):
                         currentDropCol.classList.remove('saturday-col-drop-active');
                         currentDropCol = null;
                     }
-                    colMarkers.forEach(c => {
+                    const liveCols = obtenerColumnasSabados();
+                    liveCols.forEach(c => {
                         c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active', 'saturday-col-blocked-sequence');
                     });
                     setTimeout(() => {
@@ -730,7 +771,8 @@ def renderizar_buscador(cargar_datos_fn=None):
                         currentDropCol.classList.remove('saturday-col-drop-active');
                         currentDropCol = null;
                     }
-                    colMarkers.forEach(c => c.classList.remove('saturday-col-droppable-hint', 'saturday-col-blocked-sequence'));
+                    const liveCols = obtenerColumnasSabados();
+                    liveCols.forEach(c => c.classList.remove('saturday-col-droppable-hint', 'saturday-col-drop-active', 'saturday-col-blocked-sequence'));
 
                     const jsonStr = e.dataTransfer.getData('text/plain');
                     if (!jsonStr) return;
@@ -744,29 +786,28 @@ def renderizar_buscador(cargar_datos_fn=None):
                             return;
                         }
 
-                        // Validación de secuencia estricta: Bloquear si es la misma secuencia
-                        if (sonMismaSecuencia(data.source_date, targetDate)) {
-                            const mostrarAlertaSecuencia = () => {
-                                if (window.parent && window.parent.Swal) {
-                                    window.parent.Swal.fire({
-                                        title: "Secuencia no permitida",
-                                        text: "No puedes mover a este médico a su misma secuencia. Debe trasladarse a su secuencia contraria (ej. 21 de noviembre o 5 de diciembre).",
-                                        icon: "warning",
-                                        confirmButtonColor: '#0f9a9b'
-                                    });
-                                } else {
-                                    alert("Secuencia no permitida: No puedes mover a este médico a su misma secuencia. Debe ser a la secuencia contraria.");
-                                }
-                            };
-
-                            if (!window.parent.Swal) {
-                                const sc = window.parent.document.createElement('script');
-                                sc.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-                                sc.onload = mostrarAlertaSecuencia;
-                                window.parent.document.head.appendChild(sc);
+                        const mostrarAlertaValidacion = (titulo, texto) => {
+                            if (window.parent && window.parent.Swal) {
+                                window.parent.Swal.fire({
+                                    title: titulo,
+                                    text: texto,
+                                    icon: "warning",
+                                    confirmButtonColor: '#0f9a9b'
+                                });
                             } else {
-                                mostrarAlertaSecuencia();
+                                alert(titulo + ": " + texto);
                             }
+                        };
+
+                        // Validación 1: El médico ya trabaja en este sábado destino
+                        if (medicoTrabajaEnColumna(col, data.doctor)) {
+                            mostrarAlertaValidacion("Médico ya programado", `El médico ${data.doctor} ya se encuentra programado en el sábado seleccionado.`);
+                            return;
+                        }
+
+                        // Validación 2: Misma secuencia quincenal no permitida
+                        if (sonMismaSecuencia(data.source_date, targetDate)) {
+                            mostrarAlertaValidacion("Secuencia no permitida", "No puedes mover a este médico a su misma secuencia. Debe trasladarse a su secuencia contraria (ej. 21 de noviembre o 5 de diciembre).");
                             return;
                         }
 

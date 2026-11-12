@@ -647,14 +647,14 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         cols = st.columns(len(saturdays))
         for idx, sat_date in enumerate(saturdays):
             with cols[idx]:
-                st.markdown(f"<div class='saturday-col-marker' data-sat-date='{sat_date}'></div>", unsafe_allow_html=True)
-                is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
-                
                 date_shifts_all = month_shifts[month_shifts['Date'] == sat_date] if not month_shifts.empty else pd.DataFrame()
                 num_doctors_all = len(date_shifts_all)
                 doc_counts = date_shifts_all['Supernumerary'].value_counts() if not date_shifts_all.empty else pd.Series()
-                
                 nombres_dia = _nombres_unicos(date_shifts_all)
+                doc_names_col = "|".join([dp.normalize_name_no_accents(n).upper() for n in nombres_dia])
+
+                st.markdown(f"<div class='saturday-col-marker' data-sat-date='{sat_date}' data-doctors='{doc_names_col}'></div>", unsafe_allow_html=True)
+                is_holiday = sat_date.month == 12 and sat_date.day in [24, 31]
 
                 # Lista de médicos filtrada y ordenada según el icono de la columna
                 date_shifts_loop = _aplicar_filtro_orden(date_shifts_all, sat_date)

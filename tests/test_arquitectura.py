@@ -428,6 +428,57 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('(Seleccionar todo)', contenido_c)
         self.assertIn("class='excel-menu-divider'", contenido_c)
 
+    def test_24_validacion_traslado_mismo_sabado_secuencia_y_duplicado(self):
+        """Verifica la lógica estricta de validación en traslado de personas:
+        - Cálculo de paridad quincenal (misma secuencia = múltiplo de 14 días)
+        - Presencia de data-doctors en saturday-col-marker
+        - Bloqueo visual y de drop en columnas no permitidas (mismo sábado, misma secuencia, médico ya presente)
+        - Validación en backend (dialogos.py) contra traslados a sábados donde el médico ya trabaja"""
+        from componentes.dialogos import es_misma_secuencia_sabado
+        import datetime
+
+        # 1. Pruebas unitarias de paridad quincenal
+        d_nov14 = datetime.date(2026, 11, 14)
+        d_nov21 = datetime.date(2026, 11, 21)
+        d_nov28 = datetime.date(2026, 11, 28)
+        d_dic05 = datetime.date(2026, 12, 5)
+
+        self.assertTrue(es_misma_secuencia_sabado(d_nov14, d_nov14), "Mismo sábado debe ser misma secuencia")
+        self.assertTrue(es_misma_secuencia_sabado(d_nov14, d_nov28), "14 días de diferencia debe ser misma secuencia")
+        self.assertFalse(es_misma_secuencia_sabado(d_nov14, d_nov21), "7 días de diferencia debe ser secuencia contraria")
+        self.assertFalse(es_misma_secuencia_sabado(d_nov14, d_dic05), "21 días de diferencia debe ser secuencia contraria")
+
+        # 2. Marcador con data-doctors en cuadricula_turnos.py
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn("data-doctors=", contenido_c)
+        self.assertIn("saturday-col-marker", contenido_c)
+
+        # 3. Estilos de cursor not-allowed y bloqueo
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn(".saturday-col-blocked-sequence", contenido_s)
+        self.assertIn("cursor: not-allowed", contenido_s)
+        self.assertIn(":not(.saturday-col-blocked-sequence)", contenido_s)
+
+        # 4. Lógica de bloqueo en buscador.py
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn("obtenerColumnasSabados", contenido_b)
+        self.assertIn("medicoTrabajaEnColumna", contenido_b)
+        self.assertIn("esMismoSabado || esMismaSec || yaTrabaja", contenido_b)
+        self.assertIn("dropEffect = 'none'", contenido_b)
+
+        # 5. Validación en backend dialogos.py
+        dialogos_path = os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
+        with open(dialogos_path, "r", encoding="utf-8") as f:
+            contenido_d = f.read()
+        self.assertIn("ya_trabaja_destino", contenido_d)
+        self.assertIn("Restricción de programación: El médico", contenido_d)
+
 
 if __name__ == "__main__":
     unittest.main()
