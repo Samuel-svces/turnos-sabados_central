@@ -387,26 +387,91 @@ def renderizar_buscador(cargar_datos_fn=None):
 
     function vincularFiltrosExcel() {
         const parentDoc = window.parent.document;
-        const popoverSearchInputs = parentDoc.querySelectorAll('[data-testid="stPopoverBody"] input[placeholder="Buscar..."]');
-        popoverSearchInputs.forEach(input => {
-            if (input.dataset.excelFilterBound) return;
-            input.dataset.excelFilterBound = "true";
-            input.addEventListener('input', (e) => {
-                const query = normalizarTexto(e.target.value);
-                const popover = input.closest('[data-testid="stPopoverBody"]');
-                if (!popover) return;
-                const labels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
-                labels.forEach((lbl, idx) => {
-                    if (idx === 0 && lbl.textContent.includes("Seleccionar")) return;
-                    const txt = normalizarTexto(lbl.textContent);
-                    const cont = lbl.closest('div[data-testid="stElementContainer"]') || lbl;
-                    if (!query || txt.includes(query)) {
-                        cont.style.removeProperty('display');
-                    } else {
-                        cont.style.setProperty('display', 'none', 'important');
+        const popovers = parentDoc.querySelectorAll('[data-testid="stPopoverBody"]');
+        if (!popovers || popovers.length === 0) return;
+
+        popovers.forEach(popover => {
+            const applyWrapper = popover.querySelector('.excel-apply-btn, div[class*="st-key-btn_aplicar"]');
+            const searchInput = popover.querySelector('input[placeholder="Buscar..."]');
+            if (!applyWrapper && !searchInput) return;
+
+            // 1. Vincular buscador reactivo dentro del popover
+            if (searchInput && !searchInput.dataset.excelFilterBound) {
+                searchInput.dataset.excelFilterBound = "true";
+                searchInput.setAttribute("autocomplete", "off");
+                searchInput.setAttribute("autocorrect", "off");
+                searchInput.setAttribute("autocapitalize", "off");
+                searchInput.setAttribute("spellcheck", "false");
+
+                searchInput.addEventListener('input', (e) => {
+                    const query = normalizarTexto(e.target.value);
+                    const labels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+                    let visibles = 0;
+                    labels.forEach((lbl, idx) => {
+                        if (idx === 0 || lbl.textContent.includes("Seleccionar")) return;
+                        const txt = normalizarTexto(lbl.textContent);
+                        const cont = lbl.closest('div[data-testid="stElementContainer"]') || lbl;
+                        if (!query || txt.includes(query)) {
+                            cont.style.removeProperty('display');
+                            visibles++;
+                        } else {
+                            cont.style.setProperty('display', 'none', 'important');
+                        }
+                    });
+
+                    let msgEl = popover.querySelector('.excel-no-match-alert');
+                    if (query && visibles === 0) {
+                        if (!msgEl) {
+                            msgEl = parentDoc.createElement('div');
+                            msgEl.className = 'excel-no-match-alert';
+                            msgEl.textContent = 'Sin coincidencias.';
+                            msgEl.style.cssText = 'color: #64748b; font-size: 0.8rem; padding: 0.6rem 0.2rem; text-align: center; font-style: italic;';
+                            const scrollCont = popover.querySelector('[data-testid="stVerticalBlock"]');
+                            if (scrollCont) scrollCont.appendChild(msgEl);
+                        }
+                        msgEl.style.removeProperty('display');
+                    } else if (msgEl) {
+                        msgEl.style.setProperty('display', 'none', 'important');
                     }
                 });
-            });
+
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    } else if (e.key === "Escape") {
+                        searchInput.value = "";
+                        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+            }
+
+            // 2. Vincular checkbox (Seleccionar todo) con selección sincronizada en cascada
+            const allCheckboxes = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+            if (allCheckboxes.length > 0) {
+                const selectAllLabel = allCheckboxes[0];
+                if (selectAllLabel.textContent.includes("Seleccionar") && !selectAllLabel.dataset.excelSelectAllBound) {
+                    selectAllLabel.dataset.excelSelectAllBound = "true";
+                    const chkAllInput = selectAllLabel.querySelector('input[type="checkbox"]');
+                    if (chkAllInput) {
+                        chkAllInput.addEventListener('change', () => {
+                            const isChecked = chkAllInput.checked;
+                            const doctorLabels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+                            doctorLabels.forEach((lbl, idx) => {
+                                if (idx === 0) return;
+                                const cont = lbl.closest('div[data-testid="stElementContainer"]') || lbl;
+                                if (cont.style.display !== 'none') {
+                                    const docChk = lbl.querySelector('input[type="checkbox"]');
+                                    if (docChk && docChk.checked !== isChecked) {
+                                        docChk.click();
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+            }
         });
     }
 
@@ -632,7 +697,7 @@ def renderizar_buscador(cargar_datos_fn=None):
     vincularBuscadorReactivo();
     inicializarDragAndDrop();
     vincularFiltrosExcel();
-    const timers = [200, 1000];
+    const timers = [100, 300, 1000];
     timers.forEach(ms => {
         setTimeout(() => {
             vincularBuscadorReactivo();
@@ -640,6 +705,43 @@ def renderizar_buscador(cargar_datos_fn=None):
             vincularFiltrosExcel();
         }, ms);
     });
+
+    // Vincular activamente al interactuar con popovers de fecha/filtro
+    parentDoc.addEventListener('click', (e) => {
+        if (e.target && e.target.closest && (
+            e.target.closest('[class*="st-key-popover_filtro"]') || 
+            e.target.closest('[data-testid="stPopover"]') || 
+            e.target.closest('.custom-header-btn')
+        )) {
+            setTimeout(vincularFiltrosExcel, 30);
+            setTimeout(vincularFiltrosExcel, 120);
+            setTimeout(vincularFiltrosExcel, 300);
+        }
+    }, true);
+
+    // MutationObserver para registrar popovers dinámicos al abrirse
+    if (!window._popoverFilterObserver) {
+        window._popoverFilterObserver = new MutationObserver((mutations) => {
+            let foundPopover = false;
+            for (let m of mutations) {
+                for (let n of m.addedNodes) {
+                    if (n.nodeType === 1 && (
+                        (n.matches && n.matches('[data-testid="stPopoverBody"]')) || 
+                        (n.querySelector && n.querySelector('[data-testid="stPopoverBody"]'))
+                    )) {
+                        foundPopover = true;
+                        break;
+                    }
+                }
+                if (foundPopover) break;
+            }
+            if (foundPopover) {
+                vincularFiltrosExcel();
+                setTimeout(vincularFiltrosExcel, 50);
+            }
+        });
+        window._popoverFilterObserver.observe(parentDoc.body, { childList: true, subtree: true });
+    }
     </script>
     """, height=0)
 

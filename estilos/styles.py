@@ -3109,11 +3109,12 @@ def apply_styles():
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
         background: #f8fafc !important;
+        transition: all 0.2s ease !important;
     }
 
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
-        border-color: #107c41 !important;
-        box-shadow: 0 0 0 2px rgba(16, 124, 65, 0.15) !important;
+        border-color: #1F5FD1 !important;
+        box-shadow: 0 0 0 2px rgba(31, 95, 209, 0.18) !important;
         background: #ffffff !important;
     }
 
@@ -3257,38 +3258,39 @@ def apply_styles():
         background: #94a3b8 !important;
     }
 
-    /* Botón verde "Aplicar" estilo Excel (estrictamente exclusivo del popover de filtro Excel) */
+    /* Botón "Aplicar" del popover de filtro Excel: borde azul #1F5FD1, fondo blanco, hover #1F5FD1 */
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button,
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"],
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button,
     div[class*="st-key-btn_aplicar"] button,
     .excel-apply-btn button {
-        background-color: #107c41 !important;
-        background: #107c41 !important;
-        color: #ffffff !important;
-        border: 1px solid #0d6535 !important;
-        border-radius: 6px !important;
+        background-color: #ffffff !important;
+        background: #ffffff !important;
+        color: #1F5FD1 !important;
+        border: 1.5px solid #1F5FD1 !important;
+        border-color: #1F5FD1 !important;
+        border-radius: 8px !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 600 !important;
-        font-size: 0.84rem !important;
+        font-size: 0.85rem !important;
         padding: 0.45rem 1rem !important;
-        min-height: 35px !important;
+        min-height: 36px !important;
         width: 100% !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-        transition: background-color 0.15s ease, transform 0.1s ease !important;
+        box-shadow: 0 1px 4px rgba(31, 95, 209, 0.12) !important;
+        transition: all 0.2s ease !important;
     }
 
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button p,
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button span,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button p,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button span,
-    div[class*="st-key-btn_aplicar"] button p,
-    div[class*="st-key-btn_aplicar"] button span,
-    .excel-apply-btn button p,
-    .excel-apply-btn button span {
-        color: #ffffff !important;
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button *,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"] *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button *,
+    div[class*="st-key-btn_aplicar"] button *,
+    .excel-apply-btn button * {
+        color: #1F5FD1 !important;
+        fill: #1F5FD1 !important;
         font-weight: 600 !important;
-        font-size: 0.84rem !important;
+        font-size: 0.85rem !important;
+        background-color: transparent !important;
+        text-shadow: none !important;
     }
 
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover,
@@ -3296,12 +3298,21 @@ def apply_styles():
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover,
     div[class*="st-key-btn_aplicar"] button:hover,
     .excel-apply-btn button:hover {
-        background-color: #0d6535 !important;
-        background: #0d6535 !important;
-        border-color: #094725 !important;
+        background-color: #1F5FD1 !important;
+        background: #1F5FD1 !important;
+        border-color: #1F5FD1 !important;
         color: #ffffff !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 4px 12px rgba(31, 95, 209, 0.35) !important;
+    }
+
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover *,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:hover *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover *,
+    div[class*="st-key-btn_aplicar"] button:hover *,
+    .excel-apply-btn button:hover * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
 
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active,
@@ -3309,9 +3320,21 @@ def apply_styles():
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active,
     div[class*="st-key-btn_aplicar"] button:active,
     .excel-apply-btn button:active {
-        background-color: #094725 !important;
-        background: #094725 !important;
+        background-color: #184eb0 !important;
+        background: #184eb0 !important;
+        border-color: #184eb0 !important;
+        color: #ffffff !important;
         transform: translateY(0px) !important;
+        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
+    }
+
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active *,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:active *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active *,
+    div[class*="st-key-btn_aplicar"] button:active *,
+    .excel-apply-btn button:active * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
     }
 
     /* Botones de Administrador en Popover (#1F5FD1 Azul Cobalto Institucional) */

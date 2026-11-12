@@ -94,19 +94,10 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
         st.session_state[pop_key] = False
 
     def _cb_aplicar():
-        consulta_val = st.session_state.get(txt_key, "")
-        consulta_c = dp.normalize_name_no_accents(consulta_val or "").upper().strip()
-        if consulta_c:
-            coincidencias = [n for n in nombres if consulta_c in dp.normalize_name_no_accents(n).upper()]
-            marcados = [
-                n for n in coincidencias 
-                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
-            ]
-        else:
-            marcados = [
-                n for n in nombres 
-                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
-            ]
+        marcados = [
+            n for n in nombres 
+            if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+        ]
 
         if not marcados:
             st.session_state.column_filters[sat_date] = []
@@ -181,11 +172,10 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
                 st.session_state[chk_key] = (nombre in visibles_guardados)
 
         chk_all_key = f"filtro_chk_all_{sat_date}_{prefijo}"
-        todos_marcados = all(st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False) for n in filtrados) if filtrados else False
+        todos_marcados = all(st.session_state.get(_clave_checkbox(sat_date, prefijo, idx), False) for idx in range(len(nombres))) if nombres else False
 
-        etiqueta_todo = "(Seleccionar todos los resultados)" if consulta_norm else "(Seleccionar todo)"
         st.checkbox(
-            etiqueta_todo,
+            "(Seleccionar todo)",
             value=todos_marcados,
             key=chk_all_key,
         )
@@ -193,13 +183,10 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
         # 4. Lista con scroll de casillas individuales
         if not nombres:
             st.caption("Sin médicos programados.")
-        elif not filtrados:
-            st.caption("Sin coincidencias.")
         else:
-            alto_lista = min(175, max(38, 28 * len(filtrados)))
+            alto_lista = min(180, max(40, 28 * len(nombres)))
             with st.container(height=alto_lista, border=False):
-                for nombre in filtrados:
-                    idx = nombres.index(nombre)
+                for idx, nombre in enumerate(nombres):
                     chk_k = _clave_checkbox(sat_date, prefijo, idx)
                     st.checkbox(nombre, key=chk_k)
 
@@ -242,6 +229,8 @@ def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: 
             visibles_reales = _seleccion_actual(sat_date, nombres)
             for idx, nombre in enumerate(nombres):
                 st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = (nombre in visibles_reales)
+            chk_all_key = f"filtro_chk_all_{sat_date}_{prefijo}"
+            st.session_state[chk_all_key] = (set(visibles_reales) >= set(nombres)) if nombres else True
             txt_key = f"filtro_txt_{sat_date}_{prefijo}"
             st.session_state[txt_key] = ""
 

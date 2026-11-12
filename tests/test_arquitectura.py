@@ -365,6 +365,32 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('div[class*="st-key-btn_duplicar"] button', contenido)
         self.assertIn('border: 1.5px solid #F0FBFB', contenido)
 
+    def test_21_estilos_boton_aplicar_filtro_y_reactividad(self):
+        """Verifica que el botón 'Aplicar' del filtro de sábados esté normalizado al azul institucional #1F5FD1
+        con fondo blanco, borde azul, y hover #1F5FD1, y que el buscador de popover tenga reactividad."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        
+        # Validar botón Aplicar
+        self.assertIn('.excel-apply-btn button', contenido_s)
+        self.assertIn('border: 1.5px solid #1F5FD1', contenido_s)
+        self.assertNotIn('background-color: #107c41', contenido_s, "El botón Aplicar ya no debe ser verde #107c41")
+
+        # Validar reactividad en buscador.py
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn('vincularFiltrosExcel', contenido_b)
+        self.assertIn('_popoverFilterObserver', contenido_b)
+
+        # Validar cuadrícula de turnos
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn('(Seleccionar todo)', contenido_c)
+        self.assertIn('btn_aplicar', contenido_c)
+
 
 if __name__ == "__main__":
     unittest.main()
