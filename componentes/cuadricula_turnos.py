@@ -339,96 +339,18 @@ def _guardar_edicion_rapida(sat_date, name, nueva_clasif, nueva_obs, clasif_actu
     st.rerun()
 
 
-def _remover_turno_rapido(sat_date, name, clasif_actual, obs_actual, row_excel, col_excel, sheet_excel):
-    """Elimina el turno directamente desde el panel adyacente."""
-    excel_path = st.session_state.excel_path
-    mods_list = []
-
-    # 1. Si era cambio de turno con otro médico, restaurar la contraparte a Secuencia Normal
-    df_s = st.session_state.shifts_df
-    if "Cambio de turno con" in str(clasif_actual):
-        counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
-        cp_match = df_s[
-            (df_s['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
-            (df_s['Classification'].str.contains(name, na=False))
-        ]
-        for _, cp_r in cp_match.iterrows():
-            mods_list.append({
-                'sheet': cp_r['Sheet'],
-                'date': cp_r['Date'],
-                'original_name': cp_r['Supernumerary'],
-                'new_name': cp_r['Supernumerary'],
-                'row': int(cp_r['Excel_Row']),
-                'col': int(cp_r['Excel_Col']),
-                'type': 'REEMPLAZAR',
-                'observaciones': cp_r.get('Observation', ''),
-                'clasificacion': 'Secuencia Normal'
-            })
-
-    # 2. Registrar eliminación del turno
-    mods_list.append({
-        'sheet': sheet_excel,
-        'date': sat_date,
-        'original_name': name,
-        'new_name': '',
-        'row': row_excel,
-        'col': col_excel,
-        'type': 'ELIMINAR',
-        'observaciones': '',
-        'clasificacion': clasif_actual
-    })
-
-    dp.save_modifications_batch(excel_path, mods_list)
-
-    # 3. Guardar acción en session_state para Deshacer
-    st.session_state.last_action = {
-        'action': 'ELIMINAR_SIMPLE',
-        'excel_path': excel_path,
-        'sheet': sheet_excel,
-        'row': row_excel,
-        'col': col_excel,
-        'date': sat_date,
-        'doc': name,
-        'obs': obs_actual,
-        'clasificacion': clasif_actual,
-        'deleted_items': [{
-            'sheet': sheet_excel,
-            'date': sat_date,
-            'doc': name,
-            'obs': obs_actual,
-            'clasificacion': clasif_actual
-        }]
+def _remover_turno_rapido(sat_date, name, clasif_actual, obs_actual, row_excel, col_excel, sheet_excel, scope="SOLO_ESTE"):
+    """Elimina el turno delegando a la función centralizada en componentes.dialogos."""
+    rem_info = {
+        'sat_date': sat_date,
+        'name': name,
+        'clasif_actual': clasif_actual,
+        'obs_actual': obs_actual,
+        'row_excel': row_excel,
+        'col_excel': col_excel,
+        'sheet_excel': sheet_excel,
     }
-
-    # 4. Actualización optimista instantánea en memoria
-    try:
-        date_check = sat_date if isinstance(sat_date, datetime.date) else pd.to_datetime(sat_date).date()
-        df_upd = st.session_state.shifts_df.copy()
-        df_dates = pd.to_datetime(df_upd['Date'], errors='coerce').dt.date
-        mask = (
-            (df_upd['Sheet'] == sheet_excel) &
-            (df_upd['Excel_Row'] == row_excel) &
-            (df_upd['Excel_Col'] == col_excel) &
-            (df_dates == date_check)
-        ) if row_excel > 0 and col_excel > 0 else (
-            (df_upd['Sheet'] == sheet_excel) &
-            (df_dates == date_check) &
-            (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(name).strip().upper())
-        )
-        if "Cambio de turno con" in str(clasif_actual):
-            counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
-            mask_cp = (
-                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
-                (df_upd['Classification'].str.contains(name, na=False))
-            )
-            df_upd.loc[mask_cp, 'Classification'] = 'Secuencia Normal'
-
-        st.session_state.shifts_df = df_upd.drop(index=df_upd[mask].index).reset_index(drop=True)
-        dp.load_modifications.clear()
-    except Exception as e_mem:
-        print("Aviso actualizando memoria tras eliminar:", e_mem)
-
-    st.rerun()
+    dialogos.ejecutar_remocion_turno(rem_info, scope=scope)
 
 
 def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_excel, col_excel, sheet_excel):
@@ -483,15 +405,16 @@ def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_e
             )
     with col_del:
         if st.button("Remover Turno", key=k_del, type="secondary", use_container_width=True, icon=":material/delete:"):
-            _remover_turno_rapido(
-                sat_date=sat_date,
-                name=name,
-                clasif_actual=clasif,
-                obs_actual=shift_obs,
-                row_excel=row_excel,
-                col_excel=col_excel,
-                sheet_excel=sheet_excel
-            )
+            st.session_state["modal_remover_turno"] = {
+                'sat_date': sat_date,
+                'name': name,
+                'clasif_actual': clasif,
+                'obs_actual': shift_obs,
+                'row_excel': row_excel,
+                'col_excel': col_excel,
+                'sheet_excel': sheet_excel
+            }
+            st.rerun()
 
 
 
@@ -722,6 +645,10 @@ def renderizar_cuadricula(df_shifts: pd.DataFrame, df_super: pd.DataFrame, searc
         if st.session_state.get("modal_add_action_details"):
             add_info = st.session_state.pop("modal_add_action_details")
             dialogos.show_add_dialog(add_info['sat_date'], add_info['sheet'], cargar_datos_fn)
+
+        if st.session_state.get("modal_remover_turno"):
+            rem_info = st.session_state.pop("modal_remover_turno")
+            dialogos.show_remover_turno_dialog(rem_info, cargar_datos_fn)
 
         # VISTA ADMINISTRADOR: Botones interactivos con diálogo de edición
         st.markdown("<div class='columns-card-marker'></div>", unsafe_allow_html=True)

@@ -241,6 +241,75 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('#F0FBFB', contenido_s, "Falta el color #F0FBFB en styles.py")
         self.assertNotIn('stColumn"]:has(.dup-btn-wrapper) button', contenido_s, "El botón duplicar no debe alterar los botones de toda la columna")
 
+    def test_18_alerta_remover_turno_dos_opciones(self):
+        """Verifica que el diálogo de remoción de turno ofrezca 'SOLO_ESTE' y 'DE_AQUI_EN_ADELANTE' y ejecute correctamente."""
+        import streamlit as st
+        from componentes.dialogos import show_remover_turno_dialog, ejecutar_remocion_turno
+        import datetime
+        import pandas as pd
+        from unittest.mock import patch
+
+        self.assertTrue(callable(show_remover_turno_dialog))
+        self.assertTrue(callable(ejecutar_remocion_turno))
+
+        # 1. Verificar presencia de claves en cuadricula_turnos.py
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn('modal_remover_turno', contenido_c, "Falta cola modal_remover_turno en cuadricula_turnos.py")
+        self.assertIn('show_remover_turno_dialog', contenido_c, "Falta llamada a show_remover_turno_dialog en cuadricula_turnos.py")
+
+        # 2. Configurar mock de session_state con 3 sábados para un médico (pasado, actual, futuro)
+        date_past = datetime.date(2026, 11, 7)
+        date_current = datetime.date(2026, 11, 14)
+        date_future = datetime.date(2026, 11, 21)
+        doc_test = "DOC DE PRUEBA"
+
+        mock_df = pd.DataFrame([
+            {'Sheet': 'SABADOS 2026', 'Date': date_past, 'Supernumerary': doc_test, 'Excel_Row': 1, 'Excel_Col': 1, 'Classification': 'Secuencia Normal', 'Observation': ''},
+            {'Sheet': 'SABADOS 2026', 'Date': date_current, 'Supernumerary': doc_test, 'Excel_Row': 2, 'Excel_Col': 1, 'Classification': 'Secuencia Normal', 'Observation': ''},
+            {'Sheet': 'SABADOS 2026', 'Date': date_future, 'Supernumerary': doc_test, 'Excel_Row': 3, 'Excel_Col': 1, 'Classification': 'Secuencia Normal', 'Observation': ''},
+        ])
+
+        rem_info = {
+            'sat_date': date_current,
+            'name': doc_test,
+            'clasif_actual': 'Secuencia Normal',
+            'obs_actual': '',
+            'row_excel': 2,
+            'col_excel': 1,
+            'sheet_excel': 'SABADOS 2026'
+        }
+
+        # Prueba A: SOLO_ESTE
+        st.session_state.shifts_df = mock_df.copy()
+        st.session_state.excel_path = "mock.xlsx"
+        with patch("modulos.procesador_datos.save_modifications_batch", return_value=True), \
+             patch("streamlit.rerun"):
+            ejecutar_remocion_turno(rem_info, scope="SOLO_ESTE")
+
+        df_despues_solo = st.session_state.shifts_df
+        # Debe haber eliminado únicamente date_current (quedan past y future)
+        self.assertEqual(len(df_despues_solo), 2)
+        fechas_restantes = list(df_despues_solo['Date'])
+        self.assertIn(date_past, fechas_restantes)
+        self.assertNotIn(date_current, fechas_restantes)
+        self.assertIn(date_future, fechas_restantes)
+        self.assertEqual(st.session_state.last_action['action'], 'ELIMINAR_SIMPLE')
+
+        # Prueba B: DE_AQUI_EN_ADELANTE
+        st.session_state.shifts_df = mock_df.copy()
+        with patch("modulos.procesador_datos.save_modifications_batch", return_value=True), \
+             patch("streamlit.rerun"):
+            ejecutar_remocion_turno(rem_info, scope="DE_AQUI_EN_ADELANTE")
+
+        df_despues_adelante = st.session_state.shifts_df
+        # Debe haber eliminado date_current y date_future (solo queda date_past)
+        self.assertEqual(len(df_despues_adelante), 1)
+        self.assertEqual(df_despues_adelante.iloc[0]['Date'], date_past)
+        self.assertEqual(st.session_state.last_action['action'], 'ELIMINAR_LOTE')
+        self.assertEqual(len(st.session_state.last_action['deleted_items']), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

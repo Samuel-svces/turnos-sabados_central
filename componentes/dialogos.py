@@ -1049,3 +1049,296 @@ def show_drag_drop_action_dialog(payload, load_app_data_func):
             st.session_state["active_drag_drop_payload"] = None
             st.rerun()
 
+
+def ejecutar_remocion_turno(rem_info, scope="SOLO_ESTE", load_app_data_func=None):
+    """
+    Ejecuta la remoción de turno(s) para un médico.
+    Soporta dos alcances (scope):
+      - 'SOLO_ESTE': Remueve únicamente la asignación del sábado seleccionado.
+      - 'DE_AQUI_EN_ADELANTE': Remueve la asignación del sábado seleccionado y todas las futuras.
+    Persiste los cambios en SharePoint (o Excel), registra en last_action para deshacer y actualiza memoria de inmediato.
+    """
+    excel_path = st.session_state.get('excel_path', '')
+    sat_date = rem_info.get('sat_date')
+    name = rem_info.get('name', 'Médico')
+    clasif_actual = rem_info.get('clasif_actual', 'Secuencia Normal')
+    obs_actual = rem_info.get('obs_actual', '')
+    row_excel = rem_info.get('row_excel', 0)
+    col_excel = rem_info.get('col_excel', 0)
+    sheet_excel = rem_info.get('sheet_excel', '')
+
+    if isinstance(sat_date, str):
+        date_check = pd.to_datetime(sat_date).date()
+    elif isinstance(sat_date, datetime.datetime):
+        date_check = sat_date.date()
+    else:
+        date_check = sat_date
+
+    df_s = st.session_state.get('shifts_df', pd.DataFrame())
+    if df_s.empty:
+        st.session_state.last_error = "No hay datos de turnos cargados."
+        st.rerun()
+        return
+
+    name_clean = str(name).strip().upper()
+    df_s_supers = df_s['Supernumerary'].astype(str).str.strip().str.upper()
+    df_s_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date
+
+    if scope == "DE_AQUI_EN_ADELANTE":
+        shifts_to_delete = df_s[
+            (df_s_supers == name_clean) &
+            (df_s_dates >= date_check)
+        ]
+    else:  # SOLO_ESTE
+        if row_excel > 0 and col_excel > 0:
+            shifts_to_delete = df_s[
+                (df_s['Sheet'] == sheet_excel) &
+                (df_s['Excel_Row'] == row_excel) &
+                (df_s['Excel_Col'] == col_excel) &
+                (df_s_dates == date_check)
+            ]
+        else:
+            shifts_to_delete = pd.DataFrame()
+
+        # Fallback 1: sheet + fecha + médico
+        if shifts_to_delete.empty:
+            shifts_to_delete = df_s[
+                (df_s['Sheet'] == sheet_excel) &
+                (df_s_dates == date_check) &
+                (df_s_supers == name_clean)
+            ]
+
+        # Fallback 2: fecha + médico
+        if shifts_to_delete.empty:
+            shifts_to_delete = df_s[
+                (df_s_dates == date_check) &
+                (df_s_supers == name_clean)
+            ]
+
+    # Si no hubo coincidencia en el DataFrame en memoria, construimos delta con los datos recibidos
+    if shifts_to_delete.empty:
+        mods_list = [{
+            'sheet': sheet_excel,
+            'date': sat_date,
+            'original_name': name,
+            'new_name': '',
+            'row': int(row_excel),
+            'col': int(col_excel),
+            'type': 'ELIMINAR',
+            'observaciones': '',
+            'clasificacion': clasif_actual
+        }]
+        dp.save_modifications_batch(excel_path, mods_list)
+        st.session_state.last_action = {
+            'action': 'ELIMINAR_SIMPLE',
+            'excel_path': excel_path,
+            'sheet': sheet_excel,
+            'row': row_excel,
+            'col': col_excel,
+            'date': sat_date,
+            'doc': name,
+            'obs': obs_actual,
+            'clasificacion': clasif_actual,
+            'deleted_items': [{
+                'sheet': sheet_excel,
+                'date': sat_date,
+                'doc': name,
+                'obs': obs_actual,
+                'clasificacion': clasif_actual
+            }]
+        }
+        st.session_state["show_delete_success_alert"] = True
+        st.session_state["deleted_doc_name"] = name
+        st.session_state["delete_alert_counter"] = st.session_state.get("delete_alert_counter", 0) + 1
+        st.rerun()
+        return
+
+    mods_list = []
+    deleted_items_log = []
+
+    for _, r_del in shifts_to_delete.iterrows():
+        row_clasif = r_del.get('Classification', 'Secuencia Normal')
+        r_name = str(r_del.get('Supernumerary', name)).strip().upper()
+
+        # Limpiar contraparte si era cambio de turno
+        if "Cambio de turno con" in str(row_clasif):
+            counterpart = str(row_clasif).replace("Cambio de turno con ", "").strip().upper()
+            cp_match = df_s[
+                (df_s['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
+                (df_s['Classification'].str.contains(r_name, na=False))
+            ]
+            for _, cp_r in cp_match.iterrows():
+                mods_list.append({
+                    'sheet': cp_r['Sheet'],
+                    'date': cp_r['Date'],
+                    'original_name': cp_r['Supernumerary'],
+                    'new_name': cp_r['Supernumerary'],
+                    'row': int(cp_r['Excel_Row']),
+                    'col': int(cp_r['Excel_Col']),
+                    'type': 'REEMPLAZAR',
+                    'observaciones': cp_r.get('Observation', ''),
+                    'clasificacion': 'Secuencia Normal'
+                })
+
+        deleted_items_log.append({
+            'sheet': r_del['Sheet'],
+            'date': r_del['Date'],
+            'doc': r_del['Supernumerary'],
+            'obs': r_del.get('Observation', ''),
+            'clasificacion': row_clasif
+        })
+
+        mods_list.append({
+            'sheet': r_del['Sheet'],
+            'date': r_del['Date'],
+            'original_name': r_del['Supernumerary'],
+            'new_name': '',
+            'row': int(r_del.get('Excel_Row', 0)),
+            'col': int(r_del.get('Excel_Col', 0)),
+            'type': 'ELIMINAR',
+            'observaciones': '',
+            'clasificacion': row_clasif
+        })
+
+    if mods_list:
+        dp.save_modifications_batch(excel_path, mods_list)
+
+    # Registro de última acción para Deshacer
+    st.session_state.last_action = {
+        'action': 'ELIMINAR_LOTE' if scope == "DE_AQUI_EN_ADELANTE" else 'ELIMINAR_SIMPLE',
+        'excel_path': excel_path,
+        'sheet': sheet_excel,
+        'row': row_excel,
+        'col': col_excel,
+        'date': sat_date,
+        'doc': name,
+        'obs': obs_actual,
+        'clasificacion': clasif_actual,
+        'deleted_items': deleted_items_log
+    }
+
+    # Actualización en memoria optimista
+    try:
+        df_upd = st.session_state.shifts_df.copy()
+        to_del_indices = list(shifts_to_delete.index)
+
+        # Restaurar contrapartes en memoria si hubo cambios de turno
+        for item in deleted_items_log:
+            if "Cambio de turno con" in str(item.get('clasificacion', '')):
+                cp_name = str(item.get('clasificacion', '')).replace("Cambio de turno con ", "").strip().upper()
+                mask_cp = (
+                    (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == cp_name) &
+                    (df_upd['Classification'].str.contains(str(item.get('doc', '')), na=False))
+                )
+                df_upd.loc[mask_cp, 'Classification'] = 'Secuencia Normal'
+
+        st.session_state.shifts_df = df_upd.drop(index=to_del_indices).reset_index(drop=True)
+        dp.load_modifications.clear()
+    except Exception as e_mem:
+        print("Aviso actualizando memoria tras remoción:", e_mem)
+
+    cant_str = f" ({len(shifts_to_delete)} turnos)" if scope == "DE_AQUI_EN_ADELANTE" and len(shifts_to_delete) > 1 else ""
+    st.session_state["show_delete_success_alert"] = True
+    st.session_state["deleted_doc_name"] = f"{name}{cant_str}"
+    st.session_state["delete_alert_counter"] = st.session_state.get("delete_alert_counter", 0) + 1
+    st.rerun()
+
+
+@st.dialog("Remover Turno")
+def show_remover_turno_dialog(rem_info, load_app_data_func=None):
+    """
+    Diálogo modal de confirmación al pulsar 'Remover Turno'.
+    Ofrece dos funciones claras e independientes:
+      1. 'Remover solo este turno': elimina únicamente el sábado actual.
+      2. 'Remover de aquí en adelante': elimina este sábado y todas las secuencias futuras del médico.
+    """
+    if not st.session_state.get("is_admin", False):
+        st.error("Acceso denegado: Se requieren permisos de administrador.")
+        st.stop()
+
+    if not rem_info or not isinstance(rem_info, dict):
+        st.rerun()
+        return
+
+    name = rem_info.get('name', 'Médico')
+    sat_date = rem_info.get('sat_date')
+    clasif_actual = rem_info.get('clasif_actual', 'Secuencia Normal')
+
+    if isinstance(sat_date, str):
+        date_check = pd.to_datetime(sat_date).date()
+    elif isinstance(sat_date, datetime.datetime):
+        date_check = sat_date.date()
+    else:
+        date_check = sat_date
+
+    MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    fecha_str = f"{date_check.day:02d} de {MESES[date_check.month-1]} de {date_check.year}" if date_check else str(sat_date)
+    fecha_corta = date_check.strftime('%d/%m/%Y') if date_check else str(sat_date)
+
+    df_s = st.session_state.get('shifts_df', pd.DataFrame())
+    name_clean = str(name).strip().upper()
+    df_dates = pd.to_datetime(df_s['Date'], errors='coerce').dt.date if not df_s.empty else pd.Series(dtype='object')
+
+    shifts_futuros = pd.DataFrame()
+    if not df_s.empty and date_check:
+        shifts_futuros = df_s[
+            (df_s['Supernumerary'].astype(str).str.strip().str.upper() == name_clean) &
+            (df_dates >= date_check)
+        ]
+    num_futuros = len(shifts_futuros)
+    num_posteriores = max(0, num_futuros - 1)
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #fef2f2 0%, #fff1f2 100%); border: 1.5px solid #f87171; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
+        <div style="font-size: 0.75rem; color: #991b1b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">Confirmación de Remoción de Turno</div>
+        <div style="font-size: 1.15rem; color: #17243D; font-weight: 800; font-family: Outfit, sans-serif; margin-top: 2px; margin-bottom: 4px;">{name}</div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.86rem; color: #475569; font-weight: 500;">
+            <span>📅 {fecha_str}</span>
+            <span>•</span>
+            <span style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1px 8px; font-weight: 600; color: #1e293b; font-size: 0.78rem;">{clasif_actual}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        "<p style='font-size: 0.92rem; color: #334155; margin-bottom: 1rem;'>"
+        "¿Cómo desea proceder con la remoción del turno? Seleccione una de las siguientes opciones:"
+        "</p>",
+        unsafe_allow_html=True
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 12px; min-height: 105px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 10px;">
+            <div>
+                <div style="font-weight: 700; color: #1e293b; font-size: 0.9rem; margin-bottom: 4px;">🗑️ Solo este turno</div>
+                <div style="font-size: 0.78rem; color: #64748b; line-height: 1.35;">
+                    Elimina <b>únicamente</b> la asignación del sábado <b>{fecha_corta}</b>. Sus turnos posteriores se conservan intactos.
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Remover solo este turno", key="btn_rem_solo_este", use_container_width=True, type="secondary", icon=":material/delete:"):
+            ejecutar_remocion_turno(rem_info, "SOLO_ESTE", load_app_data_func)
+
+    with col2:
+        texto_futuros = f"este sábado y los <b>{num_futuros} turnos programados</b> ({num_posteriores} posteriores)" if num_futuros > 1 else f"este sábado (1 turno programado)"
+        st.markdown(f"""
+        <div style="background: #fff5f5; border: 1.5px solid #fecaca; border-radius: 10px; padding: 12px; min-height: 105px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 10px;">
+            <div>
+                <div style="font-weight: 700; color: #991b1b; font-size: 0.9rem; margin-bottom: 4px;">🗓️ De aquí en adelante</div>
+                <div style="font-size: 0.78rem; color: #b91c1c; line-height: 1.35;">
+                    Desprograma a este médico eliminando {texto_futuros} de su secuencia hacia adelante.
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Remover de aquí en adelante", key="btn_rem_de_aqui_adelante", use_container_width=True, type="primary", icon=":material/delete_forever:"):
+            ejecutar_remocion_turno(rem_info, "DE_AQUI_EN_ADELANTE", load_app_data_func)
+
+    st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
+    if st.button("Cancelar", key="btn_cancelar_rem_dialog", use_container_width=True):
+        st.rerun()
+
+
