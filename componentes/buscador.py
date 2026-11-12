@@ -407,6 +407,8 @@ def renderizar_buscador(cargar_datos_fn=None):
                 let countChecked = 0;
                 doctorCheckboxes.forEach((chk, idx) => {
                     if (idx === 0 || chk.textContent.includes("Seleccionar")) return;
+                    const cont = chk.closest('div[data-testid="stElementContainer"]') || chk;
+                    if (cont.style.display === 'none') return; // Solo contar los visibles que coinciden con la búsqueda
                     const inp = chk.querySelector('input[type="checkbox"]');
                     if (inp && inp.checked) countChecked++;
                 });
@@ -468,22 +470,47 @@ def renderizar_buscador(cargar_datos_fn=None):
 
                 searchInput.addEventListener('input', (e) => {
                     const query = normalizarTexto(e.target.value);
+                    const terms = query ? query.split(/\s+/).filter(Boolean) : [];
                     const chks = popover.querySelectorAll('[data-testid="stCheckbox"]');
                     let visibles = 0;
-                    chks.forEach((chk, idx) => {
-                        if (idx === 0 || chk.textContent.includes("Seleccionar")) return;
-                        const txt = normalizarTexto(chk.textContent);
-                        const cont = chk.closest('div[data-testid="stElementContainer"]') || chk;
-                        if (!query || txt.includes(query)) {
-                            cont.style.removeProperty('display');
-                            visibles++;
-                        } else {
-                            cont.style.setProperty('display', 'none', 'important');
+                    let visibleChecked = 0;
+
+                    isBatchUpdating = true;
+                    try {
+                        chks.forEach((chk, idx) => {
+                            if (idx === 0 || chk.textContent.includes("Seleccionar")) return;
+                            const txt = normalizarTexto(chk.textContent);
+                            const cont = chk.closest('div[data-testid="stElementContainer"]') || chk;
+                            const matches = (terms.length === 0) || terms.every(t => txt.includes(t));
+
+                            if (matches) {
+                                cont.style.removeProperty('display');
+                                visibles++;
+                                const inp = chk.querySelector('input[type="checkbox"]');
+                                if (inp && inp.checked) visibleChecked++;
+                            } else {
+                                cont.style.setProperty('display', 'none', 'important');
+                                if (terms.length > 0) {
+                                    forzarEstadoCheckbox(chk, false);
+                                }
+                            }
+                        });
+
+                        // Actualizar estado del checkbox principal (Seleccionar todo) según los visibles
+                        const firstChk = chks[0];
+                        if (firstChk && firstChk.textContent.includes("Seleccionar")) {
+                            const firstInp = firstChk.querySelector('input[type="checkbox"]');
+                            const allVisChecked = (visibles > 0 && visibleChecked === visibles);
+                            if (firstInp && firstInp.checked !== allVisChecked) {
+                                forzarEstadoCheckbox(firstChk, allVisChecked);
+                            }
                         }
-                    });
+                    } finally {
+                        setTimeout(() => { isBatchUpdating = false; }, 60);
+                    }
 
                     let msgEl = popover.querySelector('.excel-no-match-alert');
-                    if (query && visibles === 0) {
+                    if (terms.length > 0 && visibles === 0) {
                         if (!msgEl) {
                             msgEl = parentDoc.createElement('div');
                             msgEl.className = 'excel-no-match-alert';
@@ -609,7 +636,26 @@ def renderizar_buscador(cargar_datos_fn=None):
                 if (docInp) docInp.addEventListener('change', onDoctorToggle);
             });
 
-            // 6. Evaluación inicial al abrir o montar el popover
+            // 6. Asegurar que al hacer clic en Aplicar solo queden marcados los médicos que coincidan con la búsqueda
+            if (applyBtn && !applyBtn.dataset.boundPreSubmit) {
+                applyBtn.dataset.boundPreSubmit = "true";
+                applyBtn.addEventListener('click', () => {
+                    const query = normalizarTexto(searchInput ? searchInput.value : "");
+                    const terms = query ? query.split(/\s+/).filter(Boolean) : [];
+                    if (terms.length > 0) {
+                        const doctorCheckboxes = popover.querySelectorAll('[data-testid="stCheckbox"]');
+                        doctorCheckboxes.forEach((chk, idx) => {
+                            if (idx === 0 || chk.textContent.includes("Seleccionar")) return;
+                            const txt = normalizarTexto(chk.textContent);
+                            if (!terms.every(t => txt.includes(t))) {
+                                forzarEstadoCheckbox(chk, false);
+                            }
+                        });
+                    }
+                }, true);
+            }
+
+            // 7. Evaluación inicial al abrir o montar el popover
             refrescarEstadoAplicar();
         });
     }

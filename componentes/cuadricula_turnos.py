@@ -94,15 +94,30 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
         st.session_state[pop_key] = False
 
     def _cb_aplicar():
-        marcados = [
-            n for n in nombres 
-            if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
-        ]
+        consulta = dp.normalize_name_no_accents(st.session_state.get(txt_key, "")).upper().strip()
+        terminos = [t for t in consulta.split() if t]
+
+        if terminos:
+            # Si hay búsqueda activa en el campo de texto (ej. "estefa"):
+            # solo se consideran como candidatos los que contengan todos los términos buscados
+            candidatos = [
+                n for n in nombres 
+                if all(t in dp.normalize_name_no_accents(n).upper() for t in terminos)
+            ]
+            marcados = [
+                n for n in candidatos 
+                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+            ]
+        else:
+            marcados = [
+                n for n in nombres 
+                if st.session_state.get(_clave_checkbox(sat_date, prefijo, nombres.index(n)), False)
+            ]
 
         if not marcados:
             st.session_state[pop_key] = False
             return
-        elif set(marcados) >= set(nombres):
+        elif not terminos and set(marcados) >= set(nombres):
             st.session_state.column_filters[sat_date] = None
             for idx, n in enumerate(nombres):
                 st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = True

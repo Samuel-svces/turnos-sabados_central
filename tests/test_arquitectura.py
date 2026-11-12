@@ -479,6 +479,40 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn("ya_trabaja_destino", contenido_d)
         self.assertIn("Restricción de programación: El médico", contenido_d)
 
+    def test_25_filtro_busqueda_excel_exclusion_no_coincidentes(self):
+        """Verifica la lógica de exclusión de médicos no coincidentes al filtrar y aplicar en el popover Excel:
+        - En backend (cuadricula_turnos.py), _cb_aplicar restringe marcados a los que coinciden con terminos
+        - En frontend (buscador.py), input event y click de Aplicar desmarcan elementos no coincidentes
+        - refrescarEstadoAplicar ignora elementos con display: none"""
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn("terminos = [t for t in consulta.split() if t]", contenido_c)
+        self.assertIn("candidatos = [", contenido_c)
+        self.assertIn("all(t in dp.normalize_name_no_accents(n).upper() for t in terminos)", contenido_c)
+
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn("cont.style.display === 'none') return;", contenido_b)
+        self.assertIn("forzarEstadoCheckbox(chk, false);", contenido_b)
+        self.assertIn("dataset.boundPreSubmit", contenido_b)
+
+        # Prueba unitaria directa de la lógica de coincidencia
+        import modulos.procesador_datos as dp
+        nombres_prueba = [
+            "MARIA ALEJANDRA SAEZ PINEDA",
+            "ESTEFANIA ZAPATA ESCANDON",
+            "ANDREA VICTORIA QUEVEDO MONTAÑO"
+        ]
+        consulta_estefa = "estefa"
+        terminos = [t for t in dp.normalize_name_no_accents(consulta_estefa).upper().split() if t]
+        candidatos = [
+            n for n in nombres_prueba 
+            if all(t in dp.normalize_name_no_accents(n).upper() for t in terminos)
+        ]
+        self.assertEqual(candidatos, ["ESTEFANIA ZAPATA ESCANDON"])
+
 
 if __name__ == "__main__":
     unittest.main()

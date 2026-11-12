@@ -3437,9 +3437,6 @@ def apply_styles():
         color: #94a3b8 !important;
         fill: #94a3b8 !important;
     }
-        color: #ffffff !important;
-        fill: #ffffff !important;
-    }
 
     /* Botones de Administrador en Popover (#1F5FD1 Azul Cobalto Institucional) */
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_admin_iniciar_sesion"] button,
