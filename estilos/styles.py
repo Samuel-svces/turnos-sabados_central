@@ -3026,7 +3026,7 @@ def apply_styles():
 
     /* Contenedor flotante del menú desplegable tipo Excel (stPopoverBody) */
     div[data-testid="stPopoverBody"] {
-        padding: 0.65rem 0.7rem 0.55rem 0.7rem !important;
+        padding: 0.5rem 0.65rem 0.45rem 0.65rem !important;
         background: #ffffff !important;
         border: 1px solid #d1d5db !important;
         border-radius: 8px !important;
@@ -3036,7 +3036,25 @@ def apply_styles():
         box-sizing: border-box !important;
     }
 
-    /* Acciones superiores estilo Excel (A-Z, Z-A, Borrar filtro) */
+    /* Espaciado ceñido en el bloque vertical del popover */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
+        gap: 0.15rem !important;
+    }
+    div[data-testid="stPopoverBody"] form [data-testid="stVerticalBlock"] {
+        gap: 0.12rem !important;
+    }
+    div[data-testid="stPopoverBody"] div[data-testid="stElementContainer"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Acciones superiores estilo Excel (A-Z, Z-A, Borrar filtro) - ceñidas y compactas */
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"],
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button,
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button,
     .excel-menu-btn button {
@@ -3048,16 +3066,27 @@ def apply_styles():
         text-align: left !important;
         justify-content: flex-start !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 0.83rem !important;
+        font-size: 0.80rem !important;
         font-weight: 500 !important;
-        padding: 0.35rem 0.5rem !important;
-        min-height: 32px !important;
-        border-radius: 5px !important;
+        padding: 0.18rem 0.45rem !important;
+        min-height: 25px !important;
+        height: 25px !important;
+        border-radius: 4px !important;
         width: 100% !important;
         display: flex !important;
         align-items: center !important;
-        gap: 8px !important;
-        transition: background 0.15s ease !important;
+        gap: 6px !important;
+        margin: 0.04rem 0 !important;
+        transition: background 0.12s ease !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button svg,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button [data-testid="stIconMaterial"],
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button svg,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_borrar_filtro_"] button [data-testid="stIconMaterial"] {
+        font-size: 0.95rem !important;
+        width: 0.95rem !important;
+        height: 0.95rem !important;
     }
 
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_ord_"] button:hover:not(:disabled),
@@ -3082,7 +3111,7 @@ def apply_styles():
     .excel-menu-btn button p,
     .excel-menu-btn button span {
         color: #1e293b !important;
-        font-size: 0.83rem !important;
+        font-size: 0.80rem !important;
         font-weight: 500 !important;
     }
 
@@ -3095,19 +3124,29 @@ def apply_styles():
         color: #0f172a !important;
     }
 
-    /* Separador horizontal */
+    /* Separador horizontal compacto */
     .excel-menu-divider {
         border: none !important;
         border-top: 1px solid #e2e8f0 !important;
-        margin: 0.45rem 0 0.45rem 0 !important;
+        margin: 0.2rem 0 !important;
         height: 1px !important;
         padding: 0 !important;
     }
 
-    /* Buscador interno del popover de Excel */
+    /* Buscador interno del popover de Excel compacto */
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[data-testid="stTextInput"] {
+        margin: 0.05rem 0 0.15rem 0 !important;
+        padding: 0 !important;
+    }
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[data-testid="stTextInput"] div[data-baseweb="input"] {
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
+        background: #f8fafc !important;
+        min-height: 28px !important;
+        height: 28px !important;
+        padding: 0 4px !important;
+        transition: all 0.2s ease !important;
+    }
         background: #f8fafc !important;
         transition: all 0.2s ease !important;
     }
@@ -3233,17 +3272,37 @@ def apply_styles():
         font-weight: 600 !important;
     }
 
-    /* Casillas de verificación del menú */
-    div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] {
-        padding: 0.1rem 0 !important;
+    /* Casillas de verificación del menú ceñidas y compactas */
+    div[data-testid="stPopoverBody"] div[data-testid="stElementContainer"]:has(div[data-testid="stCheckbox"]) {
         margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] {
+        padding: 0.04rem 0.1rem !important;
+        margin: 0 !important;
+        min-height: 20px !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] label {
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 6px !important;
+        min-height: 20px !important;
+    }
+
+    div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] div[data-baseweb="checkbox"] {
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     div[data-testid="stPopoverBody"] div[data-testid="stCheckbox"] p {
-        font-size: 0.80rem !important;
+        font-size: 0.77rem !important;
         font-weight: 500 !important;
         color: #1e293b !important;
-        line-height: 1.3 !important;
+        line-height: 1.15 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     /* Scrollbar estilizada para la lista de médicos */
@@ -3258,7 +3317,7 @@ def apply_styles():
         background: #94a3b8 !important;
     }
 
-    /* Botón "Aplicar" del popover de filtro Excel: borde azul #1F5FD1, fondo blanco, hover #1F5FD1 */
+    /* Botón "Aplicar" del popover de filtro Excel: compacto, borde azul #1F5FD1, fondo blanco, hover #1F5FD1 */
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button,
     div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"],
     div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button,
@@ -3269,14 +3328,15 @@ def apply_styles():
         color: #1F5FD1 !important;
         border: 1.5px solid #1F5FD1 !important;
         border-color: #1F5FD1 !important;
-        border-radius: 8px !important;
+        border-radius: 7px !important;
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 600 !important;
-        font-size: 0.85rem !important;
-        padding: 0.45rem 1rem !important;
-        min-height: 36px !important;
+        font-size: 0.82rem !important;
+        padding: 0.28rem 0.75rem !important;
+        min-height: 30px !important;
+        height: 30px !important;
         width: 100% !important;
-        box-shadow: 0 1px 4px rgba(31, 95, 209, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(31, 95, 209, 0.1) !important;
         transition: all 0.2s ease !important;
     }
 
@@ -3288,16 +3348,16 @@ def apply_styles():
         color: #1F5FD1 !important;
         fill: #1F5FD1 !important;
         font-weight: 600 !important;
-        font-size: 0.85rem !important;
+        font-size: 0.82rem !important;
         background-color: transparent !important;
         text-shadow: none !important;
     }
 
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover,
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:hover,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover,
-    div[class*="st-key-btn_aplicar"] button:hover,
-    .excel-apply-btn button:hover {
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover:not(:disabled),
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:hover:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover:not(:disabled),
+    div[class*="st-key-btn_aplicar"] button:hover:not(:disabled),
+    .excel-apply-btn button:hover:not(:disabled) {
         background-color: #1F5FD1 !important;
         background: #1F5FD1 !important;
         border-color: #1F5FD1 !important;
@@ -3306,20 +3366,20 @@ def apply_styles():
         box-shadow: 0 4px 12px rgba(31, 95, 209, 0.35) !important;
     }
 
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover *,
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:hover *,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover *,
-    div[class*="st-key-btn_aplicar"] button:hover *,
-    .excel-apply-btn button:hover * {
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:hover:not(:disabled) *,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:hover:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:hover:not(:disabled) *,
+    div[class*="st-key-btn_aplicar"] button:hover:not(:disabled) *,
+    .excel-apply-btn button:hover:not(:disabled) * {
         color: #ffffff !important;
         fill: #ffffff !important;
     }
 
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active,
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:active,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active,
-    div[class*="st-key-btn_aplicar"] button:active,
-    .excel-apply-btn button:active {
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active:not(:disabled),
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:active:not(:disabled),
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active:not(:disabled),
+    div[class*="st-key-btn_aplicar"] button:active:not(:disabled),
+    .excel-apply-btn button:active:not(:disabled) {
         background-color: #184eb0 !important;
         background: #184eb0 !important;
         border-color: #184eb0 !important;
@@ -3328,11 +3388,44 @@ def apply_styles():
         box-shadow: 0 1px 3px rgba(31, 95, 209, 0.2) !important;
     }
 
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active *,
-    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:active *,
-    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active *,
-    div[class*="st-key-btn_aplicar"] button:active *,
-    .excel-apply-btn button:active * {
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:active:not(:disabled) *,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:active:not(:disabled) *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:active:not(:disabled) *,
+    div[class*="st-key-btn_aplicar"] button:active:not(:disabled) *,
+    .excel-apply-btn button:active:not(:disabled) * {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+    }
+
+    /* Estado Deshabilitado del botón Aplicar cuando no hay selección */
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:disabled,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:disabled,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:disabled,
+    div[class*="st-key-btn_aplicar"] button:disabled,
+    .excel-apply-btn button:disabled,
+    .excel-apply-btn button.btn-aplicar-deshabilitado,
+    button.btn-aplicar-deshabilitado {
+        background-color: #f8fafc !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-color: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) div[class*="st-key-btn_aplicar"] button:disabled *,
+    div[data-testid="stPopoverBody"]:has(.excel-apply-btn) button[data-testid="stBaseButton-primary"]:disabled *,
+    div[data-testid="stPopoverBody"] div[class*="st-key-btn_aplicar"] button:disabled *,
+    div[class*="st-key-btn_aplicar"] button:disabled *,
+    .excel-apply-btn button:disabled *,
+    .excel-apply-btn button.btn-aplicar-deshabilitado * {
+        color: #94a3b8 !important;
+        fill: #94a3b8 !important;
+    }
         color: #ffffff !important;
         fill: #ffffff !important;
     }

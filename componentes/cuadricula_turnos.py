@@ -100,9 +100,8 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
         ]
 
         if not marcados:
-            st.session_state.column_filters[sat_date] = []
-            for idx, n in enumerate(nombres):
-                st.session_state[_clave_checkbox(sat_date, prefijo, idx)] = False
+            st.session_state[pop_key] = False
+            return
         elif set(marcados) >= set(nombres):
             st.session_state.column_filters[sat_date] = None
             for idx, n in enumerate(nombres):
@@ -184,7 +183,7 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
         if not nombres:
             st.caption("Sin médicos programados.")
         else:
-            alto_lista = min(180, max(40, 28 * len(nombres)))
+            alto_lista = min(170, max(36, 22 * len(nombres)))
             with st.container(height=alto_lista, border=False):
                 for idx, nombre in enumerate(nombres):
                     chk_k = _clave_checkbox(sat_date, prefijo, idx)
@@ -194,11 +193,13 @@ def _render_menu_excel(sat_date, nombres: list, prefijo: str, pop_key: str):
 
         # 5. Botón Aplicar (procesamiento en lote único al confirmar)
         st.markdown("<div class='excel-apply-btn'>", unsafe_allow_html=True)
+        ningun_marcado = (len(visibles_guardados) == 0)
         st.form_submit_button(
             "Aplicar",
             key=f"btn_aplicar_{sat_date}_{prefijo}",
             use_container_width=True,
             type="primary",
+            disabled=ningun_marcado,
             on_click=_cb_aplicar
         )
         st.markdown("</div>", unsafe_allow_html=True)

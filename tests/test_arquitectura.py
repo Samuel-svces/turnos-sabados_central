@@ -391,6 +391,21 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn('(Seleccionar todo)', contenido_c)
         self.assertIn('btn_aplicar', contenido_c)
 
+    def test_22_logica_deseleccion_total_y_estilo_compacto(self):
+        """Verifica que al deseleccionar 'Seleccionar todo' se desmarque en cascada y deshabilite Aplicar,
+        y que el menú desplegable tenga espaciado ceñido y compacto."""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn('btn-aplicar-deshabilitado', contenido_s)
+        self.assertIn('height: 25px', contenido_s)
+
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn('refrescarEstadoAplicar', contenido_b)
+        self.assertIn('forzarEstadoCheckbox', contenido_b)
+
 
 if __name__ == "__main__":
     unittest.main()

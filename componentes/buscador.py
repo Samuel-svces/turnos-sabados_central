@@ -395,7 +395,54 @@ def renderizar_buscador(cargar_datos_fn=None):
             const searchInput = popover.querySelector('input[placeholder="Buscar..."]');
             if (!applyWrapper && !searchInput) return;
 
-            // 1. Vincular buscador reactivo dentro del popover
+            const applyBtn = popover.querySelector('.excel-apply-btn button, div[class*="st-key-btn_aplicar"] button, button[data-testid="stBaseButton-primary"]');
+
+            // 1. Función para refrescar si el botón 'Aplicar' debe estar habilitado o deshabilitado
+            function refrescarEstadoAplicar() {
+                if (!applyBtn) return;
+                const doctorLabels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+                let countChecked = 0;
+                doctorLabels.forEach((lbl, idx) => {
+                    if (idx === 0 || lbl.textContent.includes("Seleccionar")) return;
+                    const inp = lbl.querySelector('input[type="checkbox"]');
+                    if (inp && inp.checked) countChecked++;
+                });
+
+                if (countChecked === 0) {
+                    applyBtn.disabled = true;
+                    applyBtn.setAttribute("disabled", "true");
+                    applyBtn.classList.add("btn-aplicar-deshabilitado");
+                } else {
+                    applyBtn.disabled = false;
+                    applyBtn.removeAttribute("disabled");
+                    applyBtn.classList.remove("btn-aplicar-deshabilitado");
+                }
+            }
+
+            // 2. Función robusta para cambiar el estado de un checkbox en Streamlit BaseWeb
+            function forzarEstadoCheckbox(lbl, targetChecked) {
+                const inp = lbl.querySelector('input[type="checkbox"]');
+                if (!inp) return;
+                if (inp.checked === targetChecked) return;
+
+                // Click sobre el label para activar la máquina de estados de React
+                lbl.click();
+
+                // Verificación de respaldo si el evento de click no conmutó el estado
+                if (inp.checked !== targetChecked) {
+                    try {
+                        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "checked")?.set;
+                        if (setter) setter.call(inp, targetChecked);
+                        else inp.checked = targetChecked;
+                        inp.dispatchEvent(new Event('input', { bubbles: true }));
+                        inp.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (err) {
+                        console.error("Error al forzar checkbox:", err);
+                    }
+                }
+            }
+
+            // 3. Vincular buscador reactivo dentro del popover
             if (searchInput && !searchInput.dataset.excelFilterBound) {
                 searchInput.dataset.excelFilterBound = "true";
                 searchInput.setAttribute("autocomplete", "off");
@@ -425,7 +472,7 @@ def renderizar_buscador(cargar_datos_fn=None):
                             msgEl = parentDoc.createElement('div');
                             msgEl.className = 'excel-no-match-alert';
                             msgEl.textContent = 'Sin coincidencias.';
-                            msgEl.style.cssText = 'color: #64748b; font-size: 0.8rem; padding: 0.6rem 0.2rem; text-align: center; font-style: italic;';
+                            msgEl.style.cssText = 'color: #64748b; font-size: 0.78rem; padding: 0.35rem 0.2rem; text-align: center; font-style: italic;';
                             const scrollCont = popover.querySelector('[data-testid="stVerticalBlock"]');
                             if (scrollCont) scrollCont.appendChild(msgEl);
                         }
@@ -433,6 +480,9 @@ def renderizar_buscador(cargar_datos_fn=None):
                     } else if (msgEl) {
                         msgEl.style.setProperty('display', 'none', 'important');
                     }
+
+                    // Sincronizar estado del botón aplicar según lo que haya seleccionado
+                    refrescarEstadoAplicar();
                 });
 
                 searchInput.addEventListener('keydown', (e) => {
@@ -447,31 +497,79 @@ def renderizar_buscador(cargar_datos_fn=None):
                 });
             }
 
-            // 2. Vincular checkbox (Seleccionar todo) con selección sincronizada en cascada
+            // 4. Vincular checkbox (Seleccionar todo) con selección/deselección en cascada y deshabilitación
             const allCheckboxes = popover.querySelectorAll('label[data-testid="stCheckbox"]');
             if (allCheckboxes.length > 0) {
                 const selectAllLabel = allCheckboxes[0];
                 if (selectAllLabel.textContent.includes("Seleccionar") && !selectAllLabel.dataset.excelSelectAllBound) {
                     selectAllLabel.dataset.excelSelectAllBound = "true";
                     const chkAllInput = selectAllLabel.querySelector('input[type="checkbox"]');
+
+                    const ejecutarAccionSelectAll = () => {
+                        const targetChecked = chkAllInput ? chkAllInput.checked : false;
+                        const doctorLabels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+                        doctorLabels.forEach((lbl, idx) => {
+                            if (idx === 0) return;
+                            const cont = lbl.closest('div[data-testid="stElementContainer"]') || lbl;
+                            if (cont.style.display !== 'none') {
+                                forzarEstadoCheckbox(lbl, targetChecked);
+                            }
+                        });
+                        setTimeout(refrescarEstadoAplicar, 15);
+                    };
+
+                    selectAllLabel.addEventListener('click', () => {
+                        setTimeout(ejecutarAccionSelectAll, 10);
+                    });
                     if (chkAllInput) {
                         chkAllInput.addEventListener('change', () => {
-                            const isChecked = chkAllInput.checked;
-                            const doctorLabels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
-                            doctorLabels.forEach((lbl, idx) => {
-                                if (idx === 0) return;
-                                const cont = lbl.closest('div[data-testid="stElementContainer"]') || lbl;
-                                if (cont.style.display !== 'none') {
-                                    const docChk = lbl.querySelector('input[type="checkbox"]');
-                                    if (docChk && docChk.checked !== isChecked) {
-                                        docChk.click();
-                                    }
-                                }
-                            });
+                            setTimeout(ejecutarAccionSelectAll, 10);
                         });
                     }
                 }
             }
+
+            // 5. Vincular casillas individuales de médicos para refrescar botón y checkbox general
+            allCheckboxes.forEach((lbl, idx) => {
+                if (idx === 0 || lbl.textContent.includes("Seleccionar")) return;
+                if (lbl.dataset.docChkBound) return;
+                lbl.dataset.docChkBound = "true";
+
+                const docInp = lbl.querySelector('input[type="checkbox"]');
+                const onDoctorToggle = () => {
+                    setTimeout(() => {
+                        refrescarEstadoAplicar();
+
+                        // Actualizar estado de (Seleccionar todo) según los médicos visibles
+                        const selectAllLabel = popover.querySelectorAll('label[data-testid="stCheckbox"]')[0];
+                        if (selectAllLabel && selectAllLabel.textContent.includes("Seleccionar")) {
+                            const selectAllInp = selectAllLabel.querySelector('input[type="checkbox"]');
+                            const docLabels = popover.querySelectorAll('label[data-testid="stCheckbox"]');
+                            let totalVis = 0;
+                            let checkedVis = 0;
+                            docLabels.forEach((dlbl, didx) => {
+                                if (didx === 0) return;
+                                const cont = dlbl.closest('div[data-testid="stElementContainer"]') || dlbl;
+                                if (cont.style.display !== 'none') {
+                                    totalVis++;
+                                    const dinp = dlbl.querySelector('input[type="checkbox"]');
+                                    if (dinp && dinp.checked) checkedVis++;
+                                }
+                            });
+                            const allChecked = totalVis > 0 && (checkedVis === totalVis);
+                            if (selectAllInp && selectAllInp.checked !== allChecked) {
+                                forzarEstadoCheckbox(selectAllLabel, allChecked);
+                            }
+                        }
+                    }, 10);
+                };
+
+                lbl.addEventListener('click', onDoctorToggle);
+                if (docInp) docInp.addEventListener('change', onDoctorToggle);
+            });
+
+            // 6. Evaluación inicial al abrir o montar el popover
+            refrescarEstadoAplicar();
         });
     }
 
