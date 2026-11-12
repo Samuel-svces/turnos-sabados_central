@@ -764,16 +764,18 @@ def apply_styles():
         display: none;
     }
 
-    .doc-name-badge:hover {
-        background: #1976d2;
-        color: white;
-        border-color: #1565c0;
+    .doc-name-badge:hover,
+    .doc-name-badge.has-obs:hover {
+        background: #f8fafc !important;
+        background-color: #f8fafc !important;
+        border-color: #0f9a9b !important;
+        color: #0f172a !important;
         transform: scale(1.01);
     }
 
-    .doc-name-badge.has-obs:hover {
-        background: #1565c0;
-        color: white;
+    .doc-name-badge:hover *,
+    .doc-name-badge.has-obs:hover * {
+        color: #0f172a !important;
     }
 
     /* Resaltar resultado de búsqueda */
