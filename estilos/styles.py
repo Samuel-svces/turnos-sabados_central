@@ -3767,6 +3767,166 @@ def apply_styles():
         animation: skeleton-shimmer-anim 1.4s ease-in-out infinite !important;
     }
 
+    /* ========================================================= */
+    /* MODAL & PANEL SKELETONS, SPINNERS Y OVERLAYS DE CARGA     */
+    /* ========================================================= */
+    .modal-skeleton-card {
+        background: #ffffff !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 12px 14px !important;
+        margin: 10px 0 !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    .modal-skeleton-line {
+        border-radius: 6px !important;
+    }
+
+    .modal-skeleton-header {
+        height: 20px !important;
+        width: 45% !important;
+    }
+
+    .modal-skeleton-input {
+        height: 38px !important;
+        width: 100% !important;
+        border-radius: 8px !important;
+    }
+
+    .modal-skeleton-caption {
+        height: 14px !important;
+        width: 65% !important;
+    }
+
+    .modal-loading-overlay {
+        position: relative !important;
+        background: linear-gradient(135deg, #f0fbfb 0%, #ffffff 100%) !important;
+        border: 1.5px solid #0f9a9b !important;
+        border-radius: 14px !important;
+        padding: 24px 20px !important;
+        text-align: center !important;
+        margin: 14px 0 !important;
+        box-shadow: 0 4px 14px rgba(15, 154, 155, 0.1) !important;
+        animation: fadeInOverlay 0.25s ease-out !important;
+    }
+
+    @keyframes fadeInOverlay {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-spinner {
+        display: inline-block !important;
+        width: 36px !important;
+        height: 36px !important;
+        border: 3.5px solid #d1f0f2 !important;
+        border-top-color: #0f9a9b !important;
+        border-radius: 50% !important;
+        animation: modalSpinAnim 0.75s linear infinite !important;
+        margin-bottom: 12px !important;
+    }
+
+    @keyframes modalSpinAnim {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .modal-loading-title {
+        color: #0f4c4c !important;
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 6px !important;
+    }
+
+    .modal-loading-subtitle {
+        color: #5a7184 !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        margin-bottom: 14px !important;
+    }
+
+    .modal-loading-progress-bar {
+        height: 5px !important;
+        width: 100% !important;
+        border-radius: 3px !important;
+        overflow: hidden !important;
+    }
+
+    /* Intercambio / Swap Preview Card */
+    .swap-summary-card {
+        background: #f8fafc !important;
+        border: 1.5px dashed #0f9a9b !important;
+        border-radius: 12px !important;
+        padding: 12px 14px !important;
+        margin: 10px 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    .swap-summary-node {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 3px !important;
+    }
+
+    .swap-node-role {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #0f9a9b !important;
+    }
+
+    .swap-node-name {
+        font-family: 'Outfit', sans-serif !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #17243D !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .swap-node-date {
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+    }
+
+    .swap-summary-arrow {
+        font-size: 1.3rem !important;
+        color: #0f9a9b !important;
+        font-weight: 800 !important;
+        padding: 0 4px !important;
+    }
+
+    /* Botón con spinner integrado durante procesamiento */
+    .btn-processing-spinner {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+    }
+
+    .btn-processing-spinner::before {
+        content: "" !important;
+        width: 16px !important;
+        height: 16px !important;
+        border: 2px solid rgba(255, 255, 255, 0.4) !important;
+        border-top-color: #ffffff !important;
+        border-radius: 50% !important;
+        animation: modalSpinAnim 0.65s linear infinite !important;
+        display: inline-block !important;
+    }
+
     </style>
     """)
     _CSS_BUILT = " ".join([line.strip() for line in css_content.split("\n") if line.strip()])

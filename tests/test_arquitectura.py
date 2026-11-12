@@ -542,6 +542,44 @@ class TestArquitecturaModular(unittest.TestCase):
         self.assertIn("btn_admin_iniciar_sesion", contenido_b)
         self.assertIn("btn_admin_sats_anteriores", contenido_b)
 
+    def test_27_skeletons_y_spinners_paneles(self):
+        """Verifica la implementación de Skeletons y Spinners en paneles modales:
+        - Estilos CSS: modal-skeleton-card, modal-spinner, modal-loading-overlay, swap-summary-card
+        - Diálogos: skeleton shimmer e intercambio visual en show_drag_drop_action_dialog y show_shift_dialog
+        - Cuadrícula: skeleton shimmer en edición rápida de cambio de turno
+        - Buscador: disparadores reactivos de overlay modal con spinner y skeleton progress bar"""
+        styles_path = os.path.join(PROJECT_DIR, "estilos", "styles.py")
+        with open(styles_path, "r", encoding="utf-8") as f:
+            contenido_s = f.read()
+        self.assertIn(".modal-skeleton-card", contenido_s)
+        self.assertIn(".modal-spinner", contenido_s)
+        self.assertIn(".modal-loading-overlay", contenido_s)
+        self.assertIn(".swap-summary-card", contenido_s)
+        self.assertIn(".modal-loading-progress-bar", contenido_s)
+
+        dialogos_path = os.path.join(PROJECT_DIR, "componentes", "dialogos.py")
+        with open(dialogos_path, "r", encoding="utf-8") as f:
+            contenido_d = f.read()
+        self.assertIn("modal-skeleton-card", contenido_d)
+        self.assertIn("swap-summary-card", contenido_d)
+        self.assertIn("Intercambio de Turno Quincenal", contenido_d)
+
+        cuadricula_path = os.path.join(PROJECT_DIR, "componentes", "cuadricula_turnos.py")
+        with open(cuadricula_path, "r", encoding="utf-8") as f:
+            contenido_c = f.read()
+        self.assertIn("modal-skeleton-card", contenido_c)
+        self.assertIn("Intercambio de Turno", contenido_c)
+
+        buscador_path = os.path.join(PROJECT_DIR, "componentes", "buscador.py")
+        with open(buscador_path, "r", encoding="utf-8") as f:
+            contenido_b = f.read()
+        self.assertIn("mostrarOverlayCargaModal", contenido_b)
+        self.assertIn("insertarSkeletonCambioTurno", contenido_b)
+        self.assertIn("btn_confirmar_drag_drop", contenido_b)
+        self.assertIn("btn_save_changes_action", contenido_b)
+        self.assertIn("btn_agregar_medico_dialog", contenido_b)
+        self.assertIn("btn_confirmar_eliminar_turno", contenido_b)
+
 
 if __name__ == "__main__":
     unittest.main()

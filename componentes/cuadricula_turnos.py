@@ -255,7 +255,7 @@ def _render_encabezado_columna(sat_date, total: int, visibles: int, es_festivo: 
         _render_menu_excel(sat_date, nombres, prefijo, pop_key)
 
 
-def _guardar_edicion_rapida(sat_date, name, nueva_clasif, nueva_obs, clasif_actual, obs_actual, row_excel, col_excel, sheet_excel):
+def _guardar_edicion_rapida(sat_date, name, nueva_clasif, nueva_obs, clasif_actual, obs_actual, row_excel, col_excel, sheet_excel, swap_target_pop=None):
     """Guarda modificaciones de clasificación y observación directamente desde el panel adyacente."""
     excel_path = st.session_state.excel_path
     mods_list = []
@@ -282,17 +282,41 @@ def _guardar_edicion_rapida(sat_date, name, nueva_clasif, nueva_obs, clasif_actu
             })
 
     # 2. Registrar modificación del turno
-    mods_list.append({
-        'sheet': sheet_excel,
-        'date': sat_date,
-        'original_name': name,
-        'new_name': name,
-        'row': row_excel,
-        'col': col_excel,
-        'type': 'REEMPLAZAR',
-        'observaciones': nueva_obs.strip(),
-        'clasificacion': nueva_clasif
-    })
+    if nueva_clasif == "Cambio de turno" and swap_target_pop:
+        mods_list.append({
+            'sheet': sheet_excel,
+            'date': sat_date,
+            'original_name': name,
+            'new_name': swap_target_pop['doctor'],
+            'row': row_excel,
+            'col': col_excel,
+            'type': 'REEMPLAZAR',
+            'observaciones': nueva_obs.strip(),
+            'clasificacion': f"Cambio de turno con {swap_target_pop['doctor']}"
+        })
+        mods_list.append({
+            'sheet': swap_target_pop['sheet'],
+            'date': swap_target_pop['date'],
+            'original_name': swap_target_pop['doctor'],
+            'new_name': name,
+            'row': swap_target_pop['row'],
+            'col': swap_target_pop['col'],
+            'type': 'REEMPLAZAR',
+            'observaciones': nueva_obs.strip(),
+            'clasificacion': f"Cambio de turno con {name}"
+        })
+    else:
+        mods_list.append({
+            'sheet': sheet_excel,
+            'date': sat_date,
+            'original_name': name,
+            'new_name': name,
+            'row': row_excel,
+            'col': col_excel,
+            'type': 'REEMPLAZAR',
+            'observaciones': nueva_obs.strip(),
+            'clasificacion': nueva_clasif
+        })
 
     dp.save_modifications_batch(excel_path, mods_list)
 
@@ -317,26 +341,59 @@ def _guardar_edicion_rapida(sat_date, name, nueva_clasif, nueva_obs, clasif_actu
         date_check = sat_date if isinstance(sat_date, datetime.date) else pd.to_datetime(sat_date).date()
         df_upd = st.session_state.shifts_df.copy()
         df_dates = pd.to_datetime(df_upd['Date'], errors='coerce').dt.date
-        mask = (
-            (df_upd['Sheet'] == sheet_excel) &
-            (df_upd['Excel_Row'] == row_excel) &
-            (df_upd['Excel_Col'] == col_excel) &
-            (df_dates == date_check)
-        ) if row_excel > 0 and col_excel > 0 else (
-            (df_upd['Sheet'] == sheet_excel) &
-            (df_dates == date_check) &
-            (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(name).strip().upper())
-        )
-        if "Cambio de turno con" in str(clasif_actual) and nueva_clasif != clasif_actual:
-            counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
-            mask_cp = (
-                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
-                (df_upd['Classification'].str.contains(name, na=False))
-            )
-            df_upd.loc[mask_cp, 'Classification'] = 'Secuencia Normal'
 
-        df_upd.loc[mask, 'Observation'] = nueva_obs.strip()
-        df_upd.loc[mask, 'Classification'] = nueva_clasif
+        if nueva_clasif == "Cambio de turno" and swap_target_pop:
+            mask_orig = (
+                (df_upd['Sheet'] == sheet_excel) &
+                (df_upd['Excel_Row'] == row_excel) &
+                (df_upd['Excel_Col'] == col_excel) &
+                (df_dates == date_check)
+            ) if row_excel > 0 and col_excel > 0 else (
+                (df_upd['Sheet'] == sheet_excel) &
+                (df_dates == date_check) &
+                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(name).strip().upper())
+            )
+            df_upd.loc[mask_orig, 'Supernumerary'] = str(swap_target_pop['doctor']).strip().upper()
+            df_upd.loc[mask_orig, 'Observation'] = nueva_obs.strip()
+            df_upd.loc[mask_orig, 'Classification'] = f"Cambio de turno con {swap_target_pop['doctor']}"
+
+            sw_date = swap_target_pop['date']
+            sw_date = sw_date if isinstance(sw_date, datetime.date) else pd.to_datetime(sw_date).date()
+            mask_dest = (
+                (df_upd['Sheet'] == swap_target_pop['sheet']) &
+                (df_upd['Excel_Row'] == swap_target_pop['row']) &
+                (df_upd['Excel_Col'] == swap_target_pop['col']) &
+                (df_dates == sw_date)
+            ) if swap_target_pop['row'] > 0 and swap_target_pop['col'] > 0 else (
+                (df_upd['Sheet'] == swap_target_pop['sheet']) &
+                (df_dates == sw_date) &
+                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(swap_target_pop['doctor']).strip().upper())
+            )
+            df_upd.loc[mask_dest, 'Supernumerary'] = str(name).strip().upper()
+            df_upd.loc[mask_dest, 'Observation'] = nueva_obs.strip()
+            df_upd.loc[mask_dest, 'Classification'] = f"Cambio de turno con {name}"
+        else:
+            mask = (
+                (df_upd['Sheet'] == sheet_excel) &
+                (df_upd['Excel_Row'] == row_excel) &
+                (df_upd['Excel_Col'] == col_excel) &
+                (df_dates == date_check)
+            ) if row_excel > 0 and col_excel > 0 else (
+                (df_upd['Sheet'] == sheet_excel) &
+                (df_dates == date_check) &
+                (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == str(name).strip().upper())
+            )
+            if "Cambio de turno con" in str(clasif_actual) and nueva_clasif != clasif_actual:
+                counterpart = str(clasif_actual).replace("Cambio de turno con ", "").strip().upper()
+                mask_cp = (
+                    (df_upd['Supernumerary'].astype(str).str.strip().str.upper() == counterpart) &
+                    (df_upd['Classification'].str.contains(name, na=False))
+                )
+                df_upd.loc[mask_cp, 'Classification'] = 'Secuencia Normal'
+
+            df_upd.loc[mask, 'Observation'] = nueva_obs.strip()
+            df_upd.loc[mask, 'Classification'] = nueva_clasif
+
         st.session_state.shifts_df = df_upd
         dp.load_modifications.clear()
     except Exception as e_mem:
@@ -387,6 +444,51 @@ def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_e
         key=k_clasif
     )
 
+    swap_target_pop = None
+    if nueva_clasif == "Cambio de turno":
+        st.markdown("""
+        <div class="modal-skeleton-card" style="padding: 6px 10px; margin: 4px 0 8px 0;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.72rem; font-weight: 700; color: #0f9a9b; text-transform: uppercase;">
+                    🔄 Intercambio de Turno
+                </span>
+                <span class="skeleton-shimmer-box" style="display: inline-block; width: 45px; height: 12px; border-radius: 6px;"></span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        df_s = st.session_state.get('shifts_df', pd.DataFrame())
+        today = datetime.date.today()
+        current_week_parity = sat_date.isocalendar()[1] % 2
+        future_opposite = df_s[
+            (df_s['Date'] > today) &
+            (df_s['Date'] != sat_date) &
+            (df_s['Date'].apply(lambda d: (d.isocalendar()[1]) % 2) != current_week_parity)
+        ] if not df_s.empty else pd.DataFrame()
+
+        if not future_opposite.empty:
+            future_opposite = future_opposite.sort_values(by='Date')
+            pop_docs_map = {}
+            pop_docs = []
+            for _, r_fo in future_opposite.iterrows():
+                dn = r_fo['Supernumerary']
+                dv = r_fo['Date']
+                lbl = f"{dn} ({dv.strftime('%d/%m/%Y')})"
+                if lbl not in pop_docs_map:
+                    pop_docs.append(lbl)
+                    pop_docs_map[lbl] = {
+                        'doctor': dn,
+                        'date': dv,
+                        'sheet': r_fo['Sheet'],
+                        'row': int(r_fo['Excel_Row']),
+                        'col': int(r_fo['Excel_Col'])
+                    }
+            if pop_docs:
+                sel_lbl = st.selectbox("Médico con quien cambia:", pop_docs, key=f"sel_swap_pop_{sat_date}_{s_idx}")
+                swap_target_pop = pop_docs_map.get(sel_lbl)
+        else:
+            st.info("No hay médicos de secuencia contraria disponibles.")
+
     nueva_obs = st.text_input(
         "Observaciones:",
         value=shift_obs,
@@ -407,7 +509,8 @@ def _render_panel_edicion_rapida(sat_date, s_idx, name, shift_obs, clasif, row_e
                 obs_actual=shift_obs,
                 row_excel=row_excel,
                 col_excel=col_excel,
-                sheet_excel=sheet_excel
+                sheet_excel=sheet_excel,
+                swap_target_pop=swap_target_pop
             )
     with col_del:
         if st.button("Eliminar", key=k_del, type="secondary", use_container_width=True, icon=":material/delete_outline:"):

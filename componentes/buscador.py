@@ -985,6 +985,62 @@ def renderizar_buscador(cargar_datos_fn=None):
         setTimeout(desactivarSkeletonCarga, 4500);
     }
 
+    function mostrarOverlayCargaModal(container, titulo, subtitulo) {
+        if (!container) return;
+        let existing = container.querySelector('.modal-loading-overlay');
+        if (existing) return;
+
+        const overlay = parentDoc.createElement('div');
+        overlay.className = 'modal-loading-overlay';
+        overlay.innerHTML = `
+            <div class="modal-spinner"></div>
+            <div class="modal-loading-title">${titulo || 'Sincronizando con SharePoint...'}</div>
+            <div class="modal-loading-subtitle">${subtitulo || 'Guardando cambios y actualizando datos'}</div>
+            <div class="skeleton-shimmer-box modal-loading-progress-bar"></div>
+        `;
+
+        const actionArea = container.querySelector('[data-testid="stHorizontalBlock"], .stButton');
+        if (actionArea) {
+            actionArea.style.opacity = '0.35';
+            actionArea.style.pointerEvents = 'none';
+        }
+        container.appendChild(overlay);
+    }
+
+    function insertarSkeletonCambioTurno(radioElement) {
+        const dialogOrPopover = radioElement.closest('div[data-testid="stDialog"] [role="dialog"], div[role="dialog"], [data-testid="stPopoverBody"]');
+        if (!dialogOrPopover) return;
+
+        if (dialogOrPopover.querySelector('.modal-skeleton-card, .swap-summary-card')) return;
+
+        const radioGroup = radioElement.closest('[data-testid="stRadio"]');
+        if (!radioGroup) return;
+
+        const tempSkeleton = parentDoc.createElement('div');
+        tempSkeleton.className = 'modal-skeleton-card js-temp-skeleton';
+        tempSkeleton.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <span style="font-size: 0.74rem; font-weight: 700; color: #0f9a9b; text-transform: uppercase;">
+                    🔄 Cargando candidatos para intercambio...
+                </span>
+                <span class="skeleton-shimmer-box" style="display: inline-block; width: 50px; height: 14px; border-radius: 8px;"></span>
+            </div>
+            <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-input"></div>
+            <div class="skeleton-shimmer-box modal-skeleton-line modal-skeleton-caption"></div>
+        `;
+        if (radioGroup.nextSibling) {
+            radioGroup.parentNode.insertBefore(tempSkeleton, radioGroup.nextSibling);
+        } else {
+            radioGroup.parentNode.appendChild(tempSkeleton);
+        }
+
+        setTimeout(() => {
+            if (tempSkeleton && tempSkeleton.parentNode) {
+                tempSkeleton.parentNode.removeChild(tempSkeleton);
+            }
+        }, 3000);
+    }
+
     function desactivarSkeletonCarga() {
         const existing = parentDoc.getElementById('calendar-skeleton-overlay');
         if (existing) {
@@ -1002,6 +1058,10 @@ def renderizar_buscador(cargar_datos_fn=None):
                 col.style.removeProperty('opacity');
                 col.style.removeProperty('pointer-events');
             }
+        });
+        // Limpiar overlays temporales en modales
+        parentDoc.querySelectorAll('.modal-loading-overlay, .js-temp-skeleton').forEach(el => {
+            if (el && el.parentNode) el.parentNode.removeChild(el);
         });
     }
 
@@ -1029,6 +1089,61 @@ def renderizar_buscador(cargar_datos_fn=None):
             if (target.closest('div[class*="st-key-btn_admin_cerrar_sesion"] button, button[data-testid*="btn_admin_cerrar_sesion"]')) {
                 activarSkeletonCarga();
                 return;
+            }
+
+            // 4. Duplicar sábado
+            if (target.closest('div[class*="st-key-btn_duplicar"] button, button[data-testid*="btn_duplicar"]')) {
+                activarSkeletonCarga();
+                return;
+            }
+
+            // 5. Aplicar filtro Excel en encabezados
+            if (target.closest('.excel-apply-btn button, div[class*="st-key-btn_aplicar"] button')) {
+                activarSkeletonCarga();
+                return;
+            }
+
+            // 6. Confirmar y Aplicar en Traslado / Drag & Drop
+            if (target.closest('div[class*="st-key-btn_confirmar_drag_drop"] button, button[data-testid*="btn_confirmar_drag_drop"]')) {
+                const modal = target.closest('div[data-testid="stDialog"] [role="dialog"], div[role="dialog"], div[data-testid="stDialog"]');
+                mostrarOverlayCargaModal(modal, 'Sincronizando Cambio de Turno...', 'Actualizando turnos quincenales en SharePoint');
+                return;
+            }
+
+            // 7. Guardar cambios en diálogo de turno
+            if (target.closest('div[class*="st-key-btn_save_changes_action"] button, button[data-testid*="btn_save_changes_action"]')) {
+                const modal = target.closest('div[data-testid="stDialog"] [role="dialog"], div[role="dialog"], div[data-testid="stDialog"]');
+                mostrarOverlayCargaModal(modal, 'Guardando Cambios...', 'Persistiendo modificaciones en SharePoint');
+                return;
+            }
+
+            // 8. Agregar médico en diálogo adicional
+            if (target.closest('div[class*="st-key-btn_agregar_medico_dialog"] button, button[data-testid*="btn_agregar_medico_dialog"]')) {
+                const modal = target.closest('div[data-testid="stDialog"] [role="dialog"], div[role="dialog"], div[data-testid="stDialog"]');
+                mostrarOverlayCargaModal(modal, 'Asignando Médico...', 'Registrando médico supernumerario y secuencias');
+                return;
+            }
+
+            // 9. Confirmar eliminación de turno
+            if (target.closest('div[class*="st-key-btn_confirmar_eliminar_turno"] button, button[data-testid*="btn_confirmar_eliminar_turno"]')) {
+                const modal = target.closest('div[data-testid="stDialog"] [role="dialog"], div[role="dialog"], div[data-testid="stDialog"]');
+                mostrarOverlayCargaModal(modal, 'Eliminando Turno(s)...', 'Sincronizando remoción con SharePoint');
+                return;
+            }
+
+            // 10. Guardar en popover de edición rápida
+            if (target.closest('div[class*="st-key-btn_save_pop_"] button, button[data-testid*="btn_save_pop_"]')) {
+                const popover = target.closest('[data-testid="stPopoverBody"]');
+                if (popover) {
+                    mostrarOverlayCargaModal(popover, 'Guardando...', 'Actualizando turno en SharePoint');
+                }
+                return;
+            }
+
+            // 11. Clic en radio "Cambio de turno" para renderizar skeleton temporal inmediato
+            const radioLabel = target.closest('label');
+            if (radioLabel && radioLabel.textContent && radioLabel.textContent.includes('Cambio de turno')) {
+                insertarSkeletonCambioTurno(radioLabel);
             }
         }, true);
 
